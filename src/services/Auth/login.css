@@ -1,0 +1,29 @@
+.login-layout {
+    height:100%;
+    display: flex;
+}
+
+.login-content {
+    margin: auto;
+    flex-direction: column;
+    justify-content: center;
+    display: flex;
+}
+
+.login-app-logo-container {
+    margin: 16px;
+    display: flex;
+}
+
+.login-app-logo {
+    max-width: 240px;
+    margin: 12px auto;
+}
+
+.login-card {
+    width: 350px;
+}
+
+.login-form-submit {
+    width: 100%;
+}

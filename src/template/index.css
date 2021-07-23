@@ -1,0 +1,43 @@
+.app-logo {
+  width: 200px
+}
+
+.nav-right-menu {
+  display: flex;
+  flex-direction: row;
+}
+
+.nav-right-menu-item {
+  margin-left: 16px;
+}
+
+.nav-right-profile-menu {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.nav-right-profile-username {
+  margin: 0 5px;
+}
+
+.site-header {
+  background: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid lightgrey;
+}
+
+.sider-background {
+  background: #ffffff;
+}
+
+.common-content-wrapper {
+  width: 100%;
+  padding: 16px;
+}
+
+.common-content {
+  max-width: 1000px;
+  margin: auto;
+}
