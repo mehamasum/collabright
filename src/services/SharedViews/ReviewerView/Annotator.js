@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import WebViewer from '@pdftron/webviewer';
-import {Avatar, Dropdown, Layout, Menu, Spin, Typography} from "antd";
 import useFetch from "use-http";
 
 
@@ -54,7 +53,7 @@ const Annotator = () => {
         path: '/webviewer/lib',
         initialDoc: '/sample.pdf',
         documentXFDFRetriever: async () => {
-          const data = await get('/api/v1/comments/'); // TODO: filter by document
+          const data = await get(`/api/v1/comments?document=${documentId}`);
           const xfdfs = [];
           data.results.forEach(comment => {
             mapAnnotationToCommnet[comment.annotation] = comment.id;

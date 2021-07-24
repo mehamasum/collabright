@@ -1,7 +1,8 @@
 import React, {useEffect, useState, useRef} from 'react';
-import { Form, Input, Button, Layout, Card, Tabs, Space, Select } from 'antd';
+import { Form, Input, Button, Layout, Card, Tabs, Space, Select, PageHeader } from 'antd';
 import { loadModules } from "esri-loader";
 import Annotator from './Annotator';
+import logo from '../../../assets/images/logo.svg';
 
 import './index.css';
 
@@ -79,16 +80,21 @@ const ReviewerView = () => {
     <React.Fragment>
       <Layout className="reviewer-layout">
         <Header className="site-header">
-          <Space>
-            Audit Review
-            <Select defaultValue="2" style={{ width: 120 }} onChange={handleChange}>
-              <Option value="2">v2 (Latest)</Option>
-              <Option value="1">v1</Option>
-            </Select>
-          </Space>
+          <div className="app-logo">
+            <img src={logo} className="App-logo" alt="logo"/>
+          </div>
         </Header>
         <Content className="reviewer-content-wrapper">
           <div className={`reviewer-content ${key==3 ? 'reviewer-content-full' : ''}`}>
+            <Space>
+              <PageHeader
+                title="Audit"
+              />
+              <Select defaultValue="2" style={{ width: 120 }} onChange={handleChange}>
+                <Option value="2">v2 (Latest)</Option>
+                <Option value="1">v1</Option>
+              </Select>
+            </Space>
             <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={operations}>
               <TabPane tab="Details" key="1">
                 Details
