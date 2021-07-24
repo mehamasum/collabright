@@ -1,3 +1,7 @@
+.site-layout {
+  min-height: 100vh;
+}
+
 .app-logo {
   width: 200px
 }

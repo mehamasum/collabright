@@ -56,7 +56,7 @@ const Template = (props) => {
   }
 
   return (
-    <Layout style={{minHeight: '100vh'}}>
+    <Layout className="site-layout">
       <Header className="site-header">
         <div className="app-logo">
           <img src={logo} className="App-logo" alt="logo"/>
@@ -74,8 +74,6 @@ const Template = (props) => {
           </div>
 
         </div>
-
-
       </Header>
       <Layout>
         <Sider collapsible theme="light">

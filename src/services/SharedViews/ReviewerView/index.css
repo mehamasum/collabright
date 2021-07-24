@@ -1,0 +1,20 @@
+.reviewer-layout {
+  height:100%;
+  display: flex;
+}
+
+.reviewer-content-wrapper {
+  width: 100%;
+  padding: 16px;
+  background: #fff;
+}
+
+.reviewer-content {
+  max-width: 1000px;
+  margin: auto;
+  transition: max-width 250ms;
+}
+
+.reviewer-content-full {
+  max-width: 100%;
+}
