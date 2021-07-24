@@ -1,14 +1,13 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from rest_framework import serializers
+from .models import (Document, Comment)
 
-
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['url', 'username', 'email', 'groups']
+        model = Document
+        fields = ('id', 'title', 'url',)
 
-
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Group
-        fields = ['url', 'name']
+        model = Comment
+        fields = ('id', 'document', 'annotation', 'xfdf')

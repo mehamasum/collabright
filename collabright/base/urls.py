@@ -1,5 +1,5 @@
-from .views import (UserViewSet, GroupViewSet)
+from .views import (DocumentViewSet, CommentViewSet)
 
 def register_urls(router):
-  router.register(r'users', UserViewSet)
-  router.register(r'groups', GroupViewSet)
+  router.register('documents', DocumentViewSet, 'document')
+  router.register('comments', CommentViewSet, 'comment')
