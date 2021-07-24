@@ -65,7 +65,7 @@ function EsriMap({ id }) {
 }
 
 const ReviewerView = () => {
-  const [key, setKey] = useState(4); // tab key
+  const [key, setKey] = useState(1); // tab key
 
   function callback(key) {
     setKey(key);
@@ -88,15 +88,15 @@ const ReviewerView = () => {
           </Space>
         </Header>
         <Content className="reviewer-content-wrapper">
-          <div className={`reviewer-content ${key==2 ? 'reviewer-content-full' : ''}`}>
-            <Tabs className="reviewer-tabs" defaultActiveKey="4" onChange={callback} tabBarExtraContent={operations}>
-              <TabPane tab="Details" key="4">
+          <div className={`reviewer-content ${key==3 ? 'reviewer-content-full' : ''}`}>
+            <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={operations}>
+              <TabPane tab="Details" key="1">
                 Details
               </TabPane>
-              <TabPane tab="Interactive Map" key="1">
+              <TabPane tab="Interactive Map" key="2">
                 <EsriMap id="e691172598f04ea8881cd2a4adaa45ba" />
               </TabPane>
-              <TabPane tab="Comments" key="2">
+              <TabPane tab="Comments" key="3">
                 <Annotator />
               </TabPane>
             </Tabs>
