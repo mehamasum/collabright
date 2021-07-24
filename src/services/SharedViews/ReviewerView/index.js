@@ -1,6 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import { Form, Input, Button, Layout, Card, Tabs, Space, Select } from 'antd';
 import { loadModules } from "esri-loader";
+import Annotator from './Annotator';
 
 import './index.css';
 
@@ -88,7 +89,7 @@ const ReviewerView = () => {
         </Header>
         <Content className="reviewer-content-wrapper">
           <div className={`reviewer-content ${key==2 ? 'reviewer-content-full' : ''}`}>
-            <Tabs defaultActiveKey="4" onChange={callback} tabBarExtraContent={operations}>
+            <Tabs className="reviewer-tabs" defaultActiveKey="4" onChange={callback} tabBarExtraContent={operations}>
               <TabPane tab="Details" key="4">
                 Details
               </TabPane>
@@ -96,7 +97,7 @@ const ReviewerView = () => {
                 <EsriMap id="e691172598f04ea8881cd2a4adaa45ba" />
               </TabPane>
               <TabPane tab="Comments" key="2">
-                Comments
+                <Annotator />
               </TabPane>
             </Tabs>
           </div>
