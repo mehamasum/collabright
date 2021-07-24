@@ -11,6 +11,12 @@ class DocumentViewSet(viewsets.ModelViewSet):
     serializer_class = DocumentSerializer
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
     permission_classes = (permissions.IsAuthenticated, )
     serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        queryset = Comment.objects.all().order_by('id')
+        document = self.request.query_params.get('document')
+        if document is not None:
+            queryset = queryset.filter(document=document)
+        return queryset
