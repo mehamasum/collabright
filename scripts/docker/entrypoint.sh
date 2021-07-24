@@ -6,7 +6,7 @@ echo "Starting..."
 # TODO: wait for dependencies to get up
 
 npm install && rm -rf /usr/local/share/.cache
-npm run postinstall
+npm run postinstall # todo fixme
 npm run build
 
 pip install --no-cache-dir -r /app/requirements.txt
