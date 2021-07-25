@@ -1,8 +1,12 @@
 import React, {useEffect, useState, useRef} from 'react';
-import { Form, Input, Button, Layout, Card, Tabs, Space, Select, PageHeader } from 'antd';
-import { loadModules } from "esri-loader";
+import { Form, Spin, Button, Layout, Card, Tabs, Space, Select, PageHeader } from 'antd';
 import Annotator from './Annotator';
 import logo from '../../../assets/images/logo.svg';
+import {
+  useParams,
+  useHistory
+} from "react-router-dom";
+import useFetch from 'use-http';
 
 import './index.css';
 
@@ -19,7 +23,7 @@ const operations = (
   </Space>
 );
 
-function EsriMap({ id }) {
+function EsriMap({ auditId, version }) {
   return (
     <iframe
         title="Esri Map"
@@ -28,13 +32,26 @@ function EsriMap({ id }) {
         frameBorder="0"
         border="0"
         cellSpacing="0"
-        src="/mapviewer/index.html">
+        src={`/mapviewer/index.html?audit_id=${auditId}&version=${version}`}>
     </iframe>
   );
 }
 
 const ReviewerView = () => {
   const [key, setKey] = useState(1); // tab key
+  const [audit, setAudit] = useState(null);
+  let { audit: auditId, version } = useParams();
+  const history = useHistory();
+  const versionIndex = parseInt(version, 10) - 1;
+  const {get, response} = useFetch();
+
+  useEffect(() => {
+    get(`/api/v1/audits/${auditId}`).then(data => {
+      if (response.ok) {
+        setAudit(data);
+      }
+    });
+  }, []);
 
   function callback(key) {
     setKey(key);
@@ -42,7 +59,14 @@ const ReviewerView = () => {
 
   function handleChange(value) {
     console.log(`selected ${value}`);
+    const nextVersion = parseInt(value, 10) + 1;
+    console.log(`selected ${value}`, nextVersion);
+    history.push(`/review/${auditId}/${nextVersion}`)
   }
+
+  if (!audit) return <div className="full-page-loader"><Spin size="large"/></div>;
+
+  const document = audit.documents[versionIndex];
 
   return (
     <React.Fragment>
@@ -58,20 +82,21 @@ const ReviewerView = () => {
               <PageHeader
                 title="Audit"
               />
-              <Select defaultValue="2" style={{ width: 120 }} onChange={handleChange}>
-                <Option value="2">v2 (Latest)</Option>
-                <Option value="1">v1</Option>
+              <Select defaultValue={versionIndex} onChange={handleChange} className="version-select">
+                {
+                  audit.documents.map((_, index) => <Option value={index} key={`v${index+1}`}>v{index+1}.0 {index===audit.documents.length-1? '(Latest)':''}</Option>).reverse()
+                }
               </Select>
             </Space>
             <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={operations}>
               <TabPane tab="Details" key="1">
-                Details
+                <code>{JSON.stringify(audit)}</code>
               </TabPane>
               <TabPane tab="Interactive Map" key="2">
-                <EsriMap id="7a18444ddea349c08ed28db0929d0395" />
+                <EsriMap auditId={auditId} version={version} />
               </TabPane>
               <TabPane tab="Comments" key="3">
-                <Annotator />
+                <Annotator document={document}/>
               </TabPane>
             </Tabs>
           </div>

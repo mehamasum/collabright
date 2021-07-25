@@ -40,6 +40,8 @@ class Document(models.Model): # exported from map id
     map_item_data = models.TextField() # arcgis item data
     audit = models.ForeignKey(Audit, on_delete=models.CASCADE, related_name='documents')
     created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['created_at']
 
 
 class Comment(models.Model):
