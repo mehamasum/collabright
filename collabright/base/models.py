@@ -24,13 +24,22 @@ class User(AbstractUser):
 
 # notification: user, review_history
 
+class Audit(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    map_url = models.CharField(max_length=512) # arcjs web map url
+    base_document_url = models.CharField(max_length=1024) # arcjs print or any public pdf url
+    base_url = models.CharField(max_length=200) # arcjs url from map_url
+    map_id = models.CharField(max_length=200) # arcjs map id from map_url
+    created_at = models.DateTimeField(auto_now_add=True)
+
 class Document(models.Model): # exported from map id
-    map_id = models.CharField(max_length=200) # arcjs map id
     title = models.CharField(max_length=200)
-    url = models.CharField(max_length=200)
+    url = models.CharField(max_length=200) # our storage url
     map_item = models.TextField() # arcgis item
     map_item_data = models.TextField() # arcgis item data
-    # audit
+    audit = models.ForeignKey(Audit, on_delete=models.CASCADE, related_name='documents')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Comment(models.Model):
