@@ -1,0 +1,23 @@
+.integration-card {
+  width: 300px;
+}
+
+.integration-list {
+  margin: 32px 8px;
+}
+
+.integration-card-body {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.integration-connect {
+  margin: auto;
+}
+
+.integration-logo {
+  padding: 30px;
+  background: #eee;
+  height: 150px;
+}
