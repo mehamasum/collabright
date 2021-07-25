@@ -24,7 +24,8 @@ class ArcGISOAuthService:
     def get_oauth_url():
         params = {
             'response_type': 'code',
-            'redirect_uri': ArcGISOAuthService.redirect_uri
+            'redirect_uri': ArcGISOAuthService.redirect_uri,
+            'expiration': -1
         }
         return ArcGISOAuthService.service.get_authorize_url(**params)
     
@@ -69,13 +70,13 @@ class ArcGISOAuthService:
         expiry_date = integration.expiry_date
         now = timezone.now()
 
-        if now > expiry_date:
+        if now < expiry_date:
           return integration.access_token
 
         refresh_token = integration.refresh_token
         refresh_expiry_date = integration.refresh_expiry_date
 
-        if now > refresh_expiry_date:
+        if now < refresh_expiry_date:
           return None
 
         try:
@@ -115,8 +116,14 @@ class ArcGISOAuthService:
         item_url = f'{base_url}/sharing/rest/content/items/{map_id}'
         item = requests.get(item_url, params).json()
 
+        if 'error' in item:
+          return None
+
         item_data_url = f'{base_url}/sharing/rest/content/items/{map_id}/data'
         item_data = requests.get(item_data_url, params).json()
+
+        if 'error' in item_data:
+          return None
 
 
         return {

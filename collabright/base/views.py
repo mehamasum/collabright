@@ -58,4 +58,7 @@ class ArcGISApiViewSet(viewsets.ViewSet):
         base_url = 'https://meopfgqs49nwppru.maps.arcgis.com'
         map_id = '7a18444ddea349c08ed28db0929d0395'
         info = ArcGISOAuthService.get_map_info(user, base_url, map_id)
-        return Response(data=info)
+
+        if info:
+            return Response(data=info)
+        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
