@@ -1,4 +1,5 @@
 import json
+import base64
 from .models import (Integration)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
@@ -130,3 +131,54 @@ class ArcGISOAuthService:
           'item': item,
           'itemData': item_data
         }
+
+class DocuSignOAuthService:
+    service = OAuth2Service(
+        client_id=settings.DOCUSIGN_INTEGRATION_KEY,
+        client_secret=settings.DOCUSIGN_SECRET_KEY,
+        name='arcgis',
+        authorize_url="https://account-d.docusign.com/oauth/auth",
+        access_token_url="https://account-d.docusign.com/oauth/token"
+    )
+    redirect_uri = settings.APP_URL + '/oauth/callback/docusign/'
+
+    @staticmethod
+    def get_oauth_url():
+        params = {
+            'response_type': 'code',
+            'redirect_uri': DocuSignOAuthService.redirect_uri
+        }
+        return DocuSignOAuthService.service.get_authorize_url(**params)
+
+    @staticmethod
+    def verify_oauth(code, user):
+        try:
+            authorize_token = "%s:%s" % (settings.DOCUSIGN_INTEGRATION_KEY, settings.DOCUSIGN_SECRET_KEY)
+            headers = {"Authorization": "Basic %s" % base64.b64encode(authorize_token.encode())}
+            r = DocuSignOAuthService.service.get_raw_access_token(data={
+                'code': code,
+                'redirect_uri': DocuSignOAuthService.redirect_uri,
+                'grant_type': 'authorization_code',
+            }, headers=headers)
+            data = json_decoder(r.content)
+            """
+                {'access_token': ...., 'token_type': 'Bearer', 'refresh_token': ..., 'expires_in': 28800}
+            """
+            access_token = data['access_token']
+            expires_in = int(data['expires_in'])
+            refresh_token = data['refresh_token']
+
+            Integration.objects.update_or_create(
+                type=Integration.DOCU_SIGN,
+                user=user,
+                defaults={
+                    'data': data,
+                    'access_token': access_token,
+                    'refresh_token': refresh_token,
+                    'expiry_date': datetime.now() + timedelta(seconds=expires_in),
+                    'refresh_expiry_date': datetime.now() + timedelta(days=29)
+                }
+            )
+            return data
+        except KeyError:
+            return None
