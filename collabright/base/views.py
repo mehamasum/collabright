@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 
 class DocumentViewSet(viewsets.ModelViewSet):
-    queryset = Document.objects.all()
+    queryset = Document.objects.all().order_by('created_at')
     permission_classes = (permissions.IsAuthenticated, )
     serializer_class = DocumentSerializer
 
@@ -61,8 +61,8 @@ class ArcGISApiViewSet(viewsets.ViewSet):
 
     @action(detail=False)
     def get_map(self, request):
-        audit_id = '26462bdf-2054-4f16-8451-4057fc761985'
-        version = 1
+        audit_id = request.query_params.get('audit_id')
+        version = int(request.query_params.get('version'))
         
         document = get_document_from_audit_version(audit_id, version)
         

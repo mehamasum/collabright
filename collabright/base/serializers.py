@@ -7,7 +7,7 @@ from urllib.parse import urlparse, parse_qs
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ('id', 'title', 'url', 'map_item', 'map_item_data', 'audit', 'created_at')
+        fields = ('id', 'title', 'url', 'audit', 'created_at')
         read_only_fields = ('map_item', 'map_item_data', 'created_at')
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -21,9 +21,10 @@ class IntegrationSerializer(serializers.ModelSerializer):
         fields = ('id', 'type', 'expiry_date', 'refresh_expiry_date')
 
 class AuditSerializer(serializers.ModelSerializer):
+    documents = DocumentSerializer(many=True, read_only=True)
     class Meta:
         model = Audit
-        fields = ('id', 'user', 'map_url', 'base_document_url', 'base_url', 'map_id', 'created_at')
+        fields = ('id', 'user', 'map_url', 'base_document_url', 'base_url', 'map_id', 'created_at', 'documents')
         read_only_fields = ('user', 'base_url', 'map_id', 'created_at')
 
     def validate_map_url(self, value):

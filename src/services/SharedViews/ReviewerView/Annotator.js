@@ -3,9 +3,11 @@ import WebViewer from '@pdftron/webviewer';
 import useFetch from "use-http";
 
 
-const Annotator = () => {
+const Annotator = ({document}) => {
   const viewer = useRef(null);
-  const documentId = '1'; // TODO
+  const documentId = document.id;
+  const fileUrl = document.url;
+
   const user = "John"; // TODO
   const serializer = new XMLSerializer();
   const {post, get, put, del} = useFetch();
@@ -51,7 +53,7 @@ const Annotator = () => {
     WebViewer(
       {
         path: '/webviewer/lib',
-        initialDoc: '/sample.pdf',
+        initialDoc: fileUrl,
         documentXFDFRetriever: async () => {
           const data = await get(`/api/v1/comments?document=${documentId}`);
           const xfdfs = [];
