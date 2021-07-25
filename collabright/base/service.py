@@ -104,9 +104,9 @@ class ArcGISOAuthService:
             return updated_integration.access_token
         except KeyError:
             return None
-
+    
     @staticmethod
-    def get_map_info(user, base_url, map_id):
+    def get_map_item(user, base_url, map_id):
         token = ArcGISOAuthService.get_access_token(user)
         
         params = {
@@ -120,17 +120,25 @@ class ArcGISOAuthService:
         if 'error' in item:
           return None
 
+        return item
+
+    @staticmethod
+    def get_map_item_data(user, base_url, map_id):
+        token = ArcGISOAuthService.get_access_token(user)
+        
+        params = {
+            'f': 'json',
+            'token': token,
+        }
+
         item_data_url = f'{base_url}/sharing/rest/content/items/{map_id}/data'
         item_data = requests.get(item_data_url, params).json()
 
         if 'error' in item_data:
           return None
 
+        return item_data
 
-        return {
-          'item': item,
-          'itemData': item_data
-        }
 
 class DocuSignOAuthService:
     service = OAuth2Service(
