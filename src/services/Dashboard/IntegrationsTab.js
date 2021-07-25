@@ -3,11 +3,21 @@ import React, {useEffect, useState} from "react";
 import {Button, Card, Form, Input, Modal, Space, Tag} from 'antd';
 import useFetch from 'use-http';
 
+import docuSignLogo from "../../assets/icons/docuSign.svg";
 import './IntegrationsTab.css';
 
 
 const IntegrationsTab = () => {
   const [integrations, setIntegrations] = useState([
+    {
+      type: 'DOCU_SIGN',
+      url: 'docusign',
+      name: 'Docu Sign',
+      logo: docuSignLogo,
+      connected: false,
+      is_expired: false,
+      ready: true,
+    },
     {
       type: 'ARC_GIS',
       url: 'arcgis',
@@ -32,7 +42,6 @@ const IntegrationsTab = () => {
               is_expired: new Date(connected.refresh_expiry_date) < new Date() || new Date(connected.expiry_date) < new Date()
             }
           }
-      
           return item;
         });
         setIntegrations(updated);

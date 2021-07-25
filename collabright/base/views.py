@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer)
 from .models import (Comment, Document, Integration)
-from .service import ArcGISOAuthService
+from .service import (ArcGISOAuthService, DocuSignOAuthService)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -62,3 +62,20 @@ class ArcGISApiViewSet(viewsets.ViewSet):
         if info:
             return Response(data=info)
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class DocuSignApiViewSet(viewsets.ViewSet):
+    permission_classes = (permissions.IsAuthenticated, )
+
+    @action(detail=False)
+    def oauth_url(self, request):
+        url = DocuSignOAuthService.get_oauth_url()
+        return Response({
+            'url': url
+        })
+
+    @action(detail=False, methods=['post'])
+    def verify_oauth(self, request):
+        code = request.data.get('code')
+        if DocuSignOAuthService.verify_oauth(code, request.user):
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)

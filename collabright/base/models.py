@@ -40,8 +40,10 @@ class Comment(models.Model):
 
 class Integration(models.Model):
     ARC_GIS = 'ARC_GIS'
+    DOCU_SIGN = 'DOCU_SIGN'
     TYPE_CHOICES = (
         (ARC_GIS, 'Esri ArcGIS'),
+        (DOCU_SIGN, 'Docu Sign'),
     )
 
     type = models.CharField(choices=TYPE_CHOICES, max_length=64)
