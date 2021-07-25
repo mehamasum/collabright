@@ -1,6 +1,6 @@
 import json
 import base64
-from .models import (Integration)
+from .models import (Integration, Audit, Document)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -190,3 +190,10 @@ class DocuSignOAuthService:
             return data
         except KeyError:
             return None
+
+
+def get_document_from_audit_version(audit_id, version):
+    index = version - 1
+    audit = Audit.objects.get(pk=audit_id)
+    documents = Document.objects.filter(audit=audit).order_by('created_at')
+    return documents[index]

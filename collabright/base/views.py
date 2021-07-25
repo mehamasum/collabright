@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer)
 from .models import (Comment, Document, Integration, Audit)
-from .service import (ArcGISOAuthService, DocuSignOAuthService)
+from .service import (ArcGISOAuthService, DocuSignOAuthService, get_document_from_audit_version)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -64,10 +64,8 @@ class ArcGISApiViewSet(viewsets.ViewSet):
         audit_id = '26462bdf-2054-4f16-8451-4057fc761985'
         version = 1
         
-        index = version - 1
-        audit = Audit.objects.get(pk=audit_id)
-        documents = Document.objects.filter(audit=audit).order_by('created_at')
-        document = documents[index]
+        document = get_document_from_audit_version(audit_id, version)
+        
         info = {
           'item': json.loads(document.map_item),
           'itemData': json.loads(document.map_item_data)
