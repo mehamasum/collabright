@@ -2,6 +2,7 @@ import json
 from .models import (Integration)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
+from django.utils import timezone
 import requests
 from django.conf import settings
 
@@ -66,14 +67,15 @@ class ArcGISOAuthService:
             user=user,
         )
         expiry_date = integration.expiry_date
+        now = timezone.now()
 
-        if datetime.now() > expiry_date:
+        if now > expiry_date:
           return integration.access_token
 
         refresh_token = integration.refresh_token
         refresh_expiry_date = integration.refresh_expiry_date
 
-        if datetime.now() > refresh_expiry_date:
+        if now > refresh_expiry_date:
           return None
 
         try:
@@ -89,7 +91,7 @@ class ArcGISOAuthService:
             access_token = data['access_token']
             expires_in = int(data['expires_in'])
 
-            updated_integration = Integration.objects.update_or_create(
+            updated_integration, _ = Integration.objects.update_or_create(
                 type=Integration.ARC_GIS,
                 user=user,
                 defaults={
@@ -100,4 +102,24 @@ class ArcGISOAuthService:
             return updated_integration.access_token
         except KeyError:
             return None
+
+    @staticmethod
+    def get_map_info(user, base_url, map_id):
+        token = ArcGISOAuthService.get_access_token(user)
         
+        params = {
+            'f': 'json',
+            'token': token,
+        }
+
+        item_url = f'{base_url}/sharing/rest/content/items/{map_id}'
+        item = requests.get(item_url, params).json()
+
+        item_data_url = f'{base_url}/sharing/rest/content/items/{map_id}/data'
+        item_data = requests.get(item_data_url, params).json()
+
+
+        return {
+          'item': item,
+          'itemData': item_data
+        }
