@@ -3,6 +3,7 @@ import './App.css';
 import { Route, Switch, BrowserRouter as Router } from 'react-router-dom';
 import Dashboard from './services/Dashboard';
 import {Login} from './services/Auth';
+import OAuthCallback from './services/Auth/OAuthCallback';
 import ReviewerView from './services/SharedViews/ReviewerView';
 import { Result } from 'antd';
 import { Provider as FetchProvider } from 'use-http';
@@ -31,6 +32,7 @@ const App = (props) => {
             <ReviewerView/>
           </Route>
           <PrivateRoute exact path="/" component={Dashboard} />
+          <PrivateRoute exact path="/oauth/callback/:integration/" component={OAuthCallback} withoutTemplate/>
           <Route render={() => <Result status="404" title="404" subTitle="Sorry, the page you visited does not exist." />} />
         </Switch>
       </Router>

@@ -5,9 +5,20 @@ echo "Starting..."
 
 # TODO: wait for dependencies to get up
 
+cd Viewer
 npm install && rm -rf /usr/local/share/.cache
-npm run postinstall # todo fixme
 npm run build
+cd ..
+mkdir -p public/mapviewer
+cp -a Viewer/build/. public/mapviewer/
+rm -rf Viewer/build
+
+npm install && rm -rf /usr/local/share/.cache
+mkdir -p public/webviewer/lib
+cp -a node_modules/@pdftron/webviewer/public/. public/webviewer/lib/
+npm run build
+
+exit
 
 pip install --no-cache-dir -r /app/requirements.txt
 

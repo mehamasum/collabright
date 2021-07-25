@@ -29,7 +29,7 @@ const Template = (props) => {
         return setUser(data);
       }
 
-      deleteFromStorage('token');
+      //deleteFromStorage('token');
     });
   }, []);
 

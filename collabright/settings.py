@@ -204,3 +204,8 @@ DJOSER = {
 }
 
 AUTH_USER_MODEL = 'base.User'
+
+
+ARCGIS_APP_ID = env.str('ARCGIS_APP_ID')
+ARCGIS_APP_SECRET = env.str('ARCGIS_APP_SECRET')
+APP_URL = env.str('APP_URL')

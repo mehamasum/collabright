@@ -21,7 +21,7 @@
 }
 
 .reviewer-tabs {
-  height: 100%;
+  height: calc(100% - 72px);
   padding: 0 24px;
 }
 
