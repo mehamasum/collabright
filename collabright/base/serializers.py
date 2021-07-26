@@ -8,7 +8,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields = ('id', 'description', 'url', 'audit', 'created_at')
-        read_only_fields = ('map_item', 'map_item_data', 'created_at')
+        read_only_fields = ('map_item', 'map_item_data', 'map_print_definition', 'created_at')
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Print webmap</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.11/esri/css/esri.css">
+    <style>
+      html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+    </style>
+    <script src="https://js.arcgis.com/3.11/"></script>
+    <script>
+      require([
+        "esri/map", "esri/arcgis/utils"
+      ], function(
+        Map, arcgisUtils
+      ) {
+          const globalJSON = JSON;
+          const token = localStorage.getItem("token");
+          fetch("http://localhost:8000/api/v1/arcgis/get_map/"+window.location.search, {
+            headers: {
+              'Authorization': 'Token ' + token,
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(function (response) { return response.json() })
+          .then(function (webmapJson) {
+            var webmap = arcgisUtils.createMap(webmapJson, "map");
+            webmap.then(function(resp) {
+              const map = resp.map;
+              require(["esri/tasks/PrintTask", "dojo/_base/json"], function(PrintTask,  JSON){
+                var printTask = new PrintTask();   
+                var Web_Map_as_JSON = JSON.toJson(printTask._getPrintDefinition(map));
+                fetch("http://localhost:8000/api/v1/arcgis/update_map_print_definition/"+window.location.search, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': 'Token ' + token,
+                    'Content-Type': 'application/json'
+                  },
+                  body: globalJSON.stringify({map_print_definition: Web_Map_as_JSON})
+                })
+              });
+            });
+          });
+        }
+      );
+    </script>
+  </head>
+  <body>
+    <div>
+      <div id="map"></div>
+    </div>
+  </body>
+</html>

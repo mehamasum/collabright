@@ -72,6 +72,26 @@ class ArcGISApiViewSet(viewsets.ViewSet):
         }
         return Response(data=info)
 
+    @action(detail=False, methods=['post'])
+    def update_map_print_definition(self, request):
+        audit_id = request.query_params.get('audit_id')
+        version = int(request.query_params.get('version'))
+        map_print_definition = request.data.get('map_print_definition')
+
+        document = get_document_from_audit_version(audit_id, version)
+
+        document.map_print_definition = map_print_definition
+        document.save()
+        return Response(status=status.HTTP_200_OK)
+
+    @action(detail=False)
+    def get_pdf(self, request):
+        audit_id = '26462bdf-2054-4f16-8451-4057fc761985'
+        version = 2
+        document = get_document_from_audit_version(audit_id, version)        
+        info = ArcGISOAuthService.export_map_as_file(document.map_print_definition, 'v1 file')
+        return Response(data=info)
+
 class DocuSignApiViewSet(viewsets.ViewSet):
     permission_classes = (permissions.IsAuthenticated, )
 
