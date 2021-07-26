@@ -7,7 +7,7 @@ from urllib.parse import urlparse, parse_qs
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ('id', 'title', 'url', 'audit', 'created_at')
+        fields = ('id', 'description', 'url', 'audit', 'created_at')
         read_only_fields = ('map_item', 'map_item_data', 'created_at')
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class AuditSerializer(serializers.ModelSerializer):
     documents = DocumentSerializer(many=True, read_only=True)
     class Meta:
         model = Audit
-        fields = ('id', 'user', 'map_url', 'base_document_url', 'base_url', 'map_id', 'created_at', 'documents')
+        fields = ('id', 'title', 'description', 'user', 'map_url', 'base_document_url', 'base_url', 'map_id', 'created_at', 'documents', 'is_open')
         read_only_fields = ('user', 'base_url', 'map_id', 'created_at')
 
     def validate_map_url(self, value):
@@ -51,12 +51,10 @@ class AuditSerializer(serializers.ModelSerializer):
         )
 
         
-        title = 'v1'
         url = validated_data['base_document_url'] # TODO download base_document_url as file
         map_item = ArcGISOAuthService.get_map_item(user, base_url, map_id)
         map_item_data = ArcGISOAuthService.get_map_item_data(user, base_url, map_id)
         Document.objects.create(
-            title=title,
             url=url,
             map_item=json.dumps(map_item),
             map_item_data=json.dumps(map_item_data),
