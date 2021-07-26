@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react';
-import { Form, Spin, Button, Layout, Card, Tabs, Space, Select, PageHeader } from 'antd';
+import { Typography, Spin, Button, Layout, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown } from 'antd';
+import { CheckOutlined, ReloadOutlined, DownOutlined } from '@ant-design/icons';
 import Annotator from './Annotator';
 import logo from '../../../assets/images/logo.svg';
 import {
@@ -12,14 +13,28 @@ import './index.css';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
-
-
+const { Text } = Typography;
 const {Header, Sider, Content, Footer} = Layout;
+
+const approveMenu = (
+  <Menu onClick={handleMenuClick}>
+    <Menu.Item key="1" icon={<ReloadOutlined />}>
+      Request Changes
+    </Menu.Item>
+    <Menu.Item key="2" icon={<CheckOutlined />}>
+      Approve
+    </Menu.Item>
+  </Menu>
+);
 
 const operations = (
   <Space>
-    <Button>Review</Button>
-    <Button type="primary">Sign</Button>
+    <Dropdown overlay={approveMenu}>
+      <Button>
+        Submit Review <DownOutlined />
+      </Button>
+    </Dropdown>
+    <Button type="primary">Approve and Sign</Button>
   </Space>
 );
 
@@ -37,17 +52,25 @@ function EsriMap({ auditId, version }) {
   );
 }
 
+function handleMenuClick(e) {
+  console.log('click', e);
+}
+
+
+
 const ReviewerView = () => {
-  const [key, setKey] = useState(1); // tab key
+  const [key, setKey] = useState('details'); // tab key
   const [audit, setAudit] = useState(null);
-  let { audit: auditId, version } = useParams();
-  const history = useHistory();
+  const [version, setVersion] = useState(null);
+  let { audit: auditId } = useParams();
+
   const versionIndex = parseInt(version, 10) - 1;
   const {get, response} = useFetch();
 
   useEffect(() => {
     get(`/api/v1/audits/${auditId}`).then(data => {
       if (response.ok) {
+        setVersion(data.documents.length);
         setAudit(data);
       }
     });
@@ -58,15 +81,25 @@ const ReviewerView = () => {
   }
 
   function handleChange(value) {
-    console.log(`selected ${value}`);
     const nextVersion = parseInt(value, 10) + 1;
     console.log(`selected ${value}`, nextVersion);
-    history.push(`/review/${auditId}/${nextVersion}`)
+    setVersion(nextVersion);
   }
 
   if (!audit) return <div className="full-page-loader"><Spin size="large"/></div>;
 
   const document = audit.documents[versionIndex];
+
+  const VersionPicker = () => (
+    <Space>
+      <Text>Reviewing</Text>
+      <Select defaultValue={versionIndex} onChange={handleChange} className="version-select" size="small">
+        {
+          audit.documents.map((_, index) => <Option value={index} key={`v${index+1}`}>v{index+1}.0 {index===audit.documents.length-1? '(Latest)':''}</Option>).reverse()
+        }
+      </Select>
+    </Space>
+  )
 
   return (
     <React.Fragment>
@@ -77,26 +110,25 @@ const ReviewerView = () => {
           </div>
         </Header>
         <Content className="reviewer-content-wrapper">
-          <div className={`reviewer-content ${key==3 ? 'reviewer-content-full' : ''}`}>
-            <Space>
-              <PageHeader
-                title="Audit"
-              />
-              <Select defaultValue={versionIndex} onChange={handleChange} className="version-select">
-                {
-                  audit.documents.map((_, index) => <Option value={index} key={`v${index+1}`}>v{index+1}.0 {index===audit.documents.length-1? '(Latest)':''}</Option>).reverse()
-                }
-              </Select>
-            </Space>
+          <div className={`reviewer-content ${key==="discussion" ? 'reviewer-content-full' : ''}`}>
+            <PageHeader
+              title={audit.title}
+              subTitle={audit.is_open ? <Tag color="success">Open</Tag> : <Tag color="error">Closed</Tag> }
+              extra={[
+                <VersionPicker key="1"/>
+              ]}
+            />
+            
+              
             <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={operations}>
-              <TabPane tab="Details" key="1">
+              <TabPane tab="Details" key="details">
                 <code>{JSON.stringify(audit)}</code>
               </TabPane>
-              <TabPane tab="Interactive Map" key="2">
+              <TabPane tab="Interactive Map" key="map">
                 <EsriMap auditId={auditId} version={version} />
               </TabPane>
-              <TabPane tab="Comments" key="3">
-                <Annotator document={document}/>
+              <TabPane tab="Discussion" key="discussion">
+                <Annotator key={versionIndex} document={document}/>
               </TabPane>
             </Tabs>
           </div>

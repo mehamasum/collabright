@@ -28,7 +28,7 @@ const App = (props) => {
           <Route exact path="/login">
             <Login/>
           </Route>
-          <Route exact path="/review/:audit/:version">
+          <Route exact path="/review/:audit/">
             <ReviewerView/>
           </Route>
           <PrivateRoute exact path="/" component={Dashboard} />
