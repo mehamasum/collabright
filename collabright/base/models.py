@@ -41,6 +41,7 @@ class Document(models.Model): # exported from map id
     url = models.CharField(max_length=200) # our storage url
     map_item = models.TextField() # arcgis item
     map_item_data = models.TextField() # arcgis item data
+    map_print_definition = models.TextField(null=True, blank=True) # arcgis Web_Map_as_JSON
     audit = models.ForeignKey(Audit, on_delete=models.CASCADE, related_name='documents')
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:

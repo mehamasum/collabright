@@ -139,6 +139,37 @@ class ArcGISOAuthService:
 
         return item_data
 
+    @staticmethod
+    def export_map_as_file(map_print_definition, print_title):
+        json_def = json.loads(map_print_definition)
+        json_def["exportOptions"] = {
+            "dpi": 300,
+            "outputSize":  [
+                1680,
+                1050,
+            ]
+        }
+        json_def["layoutOptions"] = {
+            "titleText": print_title,
+            "scaleBarOptions": {},
+            "legendOptions": {"operationalLayers":[]}
+        }
+        json_def = json.dumps(json_def)
+        payload = {
+            'f': 'json',
+            'Web_Map_as_JSON': json_def,
+            'Format': 'PDF',
+            'Layout_Template': 'MAP_ONLY' # 'Letter ANSI A Landscape'
+        }
+
+        export_url = "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task/execute"
+        response = requests.post(export_url, data=payload)
+        response = response.json()
+        
+        if 'error' in response:
+          return None
+
+        return response
 
 class DocuSignOAuthService:
     service = OAuth2Service(
