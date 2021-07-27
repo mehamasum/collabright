@@ -24,18 +24,13 @@ class AuditSerializer(serializers.ModelSerializer):
     documents = DocumentSerializer(many=True, read_only=True)
     class Meta:
         model = Audit
-        fields = ('id', 'title', 'description', 'user', 'map_url', 'base_document_url', 'base_url', 'map_id', 'created_at', 'documents', 'is_open')
+        fields = ('id', 'title', 'description', 'user', 'map_url', 'base_url', 'map_id', 'created_at', 'documents', 'is_open')
         read_only_fields = ('user', 'base_url', 'map_id', 'created_at')
 
     def validate_map_url(self, value):
         parsed_uri = urlparse(value)
         if 'webmap' not in parse_qs(parsed_uri.query):
             raise serializers.ValidationError('Not an webmap URL')
-        return value
-
-    def validate_base_document_url(self, value):
-        if not value.endswith('.pdf'):
-            raise serializers.ValidationError('Not an PDF file')
         return value
 
     def create(self, validated_data):
@@ -51,11 +46,10 @@ class AuditSerializer(serializers.ModelSerializer):
         )
 
         
-        url = validated_data['base_document_url'] # TODO download base_document_url as file
+        # TODO update map definition and download document as file and upload back at our server
         map_item = ArcGISOAuthService.get_map_item(user, base_url, map_id)
         map_item_data = ArcGISOAuthService.get_map_item_data(user, base_url, map_id)
         Document.objects.create(
-            url=url,
             map_item=json.dumps(map_item),
             map_item_data=json.dumps(map_item_data),
             audit=audit

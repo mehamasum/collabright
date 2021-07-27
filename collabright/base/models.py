@@ -30,7 +30,6 @@ class Audit(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     map_url = models.CharField(max_length=512) # arcjs web map url
-    base_document_url = models.CharField(max_length=1024) # arcjs print or any public pdf url
     base_url = models.CharField(max_length=200) # arcjs url from map_url
     map_id = models.CharField(max_length=200) # arcjs map id from map_url
     created_at = models.DateTimeField(auto_now_add=True)
