@@ -4,19 +4,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
     <title>Print webmap</title>
-    <link rel="stylesheet" href="https://js.arcgis.com/3.11/esri/css/esri.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.37/esri/css/esri.css">
     <style>
       html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
     </style>
-    <script src="https://js.arcgis.com/3.11/"></script>
+    <script src="https://js.arcgis.com/3.37/"></script>
     <script>
       require([
-        "esri/map", "esri/arcgis/utils"
+        "esri/map",
+        "esri/arcgis/utils",
+        "esri/tasks/PrintTemplate",
+        "esri/tasks/PrintParameters"
       ], function(
-        Map, arcgisUtils
+        Map,
+        arcgisUtils,
+        PrintTemplate,
+        PrintParameters
       ) {
           const globalJSON = JSON;
+          const printParams = {};
           const token = localStorage.getItem("token");
+          // TODO: remove base-url
           fetch("http://localhost:8000/api/v1/arcgis/get_map/"+window.location.search, {
             headers: {
               'Authorization': 'Token ' + token,
@@ -29,8 +37,24 @@
             webmap.then(function(resp) {
               const map = resp.map;
               require(["esri/tasks/PrintTask", "dojo/_base/json"], function(PrintTask,  JSON){
-                var printTask = new PrintTask();   
-                var Web_Map_as_JSON = JSON.toJson(printTask._getPrintDefinition(map));
+                var printTask = new PrintTask();
+                
+                var template = new PrintTemplate();
+                template.exportOptions = {
+                  width: 1680,
+                  height: 1050,
+                  dpi: 300
+                };
+                template.format = "PDF";
+                template.layout = "Letter ANSI A Landscape";
+                template.preserveScale = false;
+
+                var params = new PrintParameters();
+                params.map = map;
+                params.template = template;
+
+                var Web_Map_as_JSON = JSON.toJson(printTask._getPrintDefinition(map, printParams));
+                // TODO: remove base-url
                 fetch("http://localhost:8000/api/v1/arcgis/update_map_print_definition/"+window.location.search, {
                   method: 'POST',
                   headers: {

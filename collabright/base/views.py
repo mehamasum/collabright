@@ -89,7 +89,7 @@ class ArcGISApiViewSet(viewsets.ViewSet):
         audit_id = '26462bdf-2054-4f16-8451-4057fc761985'
         version = 2
         document = get_document_from_audit_version(audit_id, version)        
-        info = ArcGISOAuthService.export_map_as_file(document.map_print_definition, 'v1 file')
+        info = ArcGISOAuthService.export_map_as_file(document.map_print_definition, document.map_item, document.map_item_data, 'v1 file')
         return Response(data=info)
 
 class DocuSignApiViewSet(viewsets.ViewSet):

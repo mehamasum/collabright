@@ -140,8 +140,31 @@ class ArcGISOAuthService:
         return item_data
 
     @staticmethod
-    def export_map_as_file(map_print_definition, print_title):
-        json_def = json.loads(map_print_definition)
+    def find_layer(layer_id, map_item, map_item_data):
+        for op_layer in map_item_data['operationalLayers']:
+            if op_layer['id'] == layer_id:
+                return op_layer
+        
+        for bm_layer in map_item_data['baseMap']['baseMapLayers']:
+            if bm_layer['id'] == layer_id:
+                return bm_layer
+
+        return None
+
+    @staticmethod
+    def export_map_as_file(json_map_print_definition, json_map_item, json_map_item_data, print_title):
+        json_def = json.loads(json_map_print_definition)
+        map_item = json.loads(json_map_item)
+        map_item_data = json.loads(json_map_item_data)
+        
+        # hack for updating image layers to original definition
+        for index, op_layer in enumerate(json_def['operationalLayers']):
+            if 'type' in op_layer and op_layer['type'] == 'image':
+                op_layer_id = op_layer['id']
+                found_layer = ArcGISOAuthService.find_layer(op_layer_id, map_item, map_item_data)
+                if found_layer:
+                    json_def['operationalLayers'][index] = found_layer
+
         json_def["exportOptions"] = {
             "dpi": 300,
             "outputSize":  [
@@ -155,11 +178,12 @@ class ArcGISOAuthService:
             "legendOptions": {"operationalLayers":[]}
         }
         json_def = json.dumps(json_def)
+
         payload = {
             'f': 'json',
             'Web_Map_as_JSON': json_def,
             'Format': 'PDF',
-            'Layout_Template': 'MAP_ONLY' # 'Letter ANSI A Landscape'
+            'Layout_Template': 'Letter ANSI A Landscape'
         }
 
         export_url = "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task/execute"
