@@ -178,6 +178,11 @@ CELERY_TIMEZONE = TIME_ZONE
 STATIC_URL = env.str('CDN_URL', default='/static/')
 STATIC_ROOT = os.path.join(os.path.join(BASE_DIR, 'staticfiles'), 'static')
 
+
+DEFAULT_FILE_STORAGE=env.str('DEFAULT_FILE_STORAGE', default='django.core.files.storage.FileSystemStorage')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 

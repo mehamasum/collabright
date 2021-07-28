@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer)
 from .models import (Comment, Document, Integration, Audit)
-from .service import (ArcGISOAuthService, DocuSignOAuthService, get_document_from_audit_version)
+from .service import (ArcGISOAuthService, DocuSignOAuthService, get_document_from_audit_version, download_and_save_file)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -82,15 +82,11 @@ class ArcGISApiViewSet(viewsets.ViewSet):
 
         document.map_print_definition = map_print_definition
         document.save()
-        return Response(status=status.HTTP_200_OK)
 
-    @action(detail=False)
-    def get_pdf(self, request):
-        audit_id = '26462bdf-2054-4f16-8451-4057fc761985'
-        version = 2
-        document = get_document_from_audit_version(audit_id, version)        
-        info = ArcGISOAuthService.export_map_as_file(document.map_print_definition, document.map_item, document.map_item_data, 'v1 file')
-        return Response(data=info)
+        response = ArcGISOAuthService.export_map_as_file(document.map_print_definition, document.map_item, document.map_item_data, 'Map (v1.0)')
+        file_url = response['results'][0]['value']['url']
+        download_and_save_file(file_url, audit_id, version, document)
+        return Response(status=status.HTTP_200_OK)
 
 class DocuSignApiViewSet(viewsets.ViewSet):
     permission_classes = (permissions.IsAuthenticated, )

@@ -54,6 +54,7 @@
                 params.template = template;
 
                 var Web_Map_as_JSON = JSON.toJson(printTask._getPrintDefinition(map, printParams));
+                console.log('embed', Web_Map_as_JSON);
                 // TODO: remove base-url
                 fetch("http://localhost:8000/api/v1/arcgis/update_map_print_definition/"+window.location.search, {
                   method: 'POST',
