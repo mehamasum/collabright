@@ -1,9 +1,10 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, Layout, Alert, Form, Input, Button, Row, Col } from 'antd';
 import { Steps, message, Space, Typography } from 'antd';
 
 import { useHistory } from "react-router-dom";
 import useFetch from 'use-http';
+import { loadModules } from 'esri-loader';
 
 import './AuditCreate.css';
 
@@ -88,20 +89,56 @@ const AuditForm = ({ onComplete }) => {
 }
 
 const VerifyForm = ({ auditId, onComplete }) => {
+  const globalJSON = JSON;
+  const { get, post, response } = useFetch();
+  const [ loading, setLoading ] = useState(true);
+  
+  useEffect(() => {
+    loadModules([
+      "esri/map",
+      "esri/arcgis/utils",
+      "esri/tasks/PrintParameters",
+      "esri/tasks/PrintTask", "dojo/_base/json"
+    ])
+    .then(([
+      Map,
+      arcgisUtils,
+      PrintParameters,
+      PrintTask,
+      JSON
+    ]) => {
+      get(`/api/v1/arcgis/get_map/?audit_id=${auditId}&version=1`).then(data => {
+        if (response.ok) {
+          const webmap = arcgisUtils.createMap(data, "mapNode");
+          webmap.then(function(resp) {
+            const map = resp.map;
+            const printTask = new PrintTask();
+            const printParams = new PrintParameters();
+            printParams.map = map;
+
+            setTimeout(() => {
+              const Web_Map_as_JSON = JSON.toJson(printTask._getPrintDefinition(map, printParams));
+              console.log('native', Web_Map_as_JSON);
+              post(`/api/v1/arcgis/update_map_print_definition/?audit_id=${auditId}&version=1`, {
+                map_print_definition: Web_Map_as_JSON
+              }).then(update => {
+                setLoading(false);
+              });
+            }, 5000);
+          });
+        }
+      });
+    })
+    .catch(err => {
+      console.error(err);
+    });
+  }, []);
+
   return (
     <>
-      <Text strong>Please verify your map</Text>
-      <iframe
-        className="map-verify"
-        title="Esri Map"
-        width="100%"
-        height="400"
-        frameBorder="0"
-        border="0"
-        cellSpacing="0"
-        src={`/map-preview.html?audit_id=${auditId}&version=1`}>
-      </iframe>
-      <Button type="primary" onClick={onComplete}>
+      <Text strong>Building the first version (v1.0) of your map</Text>
+      <div id="mapNode" className="map-verify"></div>
+      <Button type="primary" onClick={onComplete} loading={loading}>
         Continue
       </Button>
     </>
@@ -151,9 +188,9 @@ const PostCreateView = () => {
         <Card title="New Audit">
           <div className="audit-create-steps">
             <Steps current={current} size="small">
-              <Step title="Create" description={<small>Add Audit info</small>} />
-              <Step title="Verify" description={<small>Verify retrived map</small>} />
-              <Step title="Add Reviewers" description={<small>Upload document and assign Reviewers</small>} />
+              <Step title="Create" />
+              <Step title="Verify" />
+              <Step title="Add Reviewers" />
             </Steps>
           </div>
           <Row>

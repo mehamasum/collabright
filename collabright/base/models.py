@@ -35,6 +35,9 @@ class Audit(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_open = models.BooleanField(default=True)
 
+def get_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/<audit_id>/<filename>
+    return '{0}/{1}'.format(instance.audit.id, filename)
 class Document(models.Model): # exported from map id
     description = models.CharField(max_length=1024, null=True, blank=True)
     url = models.CharField(max_length=200) # our storage url
@@ -43,6 +46,7 @@ class Document(models.Model): # exported from map id
     map_print_definition = models.TextField(null=True, blank=True) # arcgis Web_Map_as_JSON
     audit = models.ForeignKey(Audit, on_delete=models.CASCADE, related_name='documents')
     created_at = models.DateTimeField(auto_now_add=True)
+    file = models.FileField(blank=True, upload_to=get_directory_path)
     class Meta:
         ordering = ['created_at']
 

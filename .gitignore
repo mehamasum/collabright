@@ -180,5 +180,6 @@ sketch
 
 /build
 /staticfiles
+/mediafiles
 /public/mapviewer
 /public/webviewer

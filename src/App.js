@@ -13,6 +13,9 @@ import AuditList from './services/Audit/AuditList';
 import AuditView from './services/Audit/AuditView';
 
 import PrivateRoute from './routes/PrivateRoute';
+import { setDefaultOptions } from 'esri-loader';
+
+setDefaultOptions({ version: '3.37', css: true })
 
 const App = (props) => {
   const [token] = useLocalStorage('token');

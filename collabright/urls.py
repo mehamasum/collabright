@@ -7,6 +7,7 @@ from rest_framework.documentation import include_docs_urls
 from .router import DefaultRouterWithAPIViews as DefaultRouter
 
 from collabright.base.urls import register_urls as register_base_urls
+from django.conf.urls.static import static
 
 drf_session_auth_urls = include('rest_framework.urls')
 
@@ -20,6 +21,10 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 router = DefaultRouter()
 register_base_urls(router)
