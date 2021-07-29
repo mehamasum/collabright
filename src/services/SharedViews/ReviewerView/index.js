@@ -75,7 +75,7 @@ const ReviewHeader = ({audit, handleVersionChange, version, tab}) => {
   return (
     <PageHeader
       title={audit.title}
-      subTitle={audit.is_open ? <Tag color="success">Open</Tag> : <Tag color="error">Closed</Tag> }
+      subTitle={audit.is_open ? <Tag color="success">Open</Tag> : <Tag color="purple">Closed</Tag> }
       extra={tab!=="details" && [
         <VersionPicker key="VersionPicker" audit={audit} handleVersionChange={handleVersionChange} version={version}/>
       ]}
