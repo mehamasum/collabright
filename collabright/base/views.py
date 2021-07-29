@@ -80,13 +80,20 @@ class ArcGISApiViewSet(viewsets.ViewSet):
 
         document = get_document_from_audit_version(audit_id, version)
 
-        document.map_print_definition = map_print_definition
-        document.save()
+        if not document.map_print_definition:
+            document.map_print_definition = map_print_definition
+            document.save()
 
-        response = ArcGISOAuthService.export_map_as_file(document.map_print_definition, document.map_item, document.map_item_data, 'Map (v1.0)')
-        file_url = response['results'][0]['value']['url']
-        download_and_save_file(file_url, audit_id, version, document)
-        return Response(status=status.HTTP_200_OK)
+        if not document.file:
+            response = ArcGISOAuthService.export_map_as_file(
+                document.map_print_definition,
+                document.map_item,
+                document.map_item_data,
+                'Map (v{0}}.0)'.format(version)
+            )
+            file_url = response['results'][0]['value']['url']
+            download_and_save_file(file_url, audit_id, version, document)
+        return Response(data={'ok': True}, status=status.HTTP_200_OK)
 
 class DocuSignApiViewSet(viewsets.ViewSet):
     permission_classes = (permissions.IsAuthenticated, )
