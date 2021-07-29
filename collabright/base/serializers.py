@@ -42,7 +42,7 @@ class AuditSerializer(serializers.ModelSerializer):
         map_item = ArcGISOAuthService.get_map_item(user, base_url, map_id)
         map_item_data = ArcGISOAuthService.get_map_item_data(user, base_url, map_id)
         if map_item is None or map_item_data is None:
-            raise serializers.ValidationError('ArcGIS not connected or authentication expired')
+            raise serializers.ValidationError({'auth': 'No GIS service connected or authentication expired.'})
 
         audit = Audit.objects.create(
             user=user, 
