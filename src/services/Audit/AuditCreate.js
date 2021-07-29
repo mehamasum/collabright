@@ -21,7 +21,10 @@ const AuditForm = ({ onComplete }) => {
         return onComplete(data);
       }
       console.error(data);
-      setErrorMsg(data.message);
+
+      if(data.auth) {
+        setErrorMsg(data.auth);
+      }
     });
   };
 

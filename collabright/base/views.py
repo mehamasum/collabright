@@ -39,7 +39,7 @@ class AuditViewSet(viewsets.ModelViewSet):
     serializer_class = AuditSerializer
 
     def get_queryset(self):
-        return Audit.objects.filter(user=self.request.user).order_by('created_at')
+        return Audit.objects.filter(user=self.request.user).order_by('-created_at')
 
 class ArcGISApiViewSet(viewsets.ViewSet):
     permission_classes = (permissions.IsAuthenticated, )
@@ -89,7 +89,7 @@ class ArcGISApiViewSet(viewsets.ViewSet):
                 document.map_print_definition,
                 document.map_item,
                 document.map_item_data,
-                'Map (v{0}}.0)'.format(version)
+                'Map (v{0}.0)'.format(version)
             )
             file_url = response['results'][0]['value']['url']
             download_and_save_file(file_url, audit_id, version, document)

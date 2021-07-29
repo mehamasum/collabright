@@ -1,96 +1,106 @@
 import './AuditList.css';
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import useFetch from 'use-http';
-import {Avatar, Button, Card, Space, Table, Tooltip, Typography} from 'antd';
+import {Avatar, Button, Card, Space, Table, Tag, Typography} from 'antd';
 import {Link, useHistory} from "react-router-dom";
-import {LinkOutlined,} from '@ant-design/icons';
+import {LinkOutlined} from '@ant-design/icons';
 import {formatRelativeTime, truncateString} from '../../utils';
 
 
 const columns = [
   {
-    title: 'Status',
-    dataIndex: 'status',
-    width: '30%',
+    title: 'Title',
+    dataIndex: 'title',
     render: (text, record) => (
-      <Typography.Text>{truncateString(record.status, 120)}</Typography.Text>
+      <Typography.Text>{truncateString(record.title, 24)}</Typography.Text>
     )
   },
   {
-    title: 'Page',
+    title: 'Description',
+    dataIndex: 'description',
     render: (text, record) => (
-      <Tooltip title={record.page_name}>
-        <Avatar
-          src={`https://graph.facebook.com/${record.facebook_page_id}/picture`}
-          size="small"
-        />
-      </Tooltip>
+      <Typography.Text>{record.description ? truncateString(record.description, 48) : 'N/A'}</Typography.Text>
     )
   },
   {
-    title: 'Publish Time',
+    title: 'Map',
+    render: (text, record) => (
+      <Space size="middle">
+        <a target="_blank" rel="noopener noreferrer" href={record.map_url}><LinkOutlined/> Link</a>
+      </Space>
+    ),
+  },
+  {
+    title: 'Created at',
     dataIndex: 'created_at',
     render: (text, record) => (
       <Typography.Text>{formatRelativeTime(record.created_at)}</Typography.Text>
     )
   },
   {
-    title: 'Linked Sign Up',
+    title: 'Status',
+    dataIndex: 'is_open',
     render: (text, record) => (
-      <Space>
-        {record.signup ? <Link to={`/signups/${record.signup}/`}>View</Link> : '--'}
-      </Space>
-    ),
-  },
-  {
-    title: 'Published Post',
-    render: (text, record) => (
-      <Space size="middle">
-        <a target="_blank" rel="noopener noreferrer"
-           href={`https://facebook.com/${record.facebook_page_id}/posts/${record.facebook_post_id}`}><LinkOutlined/> Open</a>
-      </Space>
-    ),
+      <Tag color={record.is_open ? 'success' : 'purple'}>{record.is_open ? 'Open' : 'Closed'}</Tag>
+    )
   },
   {
     title: 'Actions',
     render: (text, record) => (
       <Space size="middle">
-        <Link to={`/posts/${record.id}`}>Details</Link>
+        <Link to={`/audits/${record.id}`}>Details</Link>
       </Space>
     ),
   },
 ];
 
 const PostListView = (props) => {
-  const fetchUrl = props.fetchUrl || '/api/audits/?limit=25&offset=';
-  const [posts_response, , setUrl] = useFetch(`${fetchUrl}0`);
-  const [pagination, setPagination] = useState({current: 1, pageSize: 25, showSizeChanger: false});
-  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState({
+    current: 1,
+    pageSize: 10,
+  });
+  const [tableData, setTableData] = useState([]);
 
-  const tableData = useMemo(() => {
-    if (!posts_response) return [];
-    //return posts_response.results.map(r => ({...r, key: r.id}));
-  }, [posts_response]);
+  const { get, response, loading } = useFetch();
 
-  const onChangeTable = useCallback((pag) => {
-    setPagination(pag);
-    const offset = (pag.current - 1) * 25;
-    setUrl(`${fetchUrl}${offset}`);
-  }, [fetchUrl, setPagination, setUrl]);
+  const fetchList = (page) => {
+    get(`/api/v1/audits/?page=${page}`).then(data => {
+      if (response.ok) {
+        console.log(data);
+        const newData = data.results.map(audit => ({ ...audit, key: audit.id}));
+        setPage({
+          ...page,
+          total: data.count
+        })
+        return setTableData(newData);
+      }
+      console.error(data);
+    });
+  }
 
   useEffect(() => {
-    if (!posts_response) return;
-    setTotal(posts_response.count);
-  }, [posts_response]);
+    fetchList(1);
+  }, [])
+
+
+  const onChange = (nextPage) => {
+    console.log(nextPage);
+    fetchList(nextPage.current);  
+  };
 
   return (
     <div>
       <Card title="Audits" extra={
         <Button type="primary"><Link to={`/audits/new`}>Create New Audit</Link></Button>
       }>
-        <Table columns={columns} dataSource={tableData} pagination={{...pagination, total}}
-               onChange={onChangeTable}/>
+        <Table
+          loading={loading}
+          columns={columns}
+          dataSource={tableData}
+          pagination={page}
+          onChange={onChange}
+        />
       </Card>
     </div>
   );
