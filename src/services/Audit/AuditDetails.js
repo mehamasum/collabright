@@ -6,8 +6,9 @@ import useFetch from 'use-http';
 import { Row, Col, List, Badge, Divider, Modal } from 'antd';
 import { truncateString } from '../../utils';
 import MapPrinter from './MapPrinter';
-
+import AddAuditors from './AddAuditors';
 import './AuditDetails.css';
+import { message } from 'antd';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -22,6 +23,8 @@ const AdminOperations = ({ post, patch, response, auditId, version }) => {
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(true);
+  const [isReviewerModalVisible, setIsReviewerModalVisible] = useState(false);
+
 
   const handleOk = () => {
     console.log('ok');
@@ -66,16 +69,28 @@ const AdminOperations = ({ post, patch, response, auditId, version }) => {
     setDescription(value);
   }
 
+  const onAddReviewer = (e) => {
+    setIsReviewerModalVisible(true);
+  }
+
+  const onAuditorAddSuccess = () => {
+    setIsReviewerModalVisible(false);
+    message.success('Auditor added!');
+    setTimeout(() => window.location.reload(false), 1000);
+  }
+
   return (
     <>
       <Space>
-        <Button>Add Sign Document</Button>
-        <Button>Add Auditor</Button>
+        <Button onClick={onAddReviewer}>Add Auditors</Button>
         <Button type="primary" onClick={onNewVersionClick} loading={loading}>Add Next Version</Button>
       </Space>
       <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
         <MapPrinter auditId={auditId} version={version} onComplete={onPrintComplete} />
         <TextArea placeholder="What's new in this version?" showCount maxLength={100} onChange={onChange} />
+      </Modal>
+      <Modal title="Add Auditors" visible={isReviewerModalVisible} footer={null} onCancel={() => setIsReviewerModalVisible(false)}>
+        <AddAuditors auditId={auditId} onComplete={onAuditorAddSuccess}/>
       </Modal>
     </>
   )
@@ -218,7 +233,7 @@ const AuditDetails = ({ auditId, isAdmin }) => {
                 dataSource={[
                   'Audit Details',
                   'Map',
-                  'Sign Document'
+                  <Space>Agreement {isAdmin && <Button type="link" size="small">Attach</Button>}</Space>
                 ]}
                 renderItem={(item, index) => (
                   <List.Item>
@@ -226,6 +241,7 @@ const AuditDetails = ({ auditId, isAdmin }) => {
                   </List.Item>
                 )}
               />
+              <Divider />
             </Col>
             <Col className="gutter-row" span={6}>
               <List
