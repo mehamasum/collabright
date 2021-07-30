@@ -40,7 +40,6 @@ def get_directory_path(instance, filename):
     return '{0}/{1}'.format(instance.audit.id, filename)
 class Document(models.Model): # exported from map id
     description = models.CharField(max_length=1024, null=True, blank=True)
-    url = models.CharField(max_length=200) # our storage url
     map_item = models.TextField() # arcgis item
     map_item_data = models.TextField() # arcgis item data
     map_print_definition = models.TextField(null=True, blank=True) # arcgis Web_Map_as_JSON

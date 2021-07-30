@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import { Typography, Spin, Button, Layout, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown } from 'antd';
 import { CheckOutlined, ReloadOutlined, DownOutlined } from '@ant-design/icons';
-import Annotator from './Annotator';
+import AuditDetails from '../../Audit/AuditDetails';
 import logo from '../../../assets/images/logo.svg';
 import {
   useParams,
@@ -134,58 +134,8 @@ const ReviewerView = () => {
           </div>
         </Header>
         <Content className="reviewer-content-wrapper">
-          <div className={`reviewer-content ${key!=="details" ? 'reviewer-content-full' : ''}`}>
-            <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange} tab={key}/>
-            
-            <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={operations}>
-              <TabPane tab="Details" key="details">
-                <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                  <Col className="gutter-row" span={18}>
-                    {JSON.stringify(audit)}
-                    <List
-                      header={<Text strong>Attachments</Text>}
-                      dataSource={[
-                        'Audit Details',
-                        'Map',
-                        'Sign Document'
-                      ]}
-                      renderItem={(item, index) => (
-                        <List.Item>
-                          {item} {index==1 && <>&bull; v{audit.documents.length}.0 (Latest Version)</>}
-                        </List.Item>
-                      )}
-                    />
-                  </Col>
-                  <Col className="gutter-row" span={6}>
-                    <List
-                      header={<Text strong>Reviewers</Text>}
-                      dataSource={reviewers}
-                      renderItem={(item, index) => (
-                        <List.Item actions={[<Badge key="list-loadmore-edit" status="processing" />]}>
-                          {item}
-                        </List.Item>
-                      )}
-                    />
-                    <Divider/>
-                    <List
-                      header={<Text strong>Signers</Text>}
-                      dataSource={reviewers}
-                      renderItem={item => (
-                        <List.Item actions={[<Badge key="list-loadmore-edit" status="success" />]}>
-                          {item}
-                        </List.Item>
-                      )}
-                    />
-                  </Col>
-                </Row>
-              </TabPane>
-              <TabPane tab="Interactive Map" key="map">
-                <EsriMap auditId={auditId} version={version} />
-              </TabPane>
-              <TabPane tab="Discussion" key="discussion">
-                <Annotator key={versionIndex} document={document}/>
-              </TabPane>
-            </Tabs>
+          <div className="reviewer-content reviewer-content-full">
+            <AuditDetails auditId={auditId}/>
           </div>
         </Content>
       </Layout>
