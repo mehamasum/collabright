@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+import secrets
 
 class Organization(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -13,12 +13,22 @@ class User(AbstractUser):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, null=True, blank=True)
     is_org_admin = models.BooleanField(default=True)
 
+class Contact(models.Model):
+    email = models.EmailField(unique=True)
+    name = models.CharField(max_length=200, null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.name:
+            self.name = self.email.split("@")[0]
+        super(Contact, self).save(*args, **kwargs)
+
 
 # audit: user, arcgis map id, envelop id
-
-# reviewer: name, email, audit, needs_to_sign
-
-# review_history: reviewer, document, audit, status
+# contact: name, email
+# reviewer: contact, audit, needs_to_sign, verdict, token
+# review: reviewer, version, audit, verdict
 
 # signable ??? : audit, url, tabs (json)
 
@@ -49,6 +59,22 @@ class Document(models.Model): # exported from map id
     class Meta:
         ordering = ['created_at']
 
+class Reviewer(models.Model):
+    PENDING = 'PENDING'
+    APPROVED = 'APPROVED'
+    REQUESTED_CHANGE = 'REQUESTED_CHANGES'
+    TYPE_CHOICES = (
+        (PENDING, 'Pending'),
+        (APPROVED, 'Approved'),
+        (REQUESTED_CHANGE, 'Requested change'),
+    )
+
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
+    audit = models.ForeignKey(Audit, on_delete=models.CASCADE, related_name='reviewers')
+    needs_to_sign = models.BooleanField(default=False)
+    has_signed = models.BooleanField(default=False)
+    verdict = models.CharField(choices=TYPE_CHOICES, max_length=64, default=PENDING)
+    token = models.CharField(max_length=1024, default=secrets.token_urlsafe, editable=False)
 
 class Comment(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='comments')

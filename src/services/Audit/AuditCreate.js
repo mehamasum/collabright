@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Layout, Alert, Form, Input, Button, Row, Col } from 'antd';
+import { Card, Layout, Alert, Form, Input, Button, Row, Col, Divider } from 'antd';
 import { Steps, message, Space, Typography } from 'antd';
 
 import { useHistory } from "react-router-dom";
 import useFetch from 'use-http';
 import { loadModules } from 'esri-loader';
-import MapPrinter from './MapPrinter'; 
+import MapPrinter from './MapPrinter';
+import SearchAuditor from './SearchAuditor';
 
 import './AuditCreate.css';
 
@@ -95,16 +96,48 @@ const AuditForm = ({ onComplete }) => {
 
 
 
-const ReviewerForm = ({ onComplete }) => {
+const ReviewerForm = ({ onComplete, auditId }) => {
+  const [ signers, setSigners ] = useState([]);
+  const [ reviewers, setReviewers ] = useState([]);
+  const { post, response, loading } = useFetch();
+
+  const setAuditors = () => {
+    const body = [];
+    reviewers.forEach(reviewer => {
+      body.push({
+        email: reviewer,
+        needs_to_sign: false
+      });
+    });
+    signers.forEach(signer => {
+      body.push({
+        email: signer,
+        needs_to_sign: true
+      });
+    });
+    console.log({body});
+    post(`/api/v1/audits/${auditId}/add_reviewers/`, body).then(data => {
+      if(response.ok) {
+        return onComplete();
+      }
+      console.error(data);
+    })
+  }
+
   return (
     <>
-      <Text strong>Please add Reviewers and Signers</Text>
+      <Text strong>Please add Auditors using their email addresses</Text>
+      <Divider/>
       <div>
-        Reviewer
-        Signer
-        Upload signable
+        <Text strong>Reviewers</Text><br/>
+        <SearchAuditor className="search-auditor" onChange={setReviewers}/>
+        <br/>
+        <br/>
+        <Text strong>Signers</Text><br/>
+        <SearchAuditor className="search-auditor" onChange={setSigners}/>
       </div>
-      <Button type="primary" onClick={onComplete}>
+      <Divider/>
+      <Button type="primary" onClick={setAuditors}>
         Continue
       </Button>
     </>
@@ -147,7 +180,7 @@ const PostCreateView = () => {
               <div className="audit-create-step">
                 { current === 0 && <AuditForm onComplete={onComplete} />}
                 { current === 1 && <MapPrinter auditId={audit.id} onComplete={onVerify} version={1} renderNextButton/>}
-                { current === 2 && <ReviewerForm onComplete={onFinish}/>}
+                { current === 2 && <ReviewerForm auditId={audit.id} onComplete={onFinish}/>}
               </div>
             </Col>
           </Row>

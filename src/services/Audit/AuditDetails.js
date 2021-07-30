@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input } from 'antd';
+import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip } from 'antd';
 import { CheckOutlined, ReloadOutlined, DownOutlined } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
@@ -156,7 +156,7 @@ const AuditDetails = ({ auditId, isAdmin }) => {
   const { get, post, patch, response } = useFetch();
 
   useEffect(() => {
-    get(`/api/v1/audits/${auditId}`).then(data => {
+    get(`/api/v1/audits/${auditId}/`).then(data => {
       if (response.ok) {
         setVersion(data.documents.length);
         setAudit(data);
@@ -178,13 +178,12 @@ const AuditDetails = ({ auditId, isAdmin }) => {
 
   const document = audit.documents[versionIndex];
 
-  const reviewers = [
-    'Racing car',
-    'Japanese princess',
-    'Australian walks',
-    'Man charged over',
-    'Los Angeles',
-  ];
+  const getBadgeType = (verdict) => {
+    if(verdict==='PENDING') return 'processing';
+    if(verdict==='APPROVED') return 'success';
+    if(verdict==='REQUESTED_CHANGES') return 'error';
+    return 'error';
+  }
 
   return (
     <div className="audit-content">
@@ -231,20 +230,24 @@ const AuditDetails = ({ auditId, isAdmin }) => {
             <Col className="gutter-row" span={6}>
               <List
                 header={<Text strong>Reviewers</Text>}
-                dataSource={reviewers}
+                dataSource={audit.reviewers}
                 renderItem={(item, index) => (
-                  <List.Item actions={[<Badge key="list-loadmore-edit" status="processing" />]}>
-                    {item}
+                  <List.Item actions={[<Badge key="list-loadmore-edit" status={getBadgeType(item.verdict)} />]}>
+                    <Tooltip title={item.contact.email}>
+                      <span>{item.contact.name}</span>
+                    </Tooltip>
                   </List.Item>
                 )}
               />
               <Divider />
               <List
                 header={<Text strong>Signers</Text>}
-                dataSource={reviewers}
+                dataSource={audit.reviewers.filter(reviewer => reviewer.needs_to_sign)}
                 renderItem={item => (
-                  <List.Item actions={[<Badge key="list-loadmore-edit" status="success" />]}>
-                    {item}
+                  <List.Item actions={[<Badge key="list-loadmore-edit" status={item.has_signed ? "success" : "processing" } />]}>
+                    <Tooltip title={item.contact.email}>
+                      <span>{item.contact.name}</span>
+                    </Tooltip>
                   </List.Item>
                 )}
               />
