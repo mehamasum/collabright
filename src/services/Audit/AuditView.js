@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
+import useFetch from 'use-http';
+import {Avatar, Button, Card, Space, Table, Tag, Typography} from 'antd';
+import {Link, useParams, useHistory} from "react-router-dom";
+import {LinkOutlined} from '@ant-design/icons';
+import {formatRelativeTime, truncateString} from '../../utils';
+import AuditDetails from './AuditDetails';
+import './AuditView.css';
 
-export default function AuditView() {
-  const [count, setCount] = useState(0);
-
+const AuditView = (props) => {
+  let { id: auditId } = useParams();
   return (
-    <div>
-      <p>You clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}>
-        Click me
-      </button>
-    </div>
+    <Card className="audit-details-card" title="Audit Details" extra={
+      <Button danger type="text">Close This Audit</Button>
+    }>
+      <AuditDetails isAdmin auditId={auditId}></AuditDetails>
+    </Card>
   );
-}
+};
+
+export default AuditView;

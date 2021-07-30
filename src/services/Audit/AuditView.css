@@ -1,0 +1,7 @@
+.audit-details-card {
+  height: 100%;
+}
+
+.audit-details-card > .ant-card-body {
+  height: calc(100% - 65px);
+}

@@ -6,7 +6,7 @@ import useFetch from "use-http";
 const Annotator = ({document}) => {
   const viewer = useRef(null);
   const documentId = document.id;
-  const fileUrl = document.url;
+  const fileUrl = document.file;
 
   const user = "John"; // TODO
   const serializer = new XMLSerializer();
