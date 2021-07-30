@@ -306,6 +306,49 @@ class DocuSignOAuthService:
         except KeyError:
             return None
 
+    @staticmethod
+    def get_access_token(user):
+        integration = Integration.objects.get(
+            type=Integration.DOCU_SIGN,
+            user=user,
+        )
+        expiry_date = integration.expiry_date
+        now = timezone.now()
+
+        if now < expiry_date:
+          return integration.access_token
+
+        refresh_token = integration.refresh_token
+        refresh_expiry_date = integration.refresh_expiry_date
+
+        if now < refresh_expiry_date:
+          return None
+
+        try:
+            r = DocuSignOAuthService.service.get_raw_access_token(data={
+                'refresh_token': refresh_token,
+                'redirect_uri': DocuSignOAuthService.redirect_uri,
+                'grant_type': 'refresh_token',
+            })
+            data = json_decoder(r.content)
+            """
+                {'access_token': ...., 'token_type': 'Bearer', 'refresh_token': ..., 'expires_in': 28800}
+            """
+            access_token = data['access_token']
+            expires_in = int(data['expires_in'])
+
+            updated_integration, _ = Integration.objects.update_or_create(
+                type=Integration.DOCU_SIGN,
+                user=user,
+                defaults={
+                    'access_token': access_token,
+                    'expiry_date': datetime.now() + timedelta(seconds=expires_in),
+                }
+            )
+            return updated_integration.access_token
+        except KeyError:
+            return None
+
 
 def get_document_from_audit_version(audit_id, version):
     index = version - 1
