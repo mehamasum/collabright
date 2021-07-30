@@ -88,13 +88,16 @@ class ArcGISOAuthService:
         expiry_date = integration.expiry_date
         now = timezone.now()
 
+
         if now < expiry_date:
           return integration.access_token
 
         refresh_token = integration.refresh_token
         refresh_expiry_date = integration.refresh_expiry_date
 
-        if now < refresh_expiry_date:
+        print(now, expiry_date, refresh_expiry_date)
+
+        if now > refresh_expiry_date:
           return None
 
         try:
@@ -125,6 +128,8 @@ class ArcGISOAuthService:
     @staticmethod
     def get_map_item(user, base_url, map_id):
         token = ArcGISOAuthService.get_access_token(user)
+
+        print('token', token)
         
         params = {
             'f': 'json',

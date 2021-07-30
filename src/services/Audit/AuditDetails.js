@@ -1,24 +1,85 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Descriptions } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input } from 'antd';
 import { CheckOutlined, ReloadOutlined, DownOutlined } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
-import { Row, Col, List, Badge, Divider } from 'antd';
+import { Row, Col, List, Badge, Divider, Modal } from 'antd';
 import { truncateString } from '../../utils';
+import MapPrinter from './MapPrinter';
 
 import './AuditDetails.css';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
 const { Text } = Typography;
+const { TextArea } = Input;
 
-const adminOperations = (
-  <Space>
-    <Button>Add Sign Document</Button>
-    <Button>Add Auditor</Button>
-    <Button type="primary">Add Next Version</Button>
-  </Space>
-);
+
+
+const AdminOperations = ({ post, patch, response, auditId, version }) => {
+  const [ document, setDocument ] = useState(null);
+  const [ description, setDescription ] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(true);
+
+  const handleOk = () => {
+    console.log('ok');
+    setConfirmLoading(true);
+    patch(`/api/v1/documents/${document.id}/`, {
+      description,
+    }).then(data => {
+      setConfirmLoading(false);
+      if (response.ok) {
+        setIsModalVisible(false);
+        window.location.reload(false);
+        return;
+      }
+      console.error(data);
+    });
+     
+  };
+
+  const onPrintComplete = () => {
+    setConfirmLoading(false);
+  };
+
+  const onNewVersionClick = (val) => {
+    setLoading(true);
+    post("/api/v1/documents/", {
+      audit: auditId,
+    }).then(data => {
+      setLoading(false);
+      if (response.ok) {
+        setDocument(data);
+        setLoading(false);
+        return setIsModalVisible(true);
+      }
+
+      console.error(data);
+    });
+  };
+
+  const onChange = (e) => {
+    const value = e.target.value;
+    console.log('Change:', value);
+    setDescription(value);
+  }
+
+  return (
+    <>
+      <Space>
+        <Button>Add Sign Document</Button>
+        <Button>Add Auditor</Button>
+        <Button type="primary" onClick={onNewVersionClick} loading={loading}>Add Next Version</Button>
+      </Space>
+      <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
+        <MapPrinter auditId={auditId} version={version} onComplete={onPrintComplete} />
+        <TextArea placeholder="What's new in this version?" showCount maxLength={100} onChange={onChange} />
+      </Modal>
+    </>
+  )
+};
 
 const operations = (
   <Space>
@@ -92,7 +153,7 @@ const AuditDetails = ({ auditId, isAdmin }) => {
   const [version, setVersion] = useState(null);
 
   const versionIndex = parseInt(version, 10) - 1;
-  const { get, response } = useFetch();
+  const { get, post, patch, response } = useFetch();
 
   useEffect(() => {
     get(`/api/v1/audits/${auditId}`).then(data => {
@@ -116,7 +177,6 @@ const AuditDetails = ({ auditId, isAdmin }) => {
   if (!audit) return <div className="full-page-loader"><Spin size="large" /></div>;
 
   const document = audit.documents[versionIndex];
-  console.log(document);
 
   const reviewers = [
     'Racing car',
@@ -130,27 +190,29 @@ const AuditDetails = ({ auditId, isAdmin }) => {
     <div className="audit-content">
       <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange} tab={key} />
 
-      <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={isAdmin ? adminOperations : operations}>
+      <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={
+        isAdmin ? <AdminOperations post={post} patch={patch} response={response} auditId={auditId} version={audit.documents.length + 1}/> : operations
+      }>
         <TabPane tab="Details" key="details">
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
             <Col className="gutter-row" span={18}>
-              <Text strong>Audit Description</Text><br/>
+              <Text strong>Audit Description</Text><br />
               {audit.decription}
-              <Divider/>
+              <Divider />
 
-              <Text strong>Audit Map</Text><br/>
+              <Text strong>Audit Map</Text><br />
               {audit.map_url}
-              <Divider/>
+              <Divider />
 
-              <Text strong>Latest Version</Text><br/>
+              <Text strong>Latest Version</Text><br />
               v{audit.documents.length}.0
-              <Divider/>
+              <Divider />
 
-              <Text strong>Current Version</Text><br/>
-              v{version}.0<br/>
+              <Text strong>Current Version</Text><br />
+              v{version}.0<br />
 
               {document.description}
-              <Divider/>
+              <Divider />
 
               <List
                 header={<Text strong>Envelop Details</Text>}

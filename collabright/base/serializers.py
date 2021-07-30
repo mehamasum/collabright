@@ -8,7 +8,20 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields = ('id', 'description', 'file', 'audit', 'created_at')
-        read_only_fields = ('map_item', 'map_item_data', 'map_print_definition', 'created_at')
+        read_only_fields = ('map_item', 'map_item_data', 'map_print_definition', 'created_at', 'file')
+
+    def create(self, validated_data):
+        if 'map_item' not in validated_data and 'map_item_data' not in validated_data:
+            audit = validated_data['audit']
+            user = self.context.get('request').user
+            map_item = ArcGISOAuthService.get_map_item(user, audit.base_url, audit.map_id)
+            map_item_data = ArcGISOAuthService.get_map_item_data(user, audit.base_url, audit.map_id)
+            if map_item is None or map_item_data is None:
+                raise serializers.ValidationError({'auth': 'No GIS service connected or authentication expired.'})
+
+            validated_data['map_item'] = json.dumps(map_item)
+            validated_data['map_item_data'] = json.dumps(map_item_data)
+        return super(DocumentSerializer, self).create(validated_data)
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,16 +57,16 @@ class AuditSerializer(serializers.ModelSerializer):
         if map_item is None or map_item_data is None:
             raise serializers.ValidationError({'auth': 'No GIS service connected or authentication expired.'})
 
-        audit = Audit.objects.create(
-            user=user, 
-            base_url=base_url,
-            map_id=map_id,
-            **validated_data
-        )
+        validated_data['user'] = user
+        validated_data['base_url'] = base_url
+        validated_data['map_id'] = map_id
+        audit = super(AuditSerializer, self).create(validated_data)
 
-        Document.objects.create(
-            map_item=json.dumps(map_item),
-            map_item_data=json.dumps(map_item_data),
-            audit=audit
-        )
+
+        document_serializer = DocumentSerializer(data={
+            'description': "Initial upload",
+            'audit': audit.id
+        })
+        document_serializer.is_valid(raise_exception=True)
+        document_serializer.save(map_item=json.dumps(map_item), map_item_data=json.dumps(map_item_data))
         return audit

@@ -39,7 +39,7 @@ const IntegrationsTab = () => {
             return {
               ...item,
               connected: true,
-              is_expired: new Date(connected.refresh_expiry_date) < new Date() || new Date(connected.expiry_date) < new Date()
+              is_expired: new Date(connected.refresh_expiry_date) < new Date() && new Date(connected.expiry_date) < new Date()
             }
           }
           return item;

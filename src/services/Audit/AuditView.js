@@ -11,7 +11,7 @@ const AuditView = (props) => {
   let { id: auditId } = useParams();
   return (
     <Card className="audit-details-card" title="Audit Details" extra={
-      <Button danger type="text">Close This Audit</Button>
+      <Button danger>Close This Audit</Button>
     }>
       <AuditDetails isAdmin auditId={auditId}></AuditDetails>
     </Card>
