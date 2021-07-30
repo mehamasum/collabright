@@ -37,7 +37,7 @@ const MapPrinter = ({ auditId, version, onComplete, renderNextButton }) => {
             setTimeout(() => {
               const Web_Map_as_JSON = JSON.toJson(printTask._getPrintDefinition(map, printParams));
               console.log('native', Web_Map_as_JSON);
-              post(`/api/v1/arcgis/update_map_print_definition/?audit_id=${auditId}&version=1`, {
+              post(`/api/v1/arcgis/update_map_print_definition/?audit_id=${auditId}&version=${version}`, {
                 map_print_definition: Web_Map_as_JSON
               }).then(update => {
                 setLoading(false);
