@@ -1,7 +1,7 @@
 import json
 from collabright.base.service import ArcGISOAuthService
 from rest_framework import serializers
-from .models import (Document, Comment, Integration, Audit)
+from .models import (Document, Comment, Integration, Audit, Contact, Reviewer)
 from urllib.parse import urlparse, parse_qs
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -28,17 +28,34 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'document', 'annotation', 'xfdf')
 
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ('id', 'email', 'name')
+    
+    def create(self, validated_data):
+        user = self.context.get('request').user
+        validated_data['created_by'] = user
+        return super(ContactSerializer, self).create(validated_data)
+
 class IntegrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Integration
         fields = ('id', 'type', 'expiry_date', 'refresh_expiry_date')
 
+class ReviewerSerializer(serializers.ModelSerializer):
+    contact = ContactSerializer()
+    class Meta:
+        model = Reviewer
+        fields = ('id', 'contact', 'audit', 'needs_to_sign', 'has_signed', 'verdict')
+
 class AuditSerializer(serializers.ModelSerializer):
     documents = DocumentSerializer(many=True, read_only=True)
+    reviewers = ReviewerSerializer(many=True, read_only=True)
     class Meta:
         model = Audit
-        fields = ('id', 'title', 'description', 'user', 'map_url', 'base_url', 'map_id', 'created_at', 'documents', 'is_open')
-        read_only_fields = ('user', 'base_url', 'map_id', 'created_at')
+        fields = ('id', 'title', 'description', 'user', 'map_url', 'base_url', 'map_id', 'created_at', 'documents', 'is_open', 'reviewers')
+        read_only_fields = ('user', 'base_url', 'map_id', 'created_at', 'reviewers')
 
     def validate_map_url(self, value):
         parsed_uri = urlparse(value)

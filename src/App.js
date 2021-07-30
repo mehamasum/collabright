@@ -26,7 +26,8 @@ const App = (props) => {
         headers: {
           'Authorization': token ? `Token ${token}` : undefined,
           'Content-Type': 'application/json'
-        }
+        },
+        cachePolicy: 'no-cache'
       }
     }>
       <Router>
