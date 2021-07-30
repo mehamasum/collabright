@@ -5,6 +5,7 @@ import { Steps, message, Space, Typography } from 'antd';
 import { useHistory } from "react-router-dom";
 import useFetch from 'use-http';
 import { loadModules } from 'esri-loader';
+import MapPrinter from './MapPrinter'; 
 
 import './AuditCreate.css';
 
@@ -91,62 +92,7 @@ const AuditForm = ({ onComplete }) => {
   )
 }
 
-const VerifyForm = ({ auditId, onComplete }) => {
-  const globalJSON = JSON;
-  const { get, post, response } = useFetch();
-  const [ loading, setLoading ] = useState(true);
-  
-  useEffect(() => {
-    loadModules([
-      "esri/map",
-      "esri/arcgis/utils",
-      "esri/tasks/PrintParameters",
-      "esri/tasks/PrintTask", "dojo/_base/json"
-    ])
-    .then(([
-      Map,
-      arcgisUtils,
-      PrintParameters,
-      PrintTask,
-      JSON
-    ]) => {
-      get(`/api/v1/arcgis/get_map/?audit_id=${auditId}&version=1`).then(data => {
-        if (response.ok) {
-          const webmap = arcgisUtils.createMap(data, "mapNode");
-          webmap.then(function(resp) {
-            const map = resp.map;
-            const printTask = new PrintTask();
-            const printParams = new PrintParameters();
-            printParams.map = map;
 
-            setTimeout(() => {
-              const Web_Map_as_JSON = JSON.toJson(printTask._getPrintDefinition(map, printParams));
-              console.log('native', Web_Map_as_JSON);
-              post(`/api/v1/arcgis/update_map_print_definition/?audit_id=${auditId}&version=1`, {
-                map_print_definition: Web_Map_as_JSON
-              }).then(update => {
-                setLoading(false);
-              });
-            }, 5000);
-          });
-        }
-      });
-    })
-    .catch(err => {
-      console.error(err);
-    });
-  }, []);
-
-  return (
-    <>
-      <Text strong>Building the first version (v1.0) of your map</Text>
-      <div id="mapNode" className="map-verify"></div>
-      <Button type="primary" onClick={onComplete} loading={loading}>
-        Continue
-      </Button>
-    </>
-  )
-}
 
 
 const ReviewerForm = ({ onComplete }) => {
@@ -200,7 +146,7 @@ const PostCreateView = () => {
             <Col span={16} offset={4}>
               <div className="audit-create-step">
                 { current === 0 && <AuditForm onComplete={onComplete} />}
-                { current === 1 && <VerifyForm auditId={audit.id} onComplete={onVerify}/>}
+                { current === 1 && <MapPrinter auditId={audit.id} onComplete={onVerify} version={1} renderNextButton/>}
                 { current === 2 && <ReviewerForm onComplete={onFinish}/>}
               </div>
             </Col>
