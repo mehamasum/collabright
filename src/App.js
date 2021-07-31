@@ -11,9 +11,11 @@ import { useLocalStorage } from '@rehooks/local-storage';
 import AuditCreate from './services/Audit/AuditCreate';
 import AuditList from './services/Audit/AuditList';
 import AuditView from './services/Audit/AuditView';
+import ContactList from './services/Contacts';
 
 import PrivateRoute from './routes/PrivateRoute';
 import { setDefaultOptions } from 'esri-loader';
+import Settings from './services/Settings';
 
 setDefaultOptions({ version: '3.37', css: true })
 
@@ -38,6 +40,8 @@ const App = (props) => {
           <Route exact path="/review/:audit/">
             <ReviewerView/>
           </Route>
+          <PrivateRoute exact path="/contacts" component={ContactList} />
+          <PrivateRoute exact path="/settings" component={Settings} />
           <PrivateRoute exact path="/" component={Dashboard} />
           <PrivateRoute exact path="/audits" component={AuditList} />
           <PrivateRoute exact path="/audits/new" component={AuditCreate} />
