@@ -3,12 +3,11 @@ import WebViewer from '@pdftron/webviewer';
 import useFetch from "use-http";
 
 
-const Annotator = ({document}) => {
+const Annotator = ({document, isAdmin, query, user}) => {
   const viewer = useRef(null);
   const documentId = document.id;
   const fileUrl = document.file;
 
-  const user = "John"; // TODO
   const serializer = new XMLSerializer();
   const {post, get, put, del} = useFetch();
   const mapAnnotationToCommnet = {};
@@ -37,14 +36,14 @@ const Annotator = ({document}) => {
       };
       console.log({ annotationId, annotation });
       if (action==='add') {
-        const newComment = await post('/api/v1/comments/', comment);
+        const newComment = await post(`/api/v1/comments/${isAdmin ? '' : '?'+query}`, comment);
         mapAnnotationToCommnet[annotationId] = newComment.id;
       } else if (action==='modify') {
         const commentId = mapAnnotationToCommnet[annotationId];
-        put(`/api/v1/comments/${commentId}/`, comment);
+        put(`/api/v1/comments/${commentId}/${isAdmin ? '' : '?'+query}`, comment);
       } else if (action==='delete') {
         const commentId = mapAnnotationToCommnet[annotation.textContent];
-        del(`/api/v1/comments/${commentId}/`);
+        del(`/api/v1/comments/${commentId}/${isAdmin ? '' : '?'+query}`);
       }
     }
   }
@@ -55,7 +54,7 @@ const Annotator = ({document}) => {
         path: '/webviewer/lib',
         initialDoc: fileUrl,
         documentXFDFRetriever: async () => {
-          const data = await get(`/api/v1/comments?document=${documentId}`);
+          const data = await get(`/api/v1/comments?document=${documentId}${isAdmin ? '' : '&'+query}`);
           const xfdfs = [];
           data.results.forEach(comment => {
             mapAnnotationToCommnet[comment.annotation] = comment.id;
