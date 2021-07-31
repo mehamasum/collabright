@@ -130,20 +130,16 @@ class AuditViewSet(viewsets.ModelViewSet):
         return Response(reviewer_serializer.data)
 
     @action(detail=True, methods=['post'])
-    def approve(self, request, pk=None):
+    def verdict(self, request, pk=None):
+        verdict = request.data['verdict']
+        if verdict not in [Reviewer.APPROVED, Reviewer.REQUESTED_CHANGE]:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         reviewer = self.get_reviewer(request)
-        reviewer.verdict = Reviewer.APPROVED
+        reviewer.verdict = verdict
         reviewer.save()
         reviewer_serializer = ReviewerSerializer(reviewer)
         return Response(reviewer_serializer.data)
 
-    @action(detail=True, methods=['post'])
-    def disapprove(self, request, pk=None):
-        reviewer = self.get_reviewer(request)
-        reviewer.verdict = Reviewer.REQUESTED_CHANGE
-        reviewer.save()
-        reviewer_serializer = ReviewerSerializer(reviewer)
-        return Response(reviewer_serializer.data)
 
 class ContactViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
