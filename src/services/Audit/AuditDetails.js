@@ -151,18 +151,25 @@ const ReviewHeader = ({ audit, handleVersionChange, version, tab }) => {
 const AuditDetails = ({ auditId, isAdmin, query }) => {
   const [key, setKey] = useState('details'); // tab key
   const [audit, setAudit] = useState(null);
+  const [user, setUser] = useState(null);
   const [version, setVersion] = useState(null);
 
   const versionIndex = parseInt(version, 10) - 1;
   const { get, post, patch, response } = useFetch();
 
   useEffect(() => {
-    get(`/api/v1/audits/${auditId}/${isAdmin ? '' : '?'+query}`).then(data => {
+    get(isAdmin ? '/api/auth/users/me/' : `/api/v1/audits/${auditId}/me?${query}`).then(userData => {
       if (response.ok) {
-        setVersion(data.documents.length);
-        setAudit(data);
+        setUser(userData);
+        get(`/api/v1/audits/${auditId}/${isAdmin ? '' : '?'+query}`).then(data => {
+          if (response.ok) {
+            setVersion(data.documents.length);
+            setAudit(data);
+          }
+        });
       }
     });
+    
   }, []);
 
   function callback(key) {
@@ -235,8 +242,8 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
                 dataSource={audit.reviewers}
                 renderItem={(item, index) => (
                   <List.Item actions={[<Badge key="list-loadmore-edit" status={getBadgeType(item.verdict)} />]}>
-                    <Tooltip title={item.contact.email}>
-                      <span>{item.contact.name}</span>
+                    <Tooltip title={item.contact.name}>
+                      <span>{item.contact.email}</span>
                     </Tooltip>
                   </List.Item>
                 )}
@@ -247,8 +254,8 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
                 dataSource={audit.reviewers.filter(reviewer => reviewer.needs_to_sign)}
                 renderItem={item => (
                   <List.Item actions={[<Badge key="list-loadmore-edit" status={item.has_signed ? "success" : "processing" } />]}>
-                    <Tooltip title={item.contact.email}>
-                      <span>{item.contact.name}</span>
+                    <Tooltip title={item.contact.name}>
+                      <span>{item.contact.email}</span>
                     </Tooltip>
                   </List.Item>
                 )}
@@ -260,7 +267,7 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
           <EsriMap documentId={document.id} className="map-frame" isAdmin={isAdmin} query={query}/>
         </TabPane>
         <TabPane tab="Discussion" key="discussion">
-          <Annotator key={versionIndex} document={document} />
+          <Annotator key={versionIndex} document={document} isAdmin={isAdmin} query={query} user={isAdmin ? user.username : user.contact.email}/>
         </TabPane>
       </Tabs>
     </div>
