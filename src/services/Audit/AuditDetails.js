@@ -9,6 +9,7 @@ import MapPrinter from './MapPrinter';
 import AddAuditors from './AddAuditors';
 import './AuditDetails.css';
 import { message } from 'antd';
+import EsriMap from './EsriMap';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -86,7 +87,7 @@ const AdminOperations = ({ post, patch, response, auditId, version }) => {
         <Button type="primary" onClick={onNewVersionClick} loading={loading}>Add Next Version</Button>
       </Space>
       <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
-        <MapPrinter auditId={auditId} version={version} onComplete={onPrintComplete} />
+        <MapPrinter auditId={auditId} version={version} document={document}onComplete={onPrintComplete} />
         <TextArea placeholder="What's new in this version?" showCount maxLength={100} onChange={onChange} />
       </Modal>
       <Modal title="Add Auditors" visible={isReviewerModalVisible} footer={null} onCancel={() => setIsReviewerModalVisible(false)}>
@@ -115,21 +116,6 @@ const operations = (
     <Button type="primary">Approve and Sign</Button>
   </Space>
 );
-
-function EsriMap({ auditId, version }) {
-  return (
-    <iframe
-      className="map-frame"
-      title="Esri Map"
-      width="100%"
-      height="800"
-      frameBorder="0"
-      border="0"
-      cellSpacing="0"
-      src={`/mapviewer/index.html?audit_id=${auditId}&version=${version}`}>
-    </iframe>
-  );
-}
 
 function handleMenuClick(e) {
   console.log('click', e);
@@ -162,7 +148,7 @@ const ReviewHeader = ({ audit, handleVersionChange, version, tab }) => {
 
 
 
-const AuditDetails = ({ auditId, isAdmin }) => {
+const AuditDetails = ({ auditId, isAdmin, query }) => {
   const [key, setKey] = useState('details'); // tab key
   const [audit, setAudit] = useState(null);
   const [version, setVersion] = useState(null);
@@ -171,7 +157,7 @@ const AuditDetails = ({ auditId, isAdmin }) => {
   const { get, post, patch, response } = useFetch();
 
   useEffect(() => {
-    get(`/api/v1/audits/${auditId}/`).then(data => {
+    get(`/api/v1/audits/${auditId}/${isAdmin ? '' : '?'+query}`).then(data => {
       if (response.ok) {
         setVersion(data.documents.length);
         setAudit(data);
@@ -271,7 +257,7 @@ const AuditDetails = ({ auditId, isAdmin }) => {
           </Row>
         </TabPane>
         <TabPane tab="Interactive Map" key="map">
-          <EsriMap auditId={auditId} version={version} />
+          <EsriMap documentId={document.id} className="map-frame" isAdmin={isAdmin} query={query}/>
         </TabPane>
         <TabPane tab="Discussion" key="discussion">
           <Annotator key={versionIndex} document={document} />
