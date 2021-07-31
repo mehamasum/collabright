@@ -13,7 +13,7 @@ const columns = [
     title: 'Title',
     dataIndex: 'title',
     render: (text, record) => (
-      <Typography.Text>{truncateString(record.title, 24)}</Typography.Text>
+      <Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 24)}</Link></Typography.Text>
     )
   },
   {
@@ -32,6 +32,12 @@ const columns = [
     ),
   },
   {
+    title: 'Latest',
+    render: (text, record) => (
+      <Typography.Text>v{record.documents.length}.0</Typography.Text>
+    ),
+  },
+  {
     title: 'Created at',
     dataIndex: 'created_at',
     render: (text, record) => (
@@ -44,15 +50,7 @@ const columns = [
     render: (text, record) => (
       <Tag color={record.is_open ? 'success' : 'purple'}>{record.is_open ? 'Open' : 'Closed'}</Tag>
     )
-  },
-  {
-    title: 'Actions',
-    render: (text, record) => (
-      <Space size="middle">
-        <Link to={`/audits/${record.id}`}>Details</Link>
-      </Space>
-    ),
-  },
+  }
 ];
 
 const PostListView = (props) => {

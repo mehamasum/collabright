@@ -129,7 +129,7 @@ const PostCreateView = () => {
             <Col span={16} offset={4}>
               <div className="audit-create-step">
                 { current === 0 && <AuditForm onComplete={onComplete} />}
-                { current === 1 && <MapPrinter auditId={audit.id} onComplete={onVerify} version={1} renderNextButton/>}
+                { current === 1 && <MapPrinter auditId={audit.id} document={audit.documents[0]} onComplete={onVerify} version={1} renderNextButton/>}
                 { current === 2 && <AddAuditors auditId={audit.id} onComplete={onFinish}/>}
               </div>
             </Col>

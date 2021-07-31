@@ -3,60 +3,36 @@ import { Typography, Button } from 'antd';
 
 import useFetch from 'use-http';
 import { loadModules } from 'esri-loader';
+import EsriMap from './EsriMap';
 
 const { Text } = Typography;
 
-const MapPrinter = ({ auditId, version, onComplete, renderNextButton }) => {
+const MapPrinter = ({ auditId, version, document, onComplete, renderNextButton }) => {
   const globalJSON = JSON;
   const { get, post, response } = useFetch();
   const [ loading, setLoading ] = useState(true);
   
-  useEffect(() => {
-    loadModules([
-      "esri/map",
-      "esri/arcgis/utils",
-      "esri/tasks/PrintParameters",
-      "esri/tasks/PrintTask", "dojo/_base/json"
-    ])
-    .then(([
-      Map,
-      arcgisUtils,
-      PrintParameters,
-      PrintTask,
-      JSON
-    ]) => {
-      get(`/api/v1/arcgis/get_map/?audit_id=${auditId}&version=${version}`).then(data => {
-        if (response.ok) {
-          const webmap = arcgisUtils.createMap(data, "mapNode");
-          webmap.then(function(resp) {
-            const map = resp.map;
-            const printTask = new PrintTask();
-            const printParams = new PrintParameters();
-            printParams.map = map;
+  const onLoad = (map, modules) => {
+    const printTask = new modules.PrintTask();
+    const printParams = new modules.PrintParameters();
+    printParams.map = map;
 
-            setTimeout(() => {
-              const Web_Map_as_JSON = JSON.toJson(printTask._getPrintDefinition(map, printParams));
-              console.log('native', Web_Map_as_JSON);
-              post(`/api/v1/arcgis/update_map_print_definition/?audit_id=${auditId}&version=${version}`, {
-                map_print_definition: Web_Map_as_JSON
-              }).then(update => {
-                setLoading(false);
-                !renderNextButton && onComplete(update);
-              });
-            }, 5000);
-          });
-        }
+    setTimeout(() => {
+      const Web_Map_as_JSON = modules.JSON.toJson(printTask._getPrintDefinition(map, printParams));
+      console.log('native', Web_Map_as_JSON);
+      post(`/api/v1/arcgis/update_map_print_definition/?audit_id=${auditId}&version=${version}`, {
+        map_print_definition: Web_Map_as_JSON
+      }).then(update => {
+        setLoading(false);
+        !renderNextButton && onComplete(update);
       });
-    })
-    .catch(err => {
-      console.error(err);
-    });
-  }, []);
+    }, 3000);
+  }
 
   return (
     <>
       <Text strong>Building v{version}.0 of map</Text>
-      <div id="mapNode" className="map-verify"></div>
+      <EsriMap className="map-verify" documentId={document.id} onLoad={onLoad}/>
       {renderNextButton && <Button type="primary" onClick={onComplete} loading={loading}>
         Continue
       </Button>}

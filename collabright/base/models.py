@@ -74,7 +74,7 @@ class Reviewer(models.Model):
     needs_to_sign = models.BooleanField(default=False)
     has_signed = models.BooleanField(default=False)
     verdict = models.CharField(choices=TYPE_CHOICES, max_length=64, default=PENDING)
-    token = models.CharField(max_length=1024, default=secrets.token_urlsafe, editable=False)
+    token = models.CharField(max_length=1024, default=secrets.token_urlsafe)
 
 class Comment(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='comments')

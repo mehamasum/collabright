@@ -7,7 +7,7 @@ from urllib.parse import urlparse, parse_qs
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ('id', 'description', 'file', 'audit', 'created_at')
+        fields = ('id', 'description', 'file', 'audit', 'created_at',)
         read_only_fields = ('map_item', 'map_item_data', 'map_print_definition', 'created_at', 'file')
 
     def create(self, validated_data):
@@ -22,6 +22,12 @@ class DocumentSerializer(serializers.ModelSerializer):
             validated_data['map_item'] = json.dumps(map_item)
             validated_data['map_item_data'] = json.dumps(map_item_data)
         return super(DocumentSerializer, self).create(validated_data)
+
+class DocumentMapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Document
+        fields = ('id', 'map_item', 'map_item_data')
+        read_only_fields = ('map_item', 'map_item_data')
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
