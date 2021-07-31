@@ -1,5 +1,5 @@
 from .views import (DocumentViewSet, CommentViewSet, ArcGISApiViewSet,
-                    IntegrationViewSet, DocuSignApiViewSet, AuditViewSet, ContactViewSet)
+                    IntegrationViewSet, DocuSignApiViewSet, AuditViewSet, ContactViewSet, NotificationViewSet)
 
 def register_urls(router):
   router.register('documents', DocumentViewSet, 'document')
@@ -9,3 +9,4 @@ def register_urls(router):
   router.register('docusign', DocuSignApiViewSet, 'docusign')
   router.register('audits', AuditViewSet, 'audit')
   router.register('contacts', ContactViewSet, 'contact')
+  router.register('notifications', NotificationViewSet, 'notification')

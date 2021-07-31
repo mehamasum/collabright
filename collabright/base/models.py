@@ -88,7 +88,7 @@ class Notification(models.Model):
     audit = models.ForeignKey(Audit, on_delete=models.CASCADE)
     reviewer = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    read_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True)
     class Meta:
         ordering = ['created_at']
 
