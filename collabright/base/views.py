@@ -12,7 +12,7 @@ from rest_framework import status
 from datetime import datetime, timedelta
 from rest_framework import filters
 from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsDocumentReviewer
-
+from django.shortcuts import get_object_or_404
 
 
 def has_review_token(request):
@@ -84,11 +84,11 @@ class AuditViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Audit.objects.all().order_by('-created_at')
         if has_review_token(self.request):
-            return queryset
+            return queryset # TODO: fix me
         return queryset.filter(user=self.request.user)
 
     def get_permissions(self):
-        if has_review_token(self.request) and self.action in ['retrieve', 'me']:
+        if has_review_token(self.request) and self.action in ['retrieve', 'me', 'approve', 'disapprove']:
             permission_classes = [IsAuditReviewer]
         else:
             permission_classes = [permissions.IsAuthenticated]
@@ -118,16 +118,32 @@ class AuditViewSet(viewsets.ModelViewSet):
         reviewer_serializer = ReviewerSerializer(reviewers, many=True)
         return Response(reviewer_serializer.data)
 
-    @action(detail=True)
-    def me(self, request, pk=None):
+    def get_reviewer(self, request):
         audit = self.get_object()
         token = request.query_params.get('token')
-        try:
-            reviewer = Reviewer.objects.get(token=token, audit=audit)
-            reviewer_serializer = ReviewerSerializer(reviewer)
-            return Response(reviewer_serializer.data)
-        except Reviewer.DoesNotExist:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        return get_object_or_404(Reviewer, token=token, audit=audit)
+
+    @action(detail=True)
+    def me(self, request, pk=None):
+        reviewer = self.get_reviewer(request)
+        reviewer_serializer = ReviewerSerializer(reviewer)
+        return Response(reviewer_serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        reviewer = self.get_reviewer(request)
+        reviewer.verdict = Reviewer.APPROVED
+        reviewer.save()
+        reviewer_serializer = ReviewerSerializer(reviewer)
+        return Response(reviewer_serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def disapprove(self, request, pk=None):
+        reviewer = self.get_reviewer(request)
+        reviewer.verdict = Reviewer.REQUESTED_CHANGE
+        reviewer.save()
+        reviewer_serializer = ReviewerSerializer(reviewer)
+        return Response(reviewer_serializer.data)
 
 class ContactViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
