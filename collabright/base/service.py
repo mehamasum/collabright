@@ -11,6 +11,13 @@ import os
 from django.core.files.base import File
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from docusign_esign import (ApiClient, Document, SignHere, Tabs,
+                            EnvelopeDefinition, Signer, Recipients,
+                            EnvelopesApi, RecipientViewRequest, NameValue,
+                            DocumentFieldsInformation)
+from .utils import (create_api_client, create_documents, create_signers,
+                    create_sign_here)
+
 
 def download_and_save_file(url, audit_id, version, document):
     filename = 'v'+str(version)+'.pdf'
@@ -321,7 +328,7 @@ class DocuSignOAuthService:
         refresh_token = integration.refresh_token
         refresh_expiry_date = integration.refresh_expiry_date
 
-        if now < refresh_expiry_date:
+        if now > refresh_expiry_date:
           return None
 
         try:
@@ -355,3 +362,90 @@ def get_document_from_audit_version(audit_id, version):
     audit = Audit.objects.get(pk=audit_id)
     documents = Document.objects.filter(audit=audit).order_by('created_at')
     return documents[index]
+
+
+class DocuSignService:
+    base_api_uri = settings.DOCUSIGN_ACCOUNT_BASE_URI + '/restapi'
+    account_id = settings.DOCUSIGN_API_ACCOUNT_ID
+
+    @staticmethod
+    def make_envelope(args):
+        email_subject = args.get(
+            'email_subject', 'Please sign this document sent from the collabright')
+        documents = create_documents(args['documents'])
+        signers = create_signers(args['signers'])
+
+        sign_here = args.get('sign_here', {})
+        create_sign_here(signers, sign_here)
+
+        envelope_definition = EnvelopeDefinition(
+            email_subject = email_subject,
+            documents = documents,
+            recipients = Recipients(signers=signers),
+            status = "sent"
+        )
+
+        return envelope_definition
+
+    @staticmethod
+    def create_envelope(args):
+        access_token = args['access_token']
+
+        envelope_definition = DocuSignService.make_envelope(args)
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+        results = envelope_api.create_envelope(
+            account_id=DocuSignService.account_id,
+            envelope_definition=envelope_definition)
+
+        return results.to_dict()
+
+    @staticmethod
+    def recipient_view_request(args={}):
+        envelope_id = args['envelope_id']
+        access_token = args['access_token']
+        recipient = args['recipient']
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri, access_token=access_token)
+        envelope_api = EnvelopesApi(api_client)
+
+        recipient_view_request = RecipientViewRequest(
+            authentication_method = 'email',
+            client_user_id = recipient['client_id'],
+            return_url = 'http://localhost:3000/',
+            user_name = recipient['name'],
+            email = recipient['email']
+        )
+
+        results = envelope_api.create_recipient_view(
+            DocuSignService.account_id,
+            envelope_id,
+            recipient_view_request=recipient_view_request)
+
+        return results.to_dict()
+
+    @staticmethod
+    def update_document(args):
+        access_token = args['access_token']
+        envelope_id = args['envelope_id']
+
+        documents = create_documents(args['documents'])
+        envelope_definition = EnvelopeDefinition(documents=documents,)
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+
+        results = envelope_api.update_documents(
+            account_id=DocuSignService.account_id,
+            envelope_id=envelope_id,
+            envelope_definition=envelope_definition)
+
+        return results.to_dict()
