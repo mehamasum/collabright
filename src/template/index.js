@@ -6,9 +6,11 @@ import logo from '../assets/images/logo.svg';
 import {Avatar, Dropdown, Layout, Menu, Spin, Typography} from "antd";
 import {
   AppstoreOutlined,
-  ClockCircleOutlined,
+  SettingOutlined,
   DownOutlined,
-  UserOutlined
+  UserOutlined,
+  TeamOutlined,
+  FolderOpenOutlined
 } from '@ant-design/icons';
 import {Link} from 'react-router-dom';
 import useFetch from "use-http";
@@ -81,8 +83,14 @@ const Template = (props) => {
             <Menu.Item key="/" icon={<AppstoreOutlined/>}>
               <Link to="/">Dashboard</Link>
             </Menu.Item>
-            <Menu.Item key="/audits" icon={<ClockCircleOutlined/>}>
+            <Menu.Item key="/audits" icon={<FolderOpenOutlined/>}>
               <Link to="/audits">Audits</Link>
+            </Menu.Item>
+            <Menu.Item key="/contacts" icon={<TeamOutlined/>}>
+              <Link to="/contacts">Contacts</Link>
+            </Menu.Item>
+            <Menu.Item key="/settings" icon={<SettingOutlined/>}>
+              <Link to="/settings">Settings</Link>
             </Menu.Item>
           </Menu>
         </Sider>

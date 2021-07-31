@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 
-import {Button, Card, Form, Input, Modal, Space, Tag} from 'antd';
+import { Button, Card, Row, Col, Tag } from 'antd';
 import useFetch from 'use-http';
 
 import docuSignLogo from "../../assets/icons/docuSign.svg";
+import esriLogo from "../../assets/icons/esri-logo.png";
 import './IntegrationsTab.css';
 
 
@@ -12,7 +13,7 @@ const IntegrationsTab = () => {
     {
       type: 'DOCU_SIGN',
       url: 'docusign',
-      name: 'Docu Sign',
+      name: 'DocuSign',
       logo: docuSignLogo,
       connected: false,
       is_expired: false,
@@ -22,7 +23,7 @@ const IntegrationsTab = () => {
       type: 'ARC_GIS',
       url: 'arcgis',
       name: 'Esri ArcGIS',
-      logo: 'https://www.arcgis.com/graphics/arcgis-online-icon.png',
+      logo: esriLogo,
       connected: false,
       is_expired: false,
       ready: true,
@@ -55,41 +56,43 @@ const IntegrationsTab = () => {
         window.open(data.url, "Popup", "width=400,height=600");
       }
     });
-  }; 
+  };
 
   return (
     <div className="integration-list">
-      <Space>
+      <Row gutter={16}>
+
         {integrations.map(integration => (
-          <Card
-            key={integration.name}
-            hoverable
-            className="integration-card"
-            cover={<img alt="example" src={integration.logo} className="integration-logo"/>}
-          >
-            <div className="integration-card-body">
-              <div>
-                {
-                  integration.connected ? (
-                    integration.is_expired ? <Tag color="error">Expired</Tag> : <Tag color="success">Connected</Tag>
-                  ) : <Tag>Not Connected</Tag>
-                }
+          <Col span={8}>
+            <Card
+              key={integration.name}
+              className="integration-card"
+              cover={<img alt="example" src={integration.logo} className="integration-logo" />}
+            >
+              <div className="integration-card-body">
+                <div>
+                  {
+                    integration.connected ? (
+                      integration.is_expired ? <Tag color="error">Expired</Tag> : <Tag color="success">Connected</Tag>
+                    ) : <Tag>Not Connected</Tag>
+                  }
+                </div>
+                <br />
+                <div>
+                  <Button
+                    type="primary"
+                    className="integration-connect"
+                    disabled={!integration.ready}
+                    onClick={onOauthClick(integration.url)}
+                  >
+                    Connect {integration.name}
+                  </Button>
+                </div>
               </div>
-              <br/>
-              <div>
-                <Button
-                  type="primary"
-                  className="integration-connect"
-                  disabled={!integration.ready}
-                  onClick={onOauthClick(integration.url)}
-                >
-                  Connect {integration.name}
-                </Button>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </Col>
         ))}
-      </Space>
+      </Row>
     </div>
   )
 }
