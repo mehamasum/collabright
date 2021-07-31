@@ -3,14 +3,15 @@ import './index.css';
 import logo from '../assets/images/logo.svg';
 
 
-import {Avatar, Dropdown, Layout, Menu, Spin, Typography} from "antd";
+import {Avatar, Dropdown, Layout, Menu, Spin, Typography, Badge} from "antd";
 import {
   AppstoreOutlined,
   SettingOutlined,
   DownOutlined,
   UserOutlined,
   TeamOutlined,
-  FolderOpenOutlined
+  FolderOpenOutlined,
+  NotificationOutlined
 } from '@ant-design/icons';
 import {Link} from 'react-router-dom';
 import useFetch from "use-http";
@@ -23,6 +24,7 @@ const {Header, Sider, Content, Footer} = Layout;
 
 const Template = (props) => {
   const [user, setUser] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(null);
   const {response, post, get} = useFetch();
 
   useEffect(() => {
@@ -32,6 +34,16 @@ const Template = (props) => {
       }
 
       //deleteFromStorage('token');
+    });
+  }, []);
+
+  useEffect(() => {
+    get('/api/v1/notifications/').then(data => {
+      if (response.ok) {
+        const count = data.results.reduce((prev, curr) => !curr.read_at ? prev + 1 : prev, 0)
+        console.log(count);
+        //return setNotificationCount(count);
+      }
     });
   }, []);
 
@@ -65,6 +77,13 @@ const Template = (props) => {
         </div>
 
         <div className="nav-right-menu">
+          <div className="nav-right-menu-item">
+            <Link to="/notifications">
+              <Badge count={notificationCount >= 10 ? '10+' : notificationCount}>
+                <NotificationOutlined/>
+              </Badge>
+            </Link>
+          </div>
           <div className="nav-right-menu-item">
             <Dropdown overlay={menu} trigger={['click']}>
               <div className="nav-right-profile-menu">
