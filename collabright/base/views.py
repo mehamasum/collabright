@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime, timedelta
 from rest_framework import filters
-from collabright.base.permissions import IsAuditReviewer, IsDocumentReviewer
+from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsDocumentReviewer
 
 def has_review_token(request):
     token = request.query_params.get('token')
@@ -38,10 +38,19 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Comment.objects.all().order_by('id')
-        document = self.request.query_params.get('document')
-        if document is not None:
-            queryset = queryset.filter(document=document)
+        document = self.request.query_params.get('document') or self.request.data.get('document')
+        if document:
+            return queryset.filter(document=document)
         return queryset
+
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated]
+        if has_review_token(self.request):
+            permission_classes = [IsCommentReviewer]
+        else:
+            permission_classes = [permissions.IsAuthenticated]
+        print(permission_classes)
+        return [permission() for permission in permission_classes]
 
 class IntegrationViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
@@ -61,7 +70,7 @@ class AuditViewSet(viewsets.ModelViewSet):
         return queryset.filter(user=self.request.user)
 
     def get_permissions(self):
-        if has_review_token(self.request) and self.action == 'retrieve':
+        if has_review_token(self.request) and self.action in ['retrieve', 'me']:
             permission_classes = [IsAuditReviewer]
         else:
             permission_classes = [permissions.IsAuthenticated]
@@ -86,6 +95,17 @@ class AuditViewSet(viewsets.ModelViewSet):
             reviewers.append(reviewer)
         reviewer_serializer = ReviewerSerializer(reviewers, many=True)
         return Response(reviewer_serializer.data)
+
+    @action(detail=True)
+    def me(self, request, pk=None):
+        audit = self.get_object()
+        token = request.query_params.get('token')
+        try:
+            reviewer = Reviewer.objects.get(token=token, audit=audit)
+            reviewer_serializer = ReviewerSerializer(reviewer)
+            return Response(reviewer_serializer.data)
+        except Reviewer.DoesNotExist:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
 class ContactViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
