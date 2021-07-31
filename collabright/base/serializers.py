@@ -34,11 +34,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'document', 'annotation', 'xfdf')
 
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = ('id', 'type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')
-        read_only_fields = ('type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')
+
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -99,3 +95,11 @@ class AuditSerializer(serializers.ModelSerializer):
         document_serializer.is_valid(raise_exception=True)
         document_serializer.save(map_item=json.dumps(map_item), map_item_data=json.dumps(map_item_data))
         return audit
+
+class NotificationSerializer(serializers.ModelSerializer):
+    audit = AuditSerializer(read_only=True)
+    reviewer = ReviewerSerializer(read_only=True)
+    class Meta:
+        model = Notification
+        fields = ('id', 'type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')
+        read_only_fields = ('type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')

@@ -160,7 +160,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
 
     def get_queryset(self):
-        return Contact.objects.filter(created_by=self.request.user).order_by('-created_at')
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
 
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
