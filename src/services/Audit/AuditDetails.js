@@ -101,9 +101,11 @@ const ReviewerOperations = ({auditId, query}) => {
   const { post, response } = useFetch();
 
   const setVerdict = (verdict) => () => {
-    post(`/api/v1/audits/${auditId}/${verdict}/?${query}`).then(data => {
+    post(`/api/v1/audits/${auditId}/verdict/?${query}`, {
+      verdict
+    }).then(data => {
       if (response.ok) {
-        message.success(`Review Submitted - ${verdict==='disapprove' ? 'Requested Change' : 'Approved'}`);
+        message.success(`Review Submitted - ${verdict==='REQUESTED_CHANGES' ? 'Requested Change' : 'Approved'}`);
         setTimeout(() => window.location.reload(false), 1000);
         return;
       }
@@ -115,10 +117,10 @@ const ReviewerOperations = ({auditId, query}) => {
     <Space>
       <Dropdown overlay={(
         <Menu>
-          <Menu.Item key="1" icon={<ReloadOutlined />} onClick={setVerdict('disapprove')}>
+          <Menu.Item key="1" icon={<ReloadOutlined />} onClick={setVerdict('REQUESTED_CHANGES')}>
             Request Changes
           </Menu.Item>
-          <Menu.Item key="2" icon={<CheckOutlined />} onClick={setVerdict('approve')}>
+          <Menu.Item key="2" icon={<CheckOutlined />} onClick={setVerdict('APPROVED')}>
             Approve
           </Menu.Item>
         </Menu>
