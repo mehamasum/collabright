@@ -5,10 +5,8 @@ import AuditDetails from '../../Audit/AuditDetails';
 import logo from '../../../assets/images/logo.svg';
 import {
   useParams,
-  useHistory
+  useLocation
 } from "react-router-dom";
-import useFetch from 'use-http';
-import { Row, Col, List, Badge, Divider } from 'antd';
 
 import './index.css';
 
@@ -39,21 +37,6 @@ const operations = (
   </Space>
 );
 
-function EsriMap({ auditId, version }) {
-  return (
-    <iframe
-        className="map-frame"
-        title="Esri Map"
-        width="100%"
-        height="800"
-        frameBorder="0"
-        border="0"
-        cellSpacing="0"
-        src={`/mapviewer/index.html?audit_id=${auditId}&version=${version}`}>
-    </iframe>
-  );
-}
-
 function handleMenuClick(e) {
   console.log('click', e);
 }
@@ -71,59 +54,13 @@ const VersionPicker = ({audit, version, handleVersionChange}) => {
   )
 }
 
-const ReviewHeader = ({audit, handleVersionChange, version, tab}) => {
-  return (
-    <PageHeader
-      title={audit.title}
-      subTitle={audit.is_open ? <Tag color="success">Open</Tag> : <Tag color="purple">Closed</Tag> }
-      extra={tab!=="details" && [
-        <VersionPicker key="VersionPicker" audit={audit} handleVersionChange={handleVersionChange} version={version}/>
-      ]}
-    />
-  )
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
 }
 
-
-
 const ReviewerView = () => {
-  const [key, setKey] = useState('details'); // tab key
-  const [audit, setAudit] = useState(null);
-  const [version, setVersion] = useState(null);
   let { audit: auditId } = useParams();
-
-  const versionIndex = parseInt(version, 10) - 1;
-  const {get, response} = useFetch();
-
-  useEffect(() => {
-    get(`/api/v1/audits/${auditId}`).then(data => {
-      if (response.ok) {
-        setVersion(data.documents.length);
-        setAudit(data);
-      }
-    });
-  }, []);
-
-  function callback(key) {
-    setKey(key);
-  }
-
-  function handleVersionChange(value) {
-    const nextVersion = parseInt(value, 10) + 1;
-    console.log(`selected ${value}`, nextVersion);
-    setVersion(nextVersion);
-  }
-
-  if (!audit) return <div className="full-page-loader"><Spin size="large"/></div>;
-
-  const document = audit.documents[versionIndex];
-
-  const reviewers = [
-    'Racing car',
-    'Japanese princess',
-    'Australian walks',
-    'Man charged over',
-    'Los Angeles',
-  ];
+  const query = useQuery();
 
   return (
     <React.Fragment>
@@ -135,7 +72,7 @@ const ReviewerView = () => {
         </Header>
         <Content className="reviewer-content-wrapper">
           <div className="reviewer-content reviewer-content-full">
-            <AuditDetails auditId={auditId}/>
+            <AuditDetails auditId={auditId} query={query}/>
           </div>
         </Content>
       </Layout>

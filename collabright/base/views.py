@@ -2,7 +2,7 @@ import json
 from django.contrib.auth.models import Group
 from rest_framework import viewsets
 from rest_framework import permissions
-from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, ReviewerSerializer)
+from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, ReviewerSerializer, DocumentMapSerializer)
 from .models import (Comment, Document, Integration, Audit, Contact, Reviewer)
 from .service import (ArcGISOAuthService, DocuSignOAuthService, get_document_from_audit_version, download_and_save_file)
 from rest_framework.decorators import action
@@ -10,11 +10,27 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime, timedelta
 from rest_framework import filters
+from collabright.base.permissions import IsAuditReviewer, IsDocumentReviewer
 
+def has_review_token(request):
+    token = request.query_params.get('token')
+    return True if token else False
 class DocumentViewSet(viewsets.ModelViewSet):
     queryset = Document.objects.all().order_by('created_at')
     permission_classes = (permissions.IsAuthenticated, )
     serializer_class = DocumentSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return DocumentMapSerializer
+        return super().get_serializer_class()
+
+    def get_permissions(self):
+        if has_review_token(self.request) and self.action == 'retrieve':
+            permission_classes = [IsDocumentReviewer]
+        else:
+            permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
 class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
@@ -39,7 +55,17 @@ class AuditViewSet(viewsets.ModelViewSet):
     serializer_class = AuditSerializer
 
     def get_queryset(self):
-        return Audit.objects.filter(user=self.request.user).order_by('-created_at')
+        queryset = Audit.objects.all().order_by('-created_at')
+        if has_review_token(self.request):
+            return queryset
+        return queryset.filter(user=self.request.user)
+
+    def get_permissions(self):
+        if has_review_token(self.request) and self.action == 'retrieve':
+            permission_classes = [IsAuditReviewer]
+        else:
+            permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
     @action(detail=True, methods=['post'])
     def add_reviewers(self, request, pk=None):
@@ -86,20 +112,6 @@ class ArcGISApiViewSet(viewsets.ViewSet):
         if ArcGISOAuthService.verify_oauth(code, request.user):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-    @action(detail=False)
-    def get_map(self, request):
-        audit_id = request.query_params.get('audit_id')
-        version = int(request.query_params.get('version'))
-        
-        document = get_document_from_audit_version(audit_id, version)
-        
-        info = {
-          'item': json.loads(document.map_item),
-          'itemData': json.loads(document.map_item_data)
-        }
-        return Response(data=info)
 
     @action(detail=False, methods=['post'])
     def update_map_print_definition(self, request):
