@@ -3,9 +3,9 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from rest_framework import viewsets
 from rest_framework import permissions
-from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, ReviewerSerializer, DocumentMapSerializer)
-from .models import (Comment, Document, Integration, Audit, Contact, Reviewer)
-from .service import (ArcGISOAuthService, DocuSignOAuthService, get_document_from_audit_version, download_and_save_file, send_email_to_requester, send_email_to_reviewer)
+from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, ReviewerSerializer, DocumentMapSerializer)
+from .models import (Comment, Document, Integration, Audit, Contact, Notification, Reviewer)
+from .service import (ArcGISOAuthService, DocuSignOAuthService, get_document_from_audit_version, download_and_save_file, send_email_to_requester, send_email_to_reviewer, send_notification_to_requester)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from rest_framework import filters
 from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsDocumentReviewer
 from django.shortcuts import get_object_or_404
-
+from django.utils import timezone
 
 def has_review_token(request):
     token = request.query_params.get('token')
@@ -140,6 +140,7 @@ class AuditViewSet(viewsets.ModelViewSet):
 
         if reviewer.audit.user.email:
             send_email_to_requester(reviewer.audit.user, reviewer.audit, reviewer, verdict)
+        send_notification_to_requester(reviewer.audit.user, reviewer.audit, reviewer, Notification.REVIEW)
         
         reviewer_serializer = ReviewerSerializer(reviewer)
         return Response(reviewer_serializer.data)
@@ -153,6 +154,22 @@ class ContactViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Contact.objects.filter(created_by=self.request.user).order_by('-created_at')
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.IsAuthenticated, )
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Contact.objects.filter(created_by=self.request.user).order_by('-created_at')
+
+    @action(detail=True, methods=['post'])
+    def mark_read(self, request, pk=None):
+        notification = self.get_object()
+        notification.read_at = timezone.now()
+        notification.save()
+
+        serializer = NotificationSerializer(notification)
+        return Response(serializer.data)
 
 class ArcGISApiViewSet(viewsets.ViewSet):
     permission_classes = (permissions.IsAuthenticated, )

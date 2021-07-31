@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    User, Organization, Document, Comment, Integration, Audit, Contact, Reviewer)
+    Notification, User, Organization, Document, Comment, Integration, Audit, Contact, Reviewer)
 
 
 admin.site.register(User)
@@ -11,3 +11,4 @@ admin.site.register(Integration)
 admin.site.register(Audit)
 admin.site.register(Contact)
 admin.site.register(Reviewer)
+admin.site.register(Notification)
