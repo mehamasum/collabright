@@ -9,7 +9,8 @@ from django.conf import settings
 import shutil
 import os
 from django.core.files.base import File
-
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
 def download_and_save_file(url, audit_id, version, document):
     filename = 'v'+str(version)+'.pdf'
@@ -22,6 +23,24 @@ def download_and_save_file(url, audit_id, version, document):
         document.file.save(filename, File(f))
     
     return filename
+
+def send_email_to_reviewer(user, audit, reviewer, version):
+    context = {
+        'name': reviewer.contact.name,
+        'username': user.username,
+        'audit_title': audit.title,
+        'presigned_url': settings.APP_URL + '/review/' + str(audit.id) + '/?token=' + reviewer.token
+    }
+    msg_plain = render_to_string('reviewer.txt', context)
+    msg_html = render_to_string('reviewer.html', context)
+
+    send_mail(
+        '[Collabright] Review Requested for v{0}.0 of {1}'.format(version, audit.title),
+        msg_plain,
+        settings.DEFAULT_FROM_EMAIL,
+        [reviewer.contact.email],
+        html_message=msg_html,
+    )
 
 
 def json_decoder(payload):
