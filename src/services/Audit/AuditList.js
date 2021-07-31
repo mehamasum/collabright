@@ -13,14 +13,10 @@ const columns = [
     title: 'Title',
     dataIndex: 'title',
     render: (text, record) => (
-      <Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 24)}</Link></Typography.Text>
-    )
-  },
-  {
-    title: 'Description',
-    dataIndex: 'description',
-    render: (text, record) => (
-      <Typography.Text>{record.description ? truncateString(record.description, 48) : 'N/A'}</Typography.Text>
+      <Space direction="vertical">
+        <div><Tag size="small" color={record.is_open ? 'success' : 'purple'}>{record.is_open ? 'Open' : 'Closed'}</Tag><Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 64)}</Link></Typography.Text></div>
+        <small><Typography.Paragraph>Created {formatRelativeTime(record.created_at)}</Typography.Paragraph></small>
+      </Space>
     )
   },
   {
@@ -36,20 +32,6 @@ const columns = [
     render: (text, record) => (
       <Typography.Text>v{record.documents.length}.0</Typography.Text>
     ),
-  },
-  {
-    title: 'Created at',
-    dataIndex: 'created_at',
-    render: (text, record) => (
-      <Typography.Text>{formatRelativeTime(record.created_at)}</Typography.Text>
-    )
-  },
-  {
-    title: 'Status',
-    dataIndex: 'is_open',
-    render: (text, record) => (
-      <Tag color={record.is_open ? 'success' : 'purple'}>{record.is_open ? 'Open' : 'Closed'}</Tag>
-    )
   }
 ];
 
