@@ -9,7 +9,6 @@ const Dashboard = ({...props}) => {
   return (
     <div>
       <Card title="Dashboard">
-        <Text strong>Integrations</Text>
         <IntegrationsTab/>
       </Card>
     </div>
