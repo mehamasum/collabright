@@ -1,7 +1,7 @@
 import json
 from collabright.base.service import ArcGISOAuthService
 from rest_framework import serializers
-from .models import (Document, Comment, Integration, Audit, Contact, Reviewer)
+from .models import (Document, Comment, Integration, Audit, Contact, Notification, Reviewer)
 from urllib.parse import urlparse, parse_qs
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -33,6 +33,12 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'document', 'annotation', 'xfdf')
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('id', 'type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')
+        read_only_fields = ('type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:

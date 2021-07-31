@@ -76,6 +76,23 @@ class Reviewer(models.Model):
     verdict = models.CharField(choices=TYPE_CHOICES, max_length=64, default=PENDING)
     token = models.CharField(max_length=1024, default=secrets.token_urlsafe)
 
+class Notification(models.Model):
+    REVIEW = 'REVIEW'
+    COMMENT = 'COMMENT'
+    TYPE_CHOICES = (
+        (REVIEW, 'Review'),
+        (COMMENT, 'Comment'),
+    )
+    type = models.CharField(choices=TYPE_CHOICES, max_length=64, default=REVIEW)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    audit = models.ForeignKey(Audit, on_delete=models.CASCADE)
+    reviewer = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['created_at']
+
+
 class Comment(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='comments')
     annotation = models.CharField(max_length=200)

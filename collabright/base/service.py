@@ -1,6 +1,6 @@
 import json
 import base64
-from .models import (Integration, Audit, Document, Reviewer)
+from .models import (Integration, Audit, Document, Notification, Reviewer)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -50,7 +50,6 @@ def send_email_to_reviewer(user, audit, reviewer, version):
     )
 
 def send_email_to_requester(user, audit, reviewer, verdict):
-    print(user, audit, reviewer, verdict)
     context = {
         'name': reviewer.contact.name,
         'username': user.username,
@@ -67,6 +66,14 @@ def send_email_to_requester(user, audit, reviewer, verdict):
         settings.DEFAULT_FROM_EMAIL,
         [user.email],
         html_message=msg_html,
+    )
+
+def send_notification_to_requester(user, audit, reviewer, notifcation_type):
+    return Notification.objects.create(
+        type=notifcation_type,
+        user=user,
+        audit=audit,
+        reviewer=reviewer
     )
 
 def json_decoder(payload):
