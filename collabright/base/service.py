@@ -1,6 +1,6 @@
 import json
 import base64
-from .models import (Integration, Audit, Document)
+from .models import (Integration, Audit, Document, Reviewer)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -42,6 +42,25 @@ def send_email_to_reviewer(user, audit, reviewer, version):
         html_message=msg_html,
     )
 
+def send_email_to_requester(user, audit, reviewer, verdict):
+    print(user, audit, reviewer, verdict)
+    context = {
+        'name': reviewer.contact.name,
+        'username': user.username,
+        'audit_title': audit.title,
+        'private_url': settings.APP_URL + '/audits/' + str(audit.id) + '/',
+        'verdict': 'Approved' if verdict == Reviewer.APPROVED else 'Reqested Change'
+    }
+    msg_plain = render_to_string('verdict.txt', context)
+    msg_html = render_to_string('verdict.html', context)
+
+    send_mail(
+        '[Collabright] Review Submitted for {0}'.format(audit.title),
+        msg_plain,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        html_message=msg_html,
+    )
 
 def json_decoder(payload):
     return json.loads(payload.decode('utf-8'))
