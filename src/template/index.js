@@ -3,7 +3,7 @@ import './index.css';
 import logo from '../assets/images/logo.svg';
 
 
-import {Avatar, Dropdown, Layout, Menu, Spin, Typography, Badge} from "antd";
+import { Avatar, Dropdown, Layout, Menu, Spin, Typography, Badge } from "antd";
 import {
   AppstoreOutlined,
   SettingOutlined,
@@ -13,19 +13,19 @@ import {
   FolderOpenOutlined,
   NotificationOutlined
 } from '@ant-design/icons';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import useFetch from "use-http";
 import { deleteFromStorage } from '@rehooks/local-storage';
 
 
 
-const {Header, Sider, Content, Footer} = Layout;
+const { Header, Sider, Content, Footer } = Layout;
 
 
 const Template = (props) => {
   const [user, setUser] = useState(null);
   const [notificationCount, setNotificationCount] = useState(null);
-  const {response, post, get} = useFetch();
+  const { response, post, get } = useFetch();
 
   useEffect(() => {
     get('/api/auth/users/me/').then(data => {
@@ -65,7 +65,7 @@ const Template = (props) => {
 
   if (!user) {
     return (
-      <div className="full-page-loader"><Spin size="large"/></div>
+      <div className="full-page-loader"><Spin size="large" /></div>
     );
   }
 
@@ -73,23 +73,23 @@ const Template = (props) => {
     <Layout className="site-layout">
       <Header className="site-header">
         <div className="app-logo">
-          <img src={logo} className="App-logo" alt="logo"/>
+          <img src={logo} className="App-logo" alt="logo" />
         </div>
 
         <div className="nav-right-menu">
           <div className="nav-right-menu-item">
             <Link to="/notifications">
               <Badge count={notificationCount >= 10 ? '10+' : notificationCount}>
-                <NotificationOutlined/>
+                <NotificationOutlined />
               </Badge>
             </Link>
           </div>
           <div className="nav-right-menu-item">
             <Dropdown overlay={menu} trigger={['click']}>
               <div className="nav-right-profile-menu">
-                <Avatar icon={<UserOutlined/>}/>
+                <Avatar icon={<UserOutlined />} />
                 <Typography className="nav-right-profile-username">{user.username}</Typography>
-                <DownOutlined/>
+                <DownOutlined />
               </div>
             </Dropdown>
           </div>
@@ -99,16 +99,16 @@ const Template = (props) => {
       <Layout>
         <Sider collapsible theme="light">
           <Menu mode="inline" defaultSelectedKeys={['1']} selectedKeys={[props.path]}>
-            <Menu.Item key="/" icon={<AppstoreOutlined/>}>
+            <Menu.Item key="/" icon={<AppstoreOutlined />}>
               <Link to="/">Dashboard</Link>
             </Menu.Item>
-            <Menu.Item key="/audits" icon={<FolderOpenOutlined/>}>
+            <Menu.Item key="/audits" icon={<FolderOpenOutlined />}>
               <Link to="/audits">Audits</Link>
             </Menu.Item>
-            <Menu.Item key="/contacts" icon={<TeamOutlined/>}>
+            <Menu.Item key="/contacts" icon={<TeamOutlined />}>
               <Link to="/contacts">Contacts</Link>
             </Menu.Item>
-            <Menu.Item key="/settings" icon={<SettingOutlined/>}>
+            <Menu.Item key="/settings" icon={<SettingOutlined />}>
               <Link to="/settings">Settings</Link>
             </Menu.Item>
           </Menu>
@@ -119,7 +119,16 @@ const Template = (props) => {
               {props.children}
             </div>
           </Content>
-          <Footer style={{textAlign: 'center'}}> Collabright © 2021</Footer>
+          <Footer style={{ textAlign: 'center' }}>
+
+            <small style={{ fontSize: 10 }}>
+              <Typography.Text type="secondary">
+                © 2021, Collabright. All rights reserved.
+                All product names, logos, and brands are property of their respective owners.
+                Uses <a href="https://storyset.com/business">Business illustrations by Storyset</a>
+              </Typography.Text>
+            </small>
+          </Footer>
         </Layout>
       </Layout>
     </Layout>
