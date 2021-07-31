@@ -1,0 +1,13 @@
+Hello {{ username }},
+
+Your Audit has been reviewd by {{ name }}.
+
+Audit Name: {{ audit_title }}
+Reviewer: {{ name }}
+Review Status: {{ verdict }}
+
+Please click on this link to see the latest comments and updates:
+{{ private_url }}
+
+Best,
+Collabright Team
