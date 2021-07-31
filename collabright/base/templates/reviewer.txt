@@ -1,0 +1,12 @@
+Hello {{ name }},
+
+Your review has been requested by {{ username }} in an Audit.
+
+Audit Name: {{ audit_title }}
+Please click on this link to review and sign:
+{{ presigned_url }}
+
+The link is secure and private to you, please do not share it with anyone else!
+
+Best,
+Collabright Team

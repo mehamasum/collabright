@@ -1,6 +1,6 @@
 import json
 import base64
-from .models import (Integration, Audit, Document)
+from .models import (Integration, Audit, Document, Reviewer)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -9,6 +9,14 @@ from django.conf import settings
 import shutil
 import os
 from django.core.files.base import File
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from docusign_esign import (ApiClient, Document, SignHere, Tabs,
+                            EnvelopeDefinition, Signer, Recipients,
+                            EnvelopesApi, RecipientViewRequest, NameValue,
+                            DocumentFieldsInformation)
+from .utils import (create_api_client, create_documents, create_signers,
+                    create_sign_here)
 
 
 def download_and_save_file(url, audit_id, version, document):
@@ -23,6 +31,43 @@ def download_and_save_file(url, audit_id, version, document):
     
     return filename
 
+def send_email_to_reviewer(user, audit, reviewer, version):
+    context = {
+        'name': reviewer.contact.name,
+        'username': user.username,
+        'audit_title': audit.title,
+        'presigned_url': settings.APP_URL + '/review/' + str(audit.id) + '/?token=' + reviewer.token
+    }
+    msg_plain = render_to_string('reviewer.txt', context)
+    msg_html = render_to_string('reviewer.html', context)
+
+    send_mail(
+        '[Collabright] Review Requested for v{0}.0 of {1}'.format(version, audit.title),
+        msg_plain,
+        settings.DEFAULT_FROM_EMAIL,
+        [reviewer.contact.email],
+        html_message=msg_html,
+    )
+
+def send_email_to_requester(user, audit, reviewer, verdict):
+    print(user, audit, reviewer, verdict)
+    context = {
+        'name': reviewer.contact.name,
+        'username': user.username,
+        'audit_title': audit.title,
+        'private_url': settings.APP_URL + '/audits/' + str(audit.id) + '/',
+        'verdict': 'Approved' if verdict == Reviewer.APPROVED else 'Reqested Change'
+    }
+    msg_plain = render_to_string('verdict.txt', context)
+    msg_html = render_to_string('verdict.html', context)
+
+    send_mail(
+        '[Collabright] Review Submitted for {0}'.format(audit.title),
+        msg_plain,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        html_message=msg_html,
+    )
 
 def json_decoder(payload):
     return json.loads(payload.decode('utf-8'))
@@ -268,9 +313,139 @@ class DocuSignOAuthService:
         except KeyError:
             return None
 
+    @staticmethod
+    def get_access_token(user):
+        integration = Integration.objects.get(
+            type=Integration.DOCU_SIGN,
+            user=user,
+        )
+        expiry_date = integration.expiry_date
+        now = timezone.now()
+
+        if now < expiry_date:
+          return integration.access_token
+
+        refresh_token = integration.refresh_token
+        refresh_expiry_date = integration.refresh_expiry_date
+
+        if now > refresh_expiry_date:
+          return None
+
+        try:
+            r = DocuSignOAuthService.service.get_raw_access_token(data={
+                'refresh_token': refresh_token,
+                'redirect_uri': DocuSignOAuthService.redirect_uri,
+                'grant_type': 'refresh_token',
+            })
+            data = json_decoder(r.content)
+            """
+                {'access_token': ...., 'token_type': 'Bearer', 'refresh_token': ..., 'expires_in': 28800}
+            """
+            access_token = data['access_token']
+            expires_in = int(data['expires_in'])
+
+            updated_integration, _ = Integration.objects.update_or_create(
+                type=Integration.DOCU_SIGN,
+                user=user,
+                defaults={
+                    'access_token': access_token,
+                    'expiry_date': datetime.now() + timedelta(seconds=expires_in),
+                }
+            )
+            return updated_integration.access_token
+        except KeyError:
+            return None
+
 
 def get_document_from_audit_version(audit_id, version):
     index = version - 1
     audit = Audit.objects.get(pk=audit_id)
     documents = Document.objects.filter(audit=audit).order_by('created_at')
     return documents[index]
+
+
+class DocuSignService:
+    base_api_uri = settings.DOCUSIGN_ACCOUNT_BASE_URI + '/restapi'
+    account_id = settings.DOCUSIGN_API_ACCOUNT_ID
+
+    @staticmethod
+    def make_envelope(args):
+        email_subject = args.get(
+            'email_subject', 'Please sign this document sent from the collabright')
+        documents = create_documents(args['documents'])
+        signers = create_signers(args['signers'])
+
+        sign_here = args.get('sign_here', {})
+        create_sign_here(signers, sign_here)
+
+        envelope_definition = EnvelopeDefinition(
+            email_subject = email_subject,
+            documents = documents,
+            recipients = Recipients(signers=signers),
+            status = "sent"
+        )
+
+        return envelope_definition
+
+    @staticmethod
+    def create_envelope(args):
+        access_token = args['access_token']
+
+        envelope_definition = DocuSignService.make_envelope(args)
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+        results = envelope_api.create_envelope(
+            account_id=DocuSignService.account_id,
+            envelope_definition=envelope_definition)
+
+        return results.to_dict()
+
+    @staticmethod
+    def recipient_view_request(args={}):
+        envelope_id = args['envelope_id']
+        access_token = args['access_token']
+        recipient = args['recipient']
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri, access_token=access_token)
+        envelope_api = EnvelopesApi(api_client)
+
+        recipient_view_request = RecipientViewRequest(
+            authentication_method = 'email',
+            client_user_id = recipient['client_id'],
+            return_url = 'http://localhost:3000/',
+            user_name = recipient['name'],
+            email = recipient['email']
+        )
+
+        results = envelope_api.create_recipient_view(
+            DocuSignService.account_id,
+            envelope_id,
+            recipient_view_request=recipient_view_request)
+
+        return results.to_dict()
+
+    @staticmethod
+    def update_document(args):
+        access_token = args['access_token']
+        envelope_id = args['envelope_id']
+
+        documents = create_documents(args['documents'])
+        envelope_definition = EnvelopeDefinition(documents=documents,)
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+
+        results = envelope_api.update_documents(
+            account_id=DocuSignService.account_id,
+            envelope_id=envelope_id,
+            envelope_definition=envelope_definition)
+
+        return results.to_dict()
