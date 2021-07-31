@@ -97,29 +97,44 @@ const AdminOperations = ({ post, patch, response, auditId, version }) => {
   )
 };
 
-const operations = (
-  <Space>
-    <Dropdown overlay={(
-      <Menu onClick={handleMenuClick}>
-        <Menu.Item key="1" icon={<ReloadOutlined />}>
-          Request Changes
-        </Menu.Item>
-        <Menu.Item key="2" icon={<CheckOutlined />}>
-          Approve
-        </Menu.Item>
-      </Menu>
-    )}>
-      <Button>
-        Submit Review <DownOutlined />
-      </Button>
-    </Dropdown>
-    <Button type="primary">Approve and Sign</Button>
-  </Space>
-);
+const ReviewerOperations = ({auditId, query}) => {
+  const { post, response } = useFetch();
 
-function handleMenuClick(e) {
-  console.log('click', e);
-}
+  const setVerdict = (verdict) => () => {
+    post(`/api/v1/audits/${auditId}/verdict/?${query}`, {
+      verdict
+    }).then(data => {
+      if (response.ok) {
+        message.success(`Review Submitted - ${verdict==='REQUESTED_CHANGES' ? 'Requested Change' : 'Approved'}`);
+        setTimeout(() => window.location.reload(false), 1000);
+        return;
+      }
+      console.error(data);
+    });
+  }
+
+  return (
+    <Space>
+      <Dropdown overlay={(
+        <Menu>
+          <Menu.Item key="1" icon={<ReloadOutlined />} onClick={setVerdict('REQUESTED_CHANGES')}>
+            Request Changes
+          </Menu.Item>
+          <Menu.Item key="2" icon={<CheckOutlined />} onClick={setVerdict('APPROVED')}>
+            Approve
+          </Menu.Item>
+        </Menu>
+      )}>
+        <Button>
+          Submit Review <DownOutlined />
+        </Button>
+      </Dropdown>
+      <Button type="primary">Approve and Sign</Button>
+    </Space>
+  )
+};
+
+
 const VersionPicker = ({ audit, version, handleVersionChange }) => {
   const versionIndex = parseInt(version, 10) - 1;
   return (
@@ -198,7 +213,8 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
       <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange} tab={key} />
 
       <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={
-        isAdmin ? <AdminOperations post={post} patch={patch} response={response} auditId={auditId} version={audit.documents.length + 1}/> : operations
+        isAdmin ? <AdminOperations post={post} patch={patch} response={response} auditId={auditId} version={audit.documents.length + 1}/> :
+        <ReviewerOperations auditId={auditId} query={query}/>
       }>
         <TabPane tab="Details" key="details">
           <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>

@@ -1,16 +1,19 @@
 import json
+from django.conf import settings
 from django.contrib.auth.models import Group
 from rest_framework import viewsets
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, ReviewerSerializer, DocumentMapSerializer)
 from .models import (Comment, Document, Integration, Audit, Contact, Reviewer)
-from .service import (ArcGISOAuthService, DocuSignOAuthService, get_document_from_audit_version, download_and_save_file)
+from .service import (ArcGISOAuthService, DocuSignOAuthService, get_document_from_audit_version, download_and_save_file, send_email_to_requester, send_email_to_reviewer)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime, timedelta
 from rest_framework import filters
 from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsDocumentReviewer
+from django.shortcuts import get_object_or_404
+
 
 def has_review_token(request):
     token = request.query_params.get('token')
@@ -19,6 +22,8 @@ class DocumentViewSet(viewsets.ModelViewSet):
     queryset = Document.objects.all().order_by('created_at')
     permission_classes = (permissions.IsAuthenticated, )
     serializer_class = DocumentSerializer
+
+    _created_document = None
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -31,6 +36,19 @@ class DocumentViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
+
+    def perform_create(self, serializer):
+        self._created_document = serializer.save()
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        document = self._created_document
+        user = self.request.user
+        version = Document.objects.filter(audit=document.audit).count()
+        reviewers = Reviewer.objects.filter(audit=document.audit)
+        for reviewer in reviewers:
+            send_email_to_reviewer(user, document.audit, reviewer, version)
+        return response
 
 class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
@@ -66,11 +84,11 @@ class AuditViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Audit.objects.all().order_by('-created_at')
         if has_review_token(self.request):
-            return queryset
+            return queryset # TODO: fix me
         return queryset.filter(user=self.request.user)
 
     def get_permissions(self):
-        if has_review_token(self.request) and self.action in ['retrieve', 'me']:
+        if has_review_token(self.request) and self.action in ['retrieve', 'me', 'approve', 'disapprove']:
             permission_classes = [IsAuditReviewer]
         else:
             permission_classes = [permissions.IsAuthenticated]
@@ -78,6 +96,7 @@ class AuditViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def add_reviewers(self, request, pk=None):
+        user = self.request.user
         audit = self.get_object()
         reviewers = []
         for reviewer in request.data:
@@ -86,26 +105,45 @@ class AuditViewSet(viewsets.ModelViewSet):
             if not email:
                 continue
             (contact, _) = Contact.objects.get_or_create(email=email, created_by=self.request.user)
-            (reviewer, _) = Reviewer.objects.update_or_create(
+            (reviewer, created) = Reviewer.objects.update_or_create(
                 contact=contact,
                 audit=audit,
                 defaults={'needs_to_sign': needs_to_sign},
             )
-            print('reviewer', reviewer)
+            if created:
+                send_email_to_reviewer(user, audit, reviewer, 1)
             reviewers.append(reviewer)
+        
+        
         reviewer_serializer = ReviewerSerializer(reviewers, many=True)
         return Response(reviewer_serializer.data)
 
-    @action(detail=True)
-    def me(self, request, pk=None):
+    def get_reviewer(self, request):
         audit = self.get_object()
         token = request.query_params.get('token')
-        try:
-            reviewer = Reviewer.objects.get(token=token, audit=audit)
-            reviewer_serializer = ReviewerSerializer(reviewer)
-            return Response(reviewer_serializer.data)
-        except Reviewer.DoesNotExist:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        return get_object_or_404(Reviewer, token=token, audit=audit)
+
+    @action(detail=True)
+    def me(self, request, pk=None):
+        reviewer = self.get_reviewer(request)
+        reviewer_serializer = ReviewerSerializer(reviewer)
+        return Response(reviewer_serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def verdict(self, request, pk=None):
+        verdict = request.data['verdict']
+        if verdict not in [Reviewer.APPROVED, Reviewer.REQUESTED_CHANGE]:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        reviewer = self.get_reviewer(request)
+        reviewer.verdict = verdict
+        reviewer.save()
+
+        if reviewer.audit.user.email:
+            send_email_to_requester(reviewer.audit.user, reviewer.audit, reviewer, verdict)
+        
+        reviewer_serializer = ReviewerSerializer(reviewer)
+        return Response(reviewer_serializer.data)
+
 
 class ContactViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
