@@ -1,0 +1,6 @@
+.esri-map > div:first-child {
+  position: absolute;
+  z-index: 50;
+  right: 20px;
+  top: 20px;
+}

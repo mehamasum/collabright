@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Typography, Button } from 'antd';
 
 import useFetch from 'use-http';
-import { loadModules } from 'esri-loader';
 import EsriMap from './EsriMap';
+import './MapPrinter.css';
 
 const { Text } = Typography;
 
@@ -32,7 +32,7 @@ const MapPrinter = ({ auditId, version, document, onComplete, renderNextButton }
   return (
     <>
       <Text strong>Building v{version}.0 of map</Text>
-      <EsriMap className="map-verify" documentId={document.id} onLoad={onLoad}/>
+      <EsriMap className="map-printer" documentId={document.id} onLoad={onLoad} homeButtonId="map-verify-home-btn"/>
       {renderNextButton && <Button type="primary" onClick={onComplete} loading={loading}>
         Continue
       </Button>}
