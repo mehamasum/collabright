@@ -6,7 +6,7 @@ import useFetch from "use-http";
 const Annotator = ({document, isAdmin, query, user}) => {
   const viewer = useRef(null);
   const documentId = document.id;
-  const fileUrl = document.file;
+  const fileUrl = document.file || '/error.pdf';
 
   const serializer = new XMLSerializer();
   const {post, get, put, del} = useFetch();
