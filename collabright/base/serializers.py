@@ -39,7 +39,8 @@ class CommentSerializer(serializers.ModelSerializer):
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = ('id', 'email', 'name')
+        fields = ('id', 'email', 'name', 'created_at')
+        read_only_fields = ('created_at',)
     
     def create(self, validated_data):
         user = self.context.get('request').user
