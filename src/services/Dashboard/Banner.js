@@ -6,19 +6,19 @@ import banner from '../../assets/images/banner.svg';
 const Banner = () => {
   return <div className="banner">
     <div>
-      <div className="banner__header">
-        <div className="banner__header_container">
-          <div className="banner__header_content_container">
+      <div className="banner-header">
+        <div className="banner-header-container">
+          <div className="banner-header-content_container">
             <Typography.Title>Work with people outside your GIS Provider in Collabright</Typography.Title>
-            <Typography.Text className="banner__header_subtext">
+            <Typography.Text className="banner-header-subtext">
               A secure space to share maps and collaborate with other people, just like you do with your own team
             </Typography.Text>
             
-            <Button type="link" className="banner__cta">
+            <Button type="link" className="banner-cta">
               <BulbOutlined/> <strong>See how Collabright works</strong>
             </Button>
           </div>
-          <div role="presentation" className="banner__header_image--user_hub_v1">
+          <div role="presentation" className="banner-header-image">
             <img src={banner} alt=""></img>
           </div>
         </div>
