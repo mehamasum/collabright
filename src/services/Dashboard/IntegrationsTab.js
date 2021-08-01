@@ -12,6 +12,15 @@ import './IntegrationsTab.css';
 const IntegrationsTab = () => {
   const [integrations, setIntegrations] = useState([
     {
+      type: 'ARC_GIS',
+      url: 'arcgis',
+      name: 'Esri ArcGIS',
+      logo: esriLogo,
+      connected: false,
+      is_expired: false,
+      ready: true,
+    },
+    {
       type: 'DOCU_SIGN',
       url: 'docusign',
       name: 'DocuSign',
@@ -20,15 +29,6 @@ const IntegrationsTab = () => {
       is_expired: false,
       ready: true,
     },
-    {
-      type: 'ARC_GIS',
-      url: 'arcgis',
-      name: 'Esri ArcGIS',
-      logo: esriLogo,
-      connected: false,
-      is_expired: false,
-      ready: true,
-    }
   ]);
   const { get, response, loading } = useFetch();
 
