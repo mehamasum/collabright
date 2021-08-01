@@ -1,5 +1,7 @@
-const ContactList = () => {
-  return <div>Contacts</div>
+import ContactList from "./ContactList";
+
+const ContactPage = () => {
+  return <ContactList/>
 }
 
-export default ContactList;
+export default ContactPage;
