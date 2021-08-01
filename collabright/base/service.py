@@ -79,6 +79,31 @@ def send_notification_to_requester(user, audit, reviewer, notifcation_type):
 def json_decoder(payload):
     return json.loads(payload.decode('utf-8'))
 
+
+class ReviewerService:
+    def assign_reviewer_to_audit_evelope(user, audit, reviewers=[]):
+        access_token = DocuSignOAuthService.get_access_token(user)
+        envelope_id = str(audit.envelope_id)
+        signers = []
+        for reviewer in reviewers:
+            if not reviewer.needs_to_sign:
+                continue
+            signer = {
+                'name': reviewer.contact.name,
+                'email': reviewer.contact.email,
+                'client_id': reviewer.contact_id,
+                'recipient_id': reviewer.id
+            }
+            signers.append(signer)
+        results = DocuSignService.create_signers({
+            'access_token': access_token,
+            'envelope_id': envelope_id,
+            'signers': signers,
+        })
+
+        return results
+
+
 class ArcGISOAuthService:
     service = OAuth2Service(
         client_id=settings.ARCGIS_APP_ID,

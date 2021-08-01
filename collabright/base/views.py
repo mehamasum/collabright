@@ -4,7 +4,10 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, OrganizationSerializer, ReviewerSerializer, DocumentMapSerializer)
 from .models import (Comment, Document, Integration, Audit, Contact, Notification, Organization, Reviewer)
-from .service import (ArcGISOAuthService, DocuSignOAuthService, download_and_save_file, send_email_to_requester, send_email_to_reviewer, send_notification_to_requester)
+from .service import (ArcGISOAuthService, DocuSignOAuthService,
+                      download_and_save_file, send_email_to_requester,
+                      send_email_to_reviewer, send_notification_to_requester,
+                      ReviewerService)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -137,15 +140,14 @@ class AuditViewSet(viewsets.ModelViewSet):
             )
             if created:
                 send_email_to_reviewer(user, audit, reviewer, version)
+                ReviewerService.assign_reviewer_to_audit_evelope(user, audit, reviewers)
             reviewers.append(reviewer)
             updated_reviewers.append(reviewer.id)
-        
 
         diff = lambda l1,l2: [x for x in l1 if x not in l2]
         deleted_reviewers = diff(existing_reviewers, updated_reviewers)
 
         Reviewer.objects.filter(pk__in=deleted_reviewers).delete()
-        
         reviewer_serializer = ReviewerSerializer(reviewers, many=True)
         return Response(reviewer_serializer.data)
 
