@@ -1,6 +1,6 @@
 import json
 import base64
-from .models import (Integration, Audit, Document, Notification, Reviewer)
+from .models import (Integration, Notification, Reviewer)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -11,7 +11,7 @@ import os
 from django.core.files.base import File
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from docusign_esign import (ApiClient, Document, SignHere, Tabs,
+from docusign_esign import (ApiClient, SignHere, Tabs,
                             EnvelopeDefinition, Signer, Recipients,
                             EnvelopesApi, RecipientViewRequest, NameValue,
                             DocumentFieldsInformation)
@@ -21,7 +21,7 @@ from .utils import (create_api_client, create_documents, create_signers,
 
 def download_and_save_file(url, audit_id, version, document):
     filename = 'v'+str(version)+'.pdf'
-    local_filename = os.path.join('/tmp', audit_id+"___"+filename)
+    local_filename = os.path.join('/tmp', str(audit_id)+"___"+filename)
     with requests.get(url, stream=True) as r:
         with open(local_filename, 'wb') as f:
             shutil.copyfileobj(r.raw, f)
@@ -362,13 +362,6 @@ class DocuSignOAuthService:
             return updated_integration.access_token
         except KeyError:
             return None
-
-
-def get_document_from_audit_version(audit_id, version):
-    index = version - 1
-    audit = Audit.objects.get(pk=audit_id)
-    documents = Document.objects.filter(audit=audit).order_by('created_at')
-    return documents[index]
 
 
 class DocuSignService:

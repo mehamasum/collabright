@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, ReviewerSerializer, DocumentMapSerializer)
 from .models import (Comment, Document, Integration, Audit, Contact, Notification, Reviewer)
-from .service import (ArcGISOAuthService, DocuSignOAuthService, get_document_from_audit_version, download_and_save_file, send_email_to_requester, send_email_to_reviewer, send_notification_to_requester)
+from .service import (ArcGISOAuthService, DocuSignOAuthService, download_and_save_file, send_email_to_requester, send_email_to_reviewer, send_notification_to_requester)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -24,6 +24,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
     serializer_class = DocumentSerializer
 
     _created_document = None
+    _updated_document = None
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -40,6 +41,9 @@ class DocumentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         self._created_document = serializer.save()
 
+    def perform_update(self, serializer):
+        self._updated_document = serializer.save()
+
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         document = self._created_document
@@ -49,6 +53,21 @@ class DocumentViewSet(viewsets.ModelViewSet):
         for reviewer in reviewers:
             send_email_to_reviewer(user, document.audit, reviewer, version)
         return response
+
+    def partial_update(self, request, *args, **kwargs):
+        update_response = super().partial_update(request, *args, **kwargs)
+        document = self._updated_document
+        version = Document.objects.filter(audit=document.audit).count()
+        if not document.file:
+            response = ArcGISOAuthService.export_map_as_file(
+                document.map_print_definition,
+                document.map_item,
+                document.map_item_data,
+                'Map (v{0}.0)'.format(version)
+            )
+            file_url = response['results'][0]['value']['url']
+            download_and_save_file(file_url, document.audit.id, version, document)
+        return update_response
 
 class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
@@ -187,29 +206,6 @@ class ArcGISApiViewSet(viewsets.ViewSet):
         if ArcGISOAuthService.verify_oauth(code, request.user):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=False, methods=['post'])
-    def update_map_print_definition(self, request):
-        audit_id = request.query_params.get('audit_id')
-        version = int(request.query_params.get('version'))
-        map_print_definition = request.data.get('map_print_definition')
-
-        document = get_document_from_audit_version(audit_id, version)
-
-        if not document.map_print_definition:
-            document.map_print_definition = map_print_definition
-            document.save()
-
-        if not document.file:
-            response = ArcGISOAuthService.export_map_as_file(
-                document.map_print_definition,
-                document.map_item,
-                document.map_item_data,
-                'Map (v{0}.0)'.format(version)
-            )
-            file_url = response['results'][0]['value']['url']
-            download_and_save_file(file_url, audit_id, version, document)
-        return Response(data={'ok': True}, status=status.HTTP_200_OK)
 
 class DocuSignApiViewSet(viewsets.ViewSet):
     permission_classes = (permissions.IsAuthenticated, )
