@@ -280,7 +280,7 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
           </Row>
         </TabPane>
         <TabPane tab="Interactive Map" key="map">
-          <EsriMap documentId={document.id} className="map-frame" isAdmin={isAdmin} query={query}/>
+          <EsriMap documentId={document.id} className={`map-frame ${isAdmin ? 'map-frame-admin':''}`} isAdmin={isAdmin} query={query} homeButtonId="details-map-home-btn"/>
         </TabPane>
         <TabPane tab="Discussion" key="discussion">
           <Annotator key={versionIndex} document={document} isAdmin={isAdmin} query={query} user={isAdmin ? user.username : user.contact.email}/>

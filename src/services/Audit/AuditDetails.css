@@ -22,4 +22,9 @@
 
 .map-frame {
   height: 100%;
+  position: relative;
+}
+
+.map-frame-admin {
+  height: 500px;
 }
