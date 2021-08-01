@@ -450,3 +450,22 @@ class DocuSignService:
             envelope_definition=envelope_definition)
 
         return results.to_dict()
+
+    @staticmethod
+    def create_signers(args):
+        access_token = args['access_token']
+        envelope_id = args['envelope_id']
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+
+        signers = create_signers(args['signers'])
+        results = envelope_api.create_recipient(
+            account_id=DocuSignService.account_id,
+            envelope_id=envelope_id,
+            recipients = Recipients(signers=signers))
+
+        return results.to_dict()
