@@ -7,8 +7,8 @@ from urllib.parse import urlparse, parse_qs
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ('id', 'description', 'file', 'audit', 'created_at',)
-        read_only_fields = ('map_item', 'map_item_data', 'map_print_definition', 'created_at', 'file')
+        fields = ('id', 'description', 'file', 'audit', 'created_at', 'map_print_definition',)
+        read_only_fields = ('map_item', 'map_item_data', 'created_at', 'file')
 
     def create(self, validated_data):
         if 'map_item' not in validated_data and 'map_item_data' not in validated_data:

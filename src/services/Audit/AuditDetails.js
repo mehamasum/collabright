@@ -87,7 +87,7 @@ const AdminOperations = ({ post, patch, response, auditId, version }) => {
         <Button type="primary" onClick={onNewVersionClick} loading={loading}>Add Next Version</Button>
       </Space>
       <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
-        <MapPrinter auditId={auditId} version={version} document={document}onComplete={onPrintComplete} />
+        <MapPrinter auditId={auditId} version={version} document={document} onComplete={onPrintComplete} />
         <TextArea placeholder="What's new in this version?" showCount maxLength={100} onChange={onChange} />
       </Modal>
       <Modal title="Add Auditors" visible={isReviewerModalVisible} footer={null} onCancel={() => setIsReviewerModalVisible(false)}>

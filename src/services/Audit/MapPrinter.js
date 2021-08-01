@@ -9,7 +9,7 @@ const { Text } = Typography;
 
 const MapPrinter = ({ auditId, version, document, onComplete, renderNextButton }) => {
   const globalJSON = JSON;
-  const { get, post, response } = useFetch();
+  const { get, patch, response } = useFetch();
   const [ loading, setLoading ] = useState(true);
   
   const onLoad = (map, modules) => {
@@ -20,7 +20,7 @@ const MapPrinter = ({ auditId, version, document, onComplete, renderNextButton }
     setTimeout(() => {
       const Web_Map_as_JSON = modules.JSON.toJson(printTask._getPrintDefinition(map, printParams));
       console.log('native', Web_Map_as_JSON);
-      post(`/api/v1/arcgis/update_map_print_definition/?audit_id=${auditId}&version=${version}`, {
+      patch(`/api/v1/documents/${document.id}/`, {
         map_print_definition: Web_Map_as_JSON
       }).then(update => {
         setLoading(false);
