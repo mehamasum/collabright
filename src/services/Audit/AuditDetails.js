@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip } from 'antd';
-import { CheckOutlined, ReloadOutlined, DownOutlined } from '@ant-design/icons';
+import { RedoOutlined, DownOutlined, EyeOutlined, CheckOutlined, FileDoneOutlined, FileUnknownOutlined } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
 import { Row, Col, List, Badge, Divider, Modal } from 'antd';
@@ -18,17 +18,16 @@ const { TextArea } = Input;
 
 
 
-const AdminOperations = ({ post, patch, response, auditId, version }) => {
+const AdminOperations = ({ post, patch, response, audit, version }) => {
   const [ document, setDocument ] = useState(null);
   const [ description, setDescription ] = useState('');
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(true);
   const [isReviewerModalVisible, setIsReviewerModalVisible] = useState(false);
-
+  const auditId = audit.id;
 
   const handleOk = () => {
-    console.log('ok');
     setConfirmLoading(true);
     patch(`/api/v1/documents/${document.id}/`, {
       description,
@@ -91,7 +90,7 @@ const AdminOperations = ({ post, patch, response, auditId, version }) => {
         <TextArea placeholder="What's new in this version?" showCount maxLength={100} onChange={onChange} />
       </Modal>
       <Modal title="Add Auditors" visible={isReviewerModalVisible} footer={null} onCancel={() => setIsReviewerModalVisible(false)}>
-        <AddAuditors auditId={auditId} onComplete={onAuditorAddSuccess}/>
+        <AddAuditors auditId={auditId} onComplete={onAuditorAddSuccess} existingReviewers={audit.reviewers}/>
       </Modal>
     </>
   )
@@ -117,10 +116,10 @@ const ReviewerOperations = ({auditId, query}) => {
     <Space>
       <Dropdown overlay={(
         <Menu>
-          <Menu.Item key="1" icon={<ReloadOutlined />} onClick={setVerdict('REQUESTED_CHANGES')}>
+          <Menu.Item key="1" icon={<RedoOutlined style={{ color: '#ff4d4f' }} />} onClick={setVerdict('REQUESTED_CHANGES')}>
             Request Changes
           </Menu.Item>
-          <Menu.Item key="2" icon={<CheckOutlined />} onClick={setVerdict('APPROVED')}>
+          <Menu.Item key="2" icon={<CheckOutlined style={{ color: '#52c41a' }}/>} onClick={setVerdict('APPROVED')}>
             Approve
           </Menu.Item>
         </Menu>
@@ -202,9 +201,9 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
   const document = audit.documents[versionIndex];
 
   const getBadgeType = (verdict) => {
-    if(verdict==='PENDING') return 'processing';
-    if(verdict==='APPROVED') return 'success';
-    if(verdict==='REQUESTED_CHANGES') return 'error';
+    if(verdict==='PENDING') return <EyeOutlined />;
+    if(verdict==='APPROVED') return <CheckOutlined style={{ color: '#52c41a' }}/>;
+    if(verdict==='REQUESTED_CHANGES') return <RedoOutlined  style={{ color: '#ff4d4f' }}/>;
     return 'error';
   }
 
@@ -213,12 +212,12 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
       <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange} tab={key} />
 
       <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={
-        isAdmin ? <AdminOperations post={post} patch={patch} response={response} auditId={auditId} version={audit.documents.length + 1}/> :
+        isAdmin ? <AdminOperations post={post} patch={patch} response={response} audit={audit} version={audit.documents.length + 1}/> :
         <ReviewerOperations auditId={auditId} query={query}/>
       }>
         <TabPane tab="Details" key="details">
-          <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-            <Col className="gutter-row" span={18}>
+          <Row gutter={8}>
+            <Col className="gutter-row" span={16}>
               <Text strong>Audit Description</Text><br />
               {audit.decription}
               <Divider />
@@ -252,12 +251,12 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
               />
               <Divider />
             </Col>
-            <Col className="gutter-row" span={6}>
+            <Col className="gutter-row" span={8}>
               <List
                 header={<Text strong>Reviewers</Text>}
-                dataSource={audit.reviewers}
+                dataSource={audit.reviewers.filter(reviewer => !reviewer.needs_to_sign)}
                 renderItem={(item, index) => (
-                  <List.Item actions={[<Badge key="list-loadmore-edit" status={getBadgeType(item.verdict)} />]}>
+                  <List.Item actions={[getBadgeType(item.verdict),]}>
                     <Tooltip title={item.contact.name}>
                       <span>{item.contact.email}</span>
                     </Tooltip>
@@ -269,7 +268,10 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
                 header={<Text strong>Signers</Text>}
                 dataSource={audit.reviewers.filter(reviewer => reviewer.needs_to_sign)}
                 renderItem={item => (
-                  <List.Item actions={[<Badge key="list-loadmore-edit" status={item.has_signed ? "success" : "processing" } />]}>
+                  <List.Item actions={[
+                    getBadgeType(item.verdict),
+                    item.has_signed ? <FileDoneOutlined style={{ color: '#52c41a' }}/> : <FileUnknownOutlined />,
+                  ]}>
                     <Tooltip title={item.contact.name}>
                       <span>{item.contact.email}</span>
                     </Tooltip>
