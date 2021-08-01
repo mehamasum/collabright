@@ -38,6 +38,7 @@ class Audit(models.Model):
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=1024, null=True, blank=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    envelope_id = models.UUIDField(null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     map_url = models.CharField(max_length=512) # arcjs web map url
     base_url = models.CharField(max_length=200) # arcjs url from map_url

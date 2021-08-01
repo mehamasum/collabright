@@ -374,6 +374,7 @@ class DocuSignService:
             'email_subject', 'Please sign this document sent from the collabright')
         documents = create_documents(args['documents'])
         signers = create_signers(args['signers'])
+        status = args.get('status', 'created')
 
         sign_here = args.get('sign_here', {})
         create_sign_here(signers, sign_here)
@@ -382,7 +383,7 @@ class DocuSignService:
             email_subject = email_subject,
             documents = documents,
             recipients = Recipients(signers=signers),
-            status = "sent"
+            status = status
         )
 
         return envelope_definition
