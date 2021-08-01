@@ -4,14 +4,14 @@ import useFetch from 'use-http';
 
 const { Option } = Select;
 
-const SearchAuditor = ({ className, onChange }) => {
+const SearchAuditor = ({ className, onChange, reviewers }) => {
   const [data, setData] = useState([]);
   const [value, setValue] = useState(undefined);
   const { get, post, patch, response } = useFetch();
 
-  const getData = (value, onSuccess) => {
+  const getData = (searchText, onSuccess) => {
     console.log('getting');
-    get(`/api/v1/contacts/?search=${value}`)
+    get(`/api/v1/contacts/?search=${searchText}`)
     .then(result => {
       if (response.ok) {
         console.log('got', result);
@@ -21,10 +21,10 @@ const SearchAuditor = ({ className, onChange }) => {
     })
   }
 
-  const handleSearch = value => {
-    console.log('searching', value);
-    if (value) {
-      getData(value, data => setData(data));
+  const handleSearch = searchText => {
+    console.log('searching', searchText);
+    if (searchText) {
+      getData(searchText, data => setData(data));
     } else {
       setData([]);
     }
@@ -36,12 +36,13 @@ const SearchAuditor = ({ className, onChange }) => {
     onChange(value);
   };
 
-  const options = data.map(d => <Option key={d.email}>{d.name} ({d.email})</Option>);
+  const options = data.map(d => <Option key={d.email}>{d.email}</Option>);
   return (
     <Select
       className={className}
       mode="tags" 
       showSearch
+      defaultValue={reviewers}
       value={value}
       placeholder="Search with email"
       defaultActiveFirstOption={false}

@@ -7,7 +7,7 @@ import SearchAuditor from './SearchAuditor';
 
 const { Text } = Typography;
 
-const AddAuditors = ({ onComplete, auditId }) => {
+const AddAuditors = ({ onComplete, auditId, existingReviewers=[] }) => {
   const [ signers, setSigners ] = useState([]);
   const [ reviewers, setReviewers ] = useState([]);
   const { post, response, loading } = useFetch();
@@ -21,10 +21,15 @@ const AddAuditors = ({ onComplete, auditId }) => {
       });
     });
     signers.forEach(signer => {
-      body.push({
-        email: signer,
-        needs_to_sign: true
-      });
+      const asReviewer = reviewers.find(reviewer => reviewer.email === signer.email);
+      if (asReviewer) {
+        asReviewer.needs_to_sign = true;
+      } else {
+        body.push({
+          email: signer,
+          needs_to_sign: true
+        });
+      }
     });
     post(`/api/v1/audits/${auditId}/add_reviewers/`, body).then(data => {
       if(response.ok) {
@@ -40,11 +45,13 @@ const AddAuditors = ({ onComplete, auditId }) => {
       <Divider/>
       <div>
         <Text strong>Reviewers</Text><br/>
-        <SearchAuditor className="search-auditor" onChange={setReviewers}/>
+        <small><Text type="secondary">People who will only review the Audit</Text></small>
+        <SearchAuditor className="search-auditor" onChange={setReviewers} reviewers={existingReviewers.filter(reviewer => !reviewer.needs_to_sign).map(reviewer => reviewer.contact.email)}/>
         <br/>
         <br/>
-        <Text strong>Signers</Text><br/>
-        <SearchAuditor className="search-auditor" onChange={setSigners}/>
+        <Text strong>Reviewers and Signers</Text><br/>
+        <small><Text type="secondary">People who need to sign any uploaded agreements</Text></small>
+        <SearchAuditor className="search-auditor" onChange={setSigners} reviewers={existingReviewers.filter(reviewer => reviewer.needs_to_sign).map(reviewer => reviewer.contact.email)}/>
       </div>
       <Divider/>
       <Button type="primary" onClick={setAuditors}>
