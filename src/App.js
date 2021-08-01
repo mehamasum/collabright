@@ -1,5 +1,6 @@
 import 'antd/dist/antd.css';
 import './App.css';
+import {Helmet} from "react-helmet";
 import { Route, Switch, BrowserRouter as Router } from 'react-router-dom';
 import Dashboard from './services/Dashboard';
 import {Login} from './services/Auth';
@@ -33,6 +34,11 @@ const App = (props) => {
         cachePolicy: 'no-cache'
       }
     }>
+      <Helmet>
+        <meta charSet="utf-8" />
+        <title>Collabright | A secure space to share maps and collaborate with others</title>
+        <link rel="canonical" href="http://mysite.com/example" />
+      </Helmet>
       <Router>
         <Switch>
           <Route exact path="/login">

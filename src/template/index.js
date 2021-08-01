@@ -16,7 +16,7 @@ import {
 import { Link } from 'react-router-dom';
 import useFetch from "use-http";
 import { deleteFromStorage } from '@rehooks/local-storage';
-
+import {Helmet} from "react-helmet";
 
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -69,9 +69,15 @@ const Template = (props) => {
     );
   }
 
+  let pageName = props.path.substring(1).split('/')[0];
+  pageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+  
   return (
     <Layout className="site-layout">
       <Header className="site-header">
+        <Helmet>
+          <title>{pageName || 'Dashboard'} | Collabright</title>
+        </Helmet>
         <div className="app-logo">
           <img src={logo} className="App-logo" alt="logo" />
         </div>
