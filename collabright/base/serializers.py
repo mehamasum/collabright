@@ -3,12 +3,8 @@ from collabright.base.service import ArcGISOAuthService
 from rest_framework import serializers
 from .models import (Document, Comment, Integration, Audit, Contact, Notification, Reviewer, Organization)
 from urllib.parse import urlparse, parse_qs
-<<<<<<< HEAD
 import validators
-
-=======
 from .fields import PDFBase64File
->>>>>>> add agrement upload to audit create
 
 class DocumentSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
