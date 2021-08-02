@@ -1,6 +1,6 @@
 import json
 import base64
-from .models import (Integration, Notification, Reviewer)
+from .models import (Integration, Notification, Reviewer, Audit)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -80,6 +80,22 @@ def json_decoder(payload):
     return json.loads(payload.decode('utf-8'))
 
 
+class AuditService:
+    def update_audit_envelope(user, audit):
+        access_token = DocuSignOAuthService.get_access_token(user)
+        envelope_id = str(audit.envelope_id)
+        results = DocuSignService.update_envelope({
+            'access_token': access_token,
+            'envelope_id': envelope_id,
+            'envelope': {
+                'status': Audit.SENT
+            }
+        })
+        print(results)
+        if results['error_details'] is None:
+            audit.status = Audit.SENT
+            audit.save()
+
 class ReviewerService:
     def assign_reviewer_to_audit_evelope(user, audit, reviewers=[]):
         access_token = DocuSignOAuthService.get_access_token(user)
@@ -95,11 +111,20 @@ class ReviewerService:
                 'recipient_id': reviewer.id
             }
             signers.append(signer)
-        results = DocuSignService.create_signers({
-            'access_token': access_token,
-            'envelope_id': envelope_id,
-            'signers': signers,
-        })
+
+        results = None
+        if len(signers):
+            results = DocuSignService.create_signers({
+                'access_token': access_token,
+                'envelope_id': envelope_id,
+                'signers': signers,
+            })
+
+        if audit.status == Audit.CREATED:
+            try:
+                AuditService.update_audit_envelope(user, audit)
+            except:
+                pass
 
         return results
 
@@ -405,10 +430,10 @@ class DocuSignService:
         create_sign_here(signers, sign_here)
 
         envelope_definition = EnvelopeDefinition(
-            email_subject = email_subject,
-            documents = documents,
-            recipients = Recipients(signers=signers),
-            status = status
+            email_subject=email_subject,
+            documents=documents,
+            recipients=Recipients(signers=signers),
+            status=status
         )
 
         return envelope_definition
@@ -427,6 +452,27 @@ class DocuSignService:
         results = envelope_api.create_envelope(
             account_id=DocuSignService.account_id,
             envelope_definition=envelope_definition)
+
+        return results.to_dict()
+
+    @staticmethod
+    def update_envelope(args):
+        access_token = args['access_token']
+        envelope_id = args['envelope_id']
+        envelope = args['envelope']
+
+        status = envelope.get('status', 'created')
+        envelope_definition = EnvelopeDefinition(status=status)
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+        results = envelope_api.update(
+            account_id=DocuSignService.account_id,
+            envelope_id=envelope_id,
+            envelope=envelope_definition)
 
         return results.to_dict()
 
