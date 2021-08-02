@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 
-import { Button, Card, Row, Col, Tag } from 'antd';
+import { Button, Card, Row, Col, Tag, Menu, Dropdown } from 'antd';
 import useFetch from 'use-http';
+
+import { DisconnectOutlined, MoreOutlined } from "@ant-design/icons";
 
 import docuSignLogo from "../../assets/icons/docuSign.svg";
 import esriLogo from "../../assets/icons/esri-logo.png";
@@ -59,6 +61,12 @@ const IntegrationsTab = () => {
     });
   };
 
+  const menu = (
+    <Menu>
+      <Menu.Item danger>Disconnect</Menu.Item>
+    </Menu>
+  );
+
   return (
     <>
       {integrations.find(integration => !integration.connected || integration.is_expired) && <Banner />}
@@ -69,8 +77,10 @@ const IntegrationsTab = () => {
             <Col sm={16} lg={8}>
               <Card
                 key={integration.name}
+                title={integration.name}
                 className="integration-card"
                 cover={<img alt="example" src={integration.logo} className="integration-logo" />}
+                extra={ <Dropdown overlay={menu}><Button icon={<MoreOutlined/>} type="text"></Button></Dropdown>}
               >
                 <div className="integration-card-body">
                   <div>
@@ -88,7 +98,7 @@ const IntegrationsTab = () => {
                       disabled={!integration.ready}
                       onClick={onOauthClick(integration.url)}
                     >
-                      Connect {integration.name}
+                      {integration.connected ? 'Reconnect' : 'Connect'}
                     </Button>
                   </div>
                 </div>

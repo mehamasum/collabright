@@ -1,8 +1,10 @@
 import json
 from collabright.base.service import ArcGISOAuthService
 from rest_framework import serializers
-from .models import (Document, Comment, Integration, Audit, Contact, Notification, Reviewer)
+from .models import (Document, Comment, Integration, Audit, Contact, Notification, Reviewer, Organization)
 from urllib.parse import urlparse, parse_qs
+import validators
+
 
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -104,3 +106,13 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = ('id', 'type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')
         read_only_fields = ('type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')
+
+class OrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ('id', 'name', 'gis_base_url',)
+
+    def validate_gis_base_url(self, value):
+        if not validators.url(value):
+            raise serializers.ValidationError('Not a valid URL')
+        return value

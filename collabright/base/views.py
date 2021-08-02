@@ -3,17 +3,18 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from rest_framework import viewsets
 from rest_framework import permissions
-from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, ReviewerSerializer, DocumentMapSerializer)
-from .models import (Comment, Document, Integration, Audit, Contact, Notification, Reviewer)
+from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, OrganizationSerializer, ReviewerSerializer, DocumentMapSerializer)
+from .models import (Comment, Document, Integration, Audit, Contact, Notification, Organization, Reviewer)
 from .service import (ArcGISOAuthService, DocuSignOAuthService, download_and_save_file, send_email_to_requester, send_email_to_reviewer, send_notification_to_requester)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime, timedelta
 from rest_framework import filters
-from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsDocumentReviewer
+from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsDocumentReviewer, IsOrgAdmin
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+
 
 def has_review_token(request):
     token = request.query_params.get('token')
@@ -223,4 +224,12 @@ class DocuSignApiViewSet(viewsets.ViewSet):
         if DocuSignOAuthService.verify_oauth(code, request.user):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-        
+
+class OrganizationViewset(viewsets.ModelViewSet):
+    permission_classes = (permissions.IsAuthenticated, IsOrgAdmin,)
+    serializer_class = OrganizationSerializer
+
+    def get_queryset(self):
+        if self.request.user.organization:
+            return Organization.objects.filter(pk=self.request.user.organization.id)
+        return Organization.objects.none()
