@@ -11,7 +11,7 @@ import {
   UserOutlined,
   TeamOutlined,
   FolderOpenOutlined,
-  NotificationOutlined
+  BellOutlined
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import useFetch from "use-http";
@@ -85,7 +85,7 @@ const Template = (props) => {
           <div className="nav-right-menu-item">
             <Link to="/notifications">
               <Badge count={notificationCount >= 10 ? '10+' : notificationCount}>
-                <NotificationOutlined />
+                <BellOutlined />
               </Badge>
             </Link>
           </div>
