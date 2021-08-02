@@ -52,7 +52,7 @@ const Annotator = ({document, isAdmin, query, user}) => {
   useEffect(() => {
     WebViewer(
       {
-        path: '/static',
+        path: process.env.NODE_ENV === 'production' ? '/static/webviewer-lib' : '/webviewer/webviewer-lib',
         initialDoc: fileUrl,
         documentXFDFRetriever: async () => {
           const data = await get(`/api/v1/comments?document=${documentId}${isAdmin ? '' : '&'+query}`);
