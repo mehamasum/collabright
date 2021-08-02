@@ -46,3 +46,7 @@ class IsCommentReviewer(permissions.BasePermission):
       return True
     except Reviewer.DoesNotExist:
       return False
+
+class IsOrgAdmin(permissions.BasePermission):
+  def has_object_permission(self, request, view, organization):
+    return request.user.organization and request.user.organization.id == organization.id and request.user.is_org_admin
