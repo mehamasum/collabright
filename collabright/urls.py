@@ -32,8 +32,6 @@ register_base_urls(router)
 urlpatterns += [ path('api/v1/', include(router.urls)),]
 
 urlpatterns += [
-    # match the root
-    re_path(r'^$', react),
-    # match all other pages
-    re_path(r'^(?:.*)/?$', react),
+    re_path(r'^(?P<path>.*)/$', react),
+    path('', react),
 ]
