@@ -41,8 +41,7 @@ const Template = (props) => {
     get('/api/v1/notifications/').then(data => {
       if (response.ok) {
         const count = data.results.reduce((prev, curr) => !curr.read_at ? prev + 1 : prev, 0)
-        console.log(count);
-        //return setNotificationCount(count);
+        return setNotificationCount(count);
       }
     });
   }, []);
