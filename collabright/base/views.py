@@ -1,4 +1,3 @@
-import json
 from django.conf import settings
 from django.contrib.auth.models import Group
 from rest_framework import viewsets
@@ -118,13 +117,18 @@ class AuditViewSet(viewsets.ModelViewSet):
     def add_reviewers(self, request, pk=None):
         user = self.request.user
         audit = self.get_object()
+
+        existing_reviewers = Reviewer.objects.filter(audit=audit).values_list('id', flat=True)
+        existing_reviewers = list(existing_reviewers)
+
         reviewers = []
+        updated_reviewers = []
         for reviewer in request.data:
             email = reviewer['email']
             needs_to_sign = reviewer['needs_to_sign'] or False
             if not email:
                 continue
-            (contact, _) = Contact.objects.get_or_create(email=email, created_by=self.request.user)
+            (contact, _) = Contact.objects.get_or_create(email=email, created_by=user)
             (reviewer, created) = Reviewer.objects.update_or_create(
                 contact=contact,
                 audit=audit,
@@ -133,19 +137,25 @@ class AuditViewSet(viewsets.ModelViewSet):
             if created:
                 send_email_to_reviewer(user, audit, reviewer, 1)
             reviewers.append(reviewer)
+            updated_reviewers.append(reviewer.id)
         
+
+        diff = lambda l1,l2: [x for x in l1 if x not in l2]
+        deleted_reviewers = diff(existing_reviewers, updated_reviewers)
+
+        Reviewer.objects.filter(pk__in=deleted_reviewers).delete()
         
         reviewer_serializer = ReviewerSerializer(reviewers, many=True)
         return Response(reviewer_serializer.data)
 
-    def get_reviewer(self, request):
+    def _get_reviewer_by_token(self, request):
         audit = self.get_object()
         token = request.query_params.get('token')
         return get_object_or_404(Reviewer, token=token, audit=audit)
 
     @action(detail=True)
     def me(self, request, pk=None):
-        reviewer = self.get_reviewer(request)
+        reviewer = self._get_reviewer_by_token(request)
         reviewer_serializer = ReviewerSerializer(reviewer)
         return Response(reviewer_serializer.data)
 
@@ -154,7 +164,7 @@ class AuditViewSet(viewsets.ModelViewSet):
         verdict = request.data['verdict']
         if verdict not in [Reviewer.APPROVED, Reviewer.REQUESTED_CHANGE]:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        reviewer = self.get_reviewer(request)
+        reviewer = self._get_reviewer_by_token(request)
         reviewer.verdict = verdict
         reviewer.save()
 
