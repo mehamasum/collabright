@@ -36,7 +36,7 @@ const SearchAuditor = ({ className, onChange, reviewers }) => {
     onChange(value);
   };
 
-  const options = data.map(d => <Option key={d.email}>{d.email}</Option>);
+  const options = data.map(d => <Option key={d.email}>{d.name} ({d.email})</Option>);
   return (
     <Select
       className={className}

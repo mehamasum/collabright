@@ -8,8 +8,10 @@ import SearchAuditor from './SearchAuditor';
 const { Text } = Typography;
 
 const AddAuditors = ({ onComplete, auditId, existingReviewers=[] }) => {
-  const [ signers, setSigners ] = useState([]);
-  const [ reviewers, setReviewers ] = useState([]);
+  const existingOnlyReviewers = existingReviewers.filter(reviewer => !reviewer.needs_to_sign).map(reviewer => reviewer.contact.email);
+  const existingSigners = existingReviewers.filter(reviewer => reviewer.needs_to_sign).map(reviewer => reviewer.contact.email);
+  const [ signers, setSigners ] = useState(existingSigners || []);
+  const [ reviewers, setReviewers ] = useState(existingOnlyReviewers || []);
   const { post, response, loading } = useFetch();
 
   const setAuditors = () => {
@@ -21,7 +23,7 @@ const AddAuditors = ({ onComplete, auditId, existingReviewers=[] }) => {
       });
     });
     signers.forEach(signer => {
-      const asReviewer = reviewers.find(reviewer => reviewer.email === signer.email);
+      const asReviewer = body.find(reviewer => reviewer.email === signer);
       if (asReviewer) {
         asReviewer.needs_to_sign = true;
       } else {
@@ -46,12 +48,12 @@ const AddAuditors = ({ onComplete, auditId, existingReviewers=[] }) => {
       <div>
         <Text strong>Reviewers</Text><br/>
         <small><Text type="secondary">People who will only review the Audit</Text></small>
-        <SearchAuditor className="search-auditor" onChange={setReviewers} reviewers={existingReviewers.filter(reviewer => !reviewer.needs_to_sign).map(reviewer => reviewer.contact.email)}/>
+        <SearchAuditor className="search-auditor" onChange={setReviewers} reviewers={existingOnlyReviewers}/>
         <br/>
         <br/>
         <Text strong>Reviewers and Signers</Text><br/>
         <small><Text type="secondary">People who need to sign any uploaded agreements</Text></small>
-        <SearchAuditor className="search-auditor" onChange={setSigners} reviewers={existingReviewers.filter(reviewer => reviewer.needs_to_sign).map(reviewer => reviewer.contact.email)}/>
+        <SearchAuditor className="search-auditor" onChange={setSigners} reviewers={existingSigners}/>
       </div>
       <Divider/>
       <Button type="primary" onClick={setAuditors}>
