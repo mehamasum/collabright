@@ -1,12 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import WebViewer from '@pdftron/webviewer';
 import useFetch from "use-http";
+import errorPdf from '../../assets/error.pdf';
 
 
 const Annotator = ({document, isAdmin, query, user}) => {
   const viewer = useRef(null);
   const documentId = document.id;
-  const fileUrl = document.file || '/error.pdf';
+  const fileUrl = document.file || errorPdf;
 
   const serializer = new XMLSerializer();
   const {post, get, put, del} = useFetch();
@@ -51,7 +52,7 @@ const Annotator = ({document, isAdmin, query, user}) => {
   useEffect(() => {
     WebViewer(
       {
-        path: '/webviewer/lib',
+        path: '/static',
         initialDoc: fileUrl,
         documentXFDFRetriever: async () => {
           const data = await get(`/api/v1/comments?document=${documentId}${isAdmin ? '' : '&'+query}`);

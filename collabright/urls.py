@@ -5,6 +5,7 @@ from django.conf.urls import include
 from rest_framework.schemas import get_schema_view
 from rest_framework.documentation import include_docs_urls
 from .router import DefaultRouterWithAPIViews as DefaultRouter
+from .views import react
 
 from collabright.base.urls import register_urls as register_base_urls
 from django.conf.urls.static import static
@@ -29,3 +30,10 @@ if settings.DEBUG:
 router = DefaultRouter()
 register_base_urls(router)
 urlpatterns += [ path('api/v1/', include(router.urls)),]
+
+urlpatterns += [
+    # match the root
+    re_path(r'^$', react),
+    # match all other pages
+    re_path(r'^(?:.*)/?$', react),
+]
