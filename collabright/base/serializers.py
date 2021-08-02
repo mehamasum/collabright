@@ -3,8 +3,12 @@ from collabright.base.service import ArcGISOAuthService
 from rest_framework import serializers
 from .models import (Document, Comment, Integration, Audit, Contact, Notification, Reviewer, Organization)
 from urllib.parse import urlparse, parse_qs
+<<<<<<< HEAD
 import validators
 
+=======
+from .fields import PDFBase64File
+>>>>>>> add agrement upload to audit create
 
 class DocumentSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
@@ -67,11 +71,13 @@ class ReviewerSerializer(serializers.ModelSerializer):
 class AuditSerializer(serializers.ModelSerializer):
     documents = DocumentSerializer(many=True, read_only=True)
     reviewers = ReviewerSerializer(many=True, read_only=True)
+    agrement = PDFBase64File(write_only=True)
+
     class Meta:
         model = Audit
         fields = ('id', 'title', 'description', 'user', 'map_url', 'base_url',
                   'map_id', 'created_at', 'documents', 'is_open', 'reviewers',
-                  'envelope_id')
+                  'envelope_id', 'agrement')
         read_only_fields = ('user', 'base_url', 'map_id', 'created_at', 'reviewers')
 
     def validate_map_url(self, value):

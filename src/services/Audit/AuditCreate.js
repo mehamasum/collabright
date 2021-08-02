@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Layout, Alert, Form, Input, Button, Row, Col, Divider } from 'antd';
+import { Card, Layout, Alert, Form, Input, Button, Row, Col, Divider, Upload } from 'antd';
 import { Steps, message, Space, Typography } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
 
 import { useHistory } from "react-router-dom";
 import useFetch from 'use-http';
@@ -16,9 +17,11 @@ const { Text } = Typography;
 
 const AuditForm = ({ onComplete }) => {
   const [errorMsg, setErrorMsg] = useState(null);
+  const [base64File, setBase64File] = useState(null);
   const { post, response, loading } = useFetch();
 
   const onFinish = values => {
+    values.agrement = base64File;
     post('/api/v1/audits/', values).then(data => {
       if (response.ok) {
         return onComplete(data);
@@ -35,6 +38,29 @@ const AuditForm = ({ onComplete }) => {
     console.log('Failed:', errorInfo);
   };
 
+  const fileUploadProps = {
+    name: 'file',
+    multiple: false,
+    maxCount: 1,
+    accept: '.pdf',
+    onChange(info) {
+      console.log("call file upload onChange", info);
+      const { file } = info;
+      if(file) {
+        const reader = new FileReader();
+        reader.onload = (readerEvt) => {
+          const binaryString = readerEvt.target.result;
+          setBase64File(btoa(binaryString))
+        };
+        reader.readAsBinaryString(file);
+      }
+    },
+    beforeUpload() {
+      return false;
+    }
+  };
+
+  console.log("base64File", base64File);
   return (
     <>
       <Text strong>Please fill up the form</Text>
@@ -83,6 +109,19 @@ const AuditForm = ({ onComplete }) => {
           ]}
         >
           <Input placeholder="Copy the map URL from your GIS site and paste here" type="url"/>
+        </Form.Item>
+
+        <Form.Item>
+            <Upload.Dragger {...fileUploadProps}>
+    <p className="ant-upload-drag-icon">
+      <InboxOutlined />
+    </p>
+    <p className="ant-upload-text">Click or drag file to this area to upload</p>
+    <p className="ant-upload-hint">
+      Support for a single or bulk upload. Strictly prohibit from uploading company data or other
+      band files
+    </p>
+  </Upload.Dragger>
         </Form.Item>
         <Form.Item >
           <Button type="primary" htmlType="submit" loading={loading}>
