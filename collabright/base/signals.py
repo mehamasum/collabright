@@ -22,12 +22,18 @@ def add_docusign_document_to_envelope(sender, instance, created, **kwargs):
         envelope_id = str(instance.audit.envelope_id)
         token = DocuSignOAuthService.get_access_token(user)
         file_path = instance.file.path
+        documents = [{
+            'file_path': file_path,
+            'document_id': 1
+        }]
+        if bool(instance.audit.agrement):
+            documents.append({
+                'file_path': instance.audit.agrement.path,
+                'document_id': 2
+            })
         document = DocuSignService.update_document({
             'access_token': token,
             'envelope_id': envelope_id,
-            'documents': [{
-                'file_path': file_path,
-                'document_id': 1
-            }]
+            'documents': documents
         })
         print(document)
