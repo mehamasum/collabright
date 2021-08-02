@@ -45,6 +45,7 @@ class Audit(models.Model):
     map_id = models.CharField(max_length=200) # arcjs map id from map_url
     created_at = models.DateTimeField(auto_now_add=True)
     is_open = models.BooleanField(default=True)
+    agrement = models.FileField(blank=True)
 
 def get_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/<audit_id>/<filename>
