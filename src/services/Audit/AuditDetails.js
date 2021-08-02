@@ -106,7 +106,7 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
 };
 
 const ReviewerOperations = ({auditId, query}) => {
-  const { post, response } = useFetch();
+  const { get, post, response } = useFetch();
 
   const setVerdict = (verdict) => () => {
     post(`/api/v1/audits/${auditId}/verdict/?${query}`, {
@@ -120,6 +120,14 @@ const ReviewerOperations = ({auditId, query}) => {
       console.error(data);
     });
   }
+
+  const getDocuSignRecipientView = () => {
+    get(`/api/v1/audits/${auditId}/docusign_recipient_view/?${query}`).then(data => {
+      if(response.ok) {
+        window.location.replace(data.url);
+      }
+    });
+  };
 
   return (
     <Space>
@@ -137,7 +145,7 @@ const ReviewerOperations = ({auditId, query}) => {
           Submit Review <DownOutlined />
         </Button>
       </Dropdown>
-      <Button type="primary">Approve and Sign</Button>
+      <Button type="primary" onClick={getDocuSignRecipientView}>Approve and Sign</Button>
     </Space>
   )
 };
