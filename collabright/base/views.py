@@ -7,7 +7,7 @@ from .models import (Comment, Document, Integration, Audit, Contact, Notificatio
 from .service import (ArcGISOAuthService, DocuSignOAuthService,
                       download_and_save_file, send_email_to_requester,
                       send_email_to_reviewer, send_notification_to_requester,
-                      ReviewerService)
+                      ReviewerService, DocuSignService, DocuSignOAuthService)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,6 +16,7 @@ from rest_framework import filters
 from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsDocumentReviewer, IsOrgAdmin
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from docusign_esign.client import api_exception
 
 
 def has_review_token(request):
@@ -110,7 +111,8 @@ class AuditViewSet(viewsets.ModelViewSet):
         return queryset.filter(user=self.request.user)
 
     def get_permissions(self):
-        if has_review_token(self.request) and self.action in ['retrieve', 'me', 'verdict']:
+        if has_review_token(self.request) and self.action in [
+                'retrieve', 'me', 'verdict', 'docusign_recipient_view']:
             permission_classes = [IsAuditReviewer]
         else:
             permission_classes = [permissions.IsAuthenticated]
@@ -177,6 +179,25 @@ class AuditViewSet(viewsets.ModelViewSet):
         
         reviewer_serializer = ReviewerSerializer(reviewer)
         return Response(reviewer_serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def docusign_recipient_view(self, request, pk=None):
+        audit = self.get_object()
+        reviewer = self.get_reviewer(request)
+        envelope_id = str(audit.envelope_id)
+        access_token = DocuSignOAuthService.get_access_token(reviewer.audit.user)
+        try:
+            recipient_view = DocuSignService.recipient_view_request({
+                'recipient': {
+                    'name': reviewer.contact.name,
+                    'email': reviewer.contact.email,
+                    'client_id': reviewer.contact.id},
+                'access_token': access_token,
+                'envelope_id': envelope_id}
+            )
+            return Response(recipient_view, status.HTTP_200_OK)
+        except api_exception.ApiException as e:
+            return Response(e.body, status=status.HTTP_403_FORBIDDEN)
 
 
 class ContactViewSet(viewsets.ModelViewSet):
