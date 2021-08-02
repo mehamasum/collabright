@@ -59,6 +59,10 @@ class Document(models.Model): # exported from map id
     class Meta:
         ordering = ['created_at']
 
+
+def make_token():
+    return secrets.token_urlsafe(128)
+
 class Reviewer(models.Model):
     PENDING = 'PENDING'
     APPROVED = 'APPROVED'
@@ -74,7 +78,7 @@ class Reviewer(models.Model):
     needs_to_sign = models.BooleanField(default=False)
     has_signed = models.BooleanField(default=False)
     verdict = models.CharField(choices=TYPE_CHOICES, max_length=64, default=PENDING)
-    token = models.CharField(max_length=1024, default=secrets.token_urlsafe)
+    token = models.CharField(max_length=1024, default=make_token)
 
 class Notification(models.Model):
     REVIEW = 'REVIEW'

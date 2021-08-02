@@ -58,6 +58,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # Simplified static file serving.
+    # https://warehouse.python.org/project/whitenoise/
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -73,7 +76,7 @@ ROOT_URLCONF = 'collabright.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -176,8 +179,15 @@ CELERY_TIMEZONE = TIME_ZONE
 
 # TODO: CDN
 STATIC_URL = env.str('CDN_URL', default='/static/')
-STATIC_ROOT = os.path.join(os.path.join(BASE_DIR, 'staticfiles'), 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'build', 'static'), 
+    os.path.join(BASE_DIR, 'node_modules','@pdftron','webviewer','public')
+]
 
+# Simplified static file serving.
+# https://warehouse.python.org/project/whitenoise/
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_FILE_STORAGE=env.str('DEFAULT_FILE_STORAGE', default='django.core.files.storage.FileSystemStorage')
 MEDIA_URL = '/media/'
