@@ -61,9 +61,10 @@ const IntegrationsTab = () => {
     });
   };
 
-  const menu = (
+  const menu = (isConnected) => (
     <Menu>
-      <Menu.Item danger>Disconnect</Menu.Item>
+      <Menu.Item>Learn More</Menu.Item>
+      {isConnected && <Menu.Item danger>Disconnect</Menu.Item>}
     </Menu>
   );
 
@@ -80,7 +81,7 @@ const IntegrationsTab = () => {
                 title={integration.name}
                 className="integration-card"
                 cover={<img alt="example" src={integration.logo} className="integration-logo" />}
-                extra={ <Dropdown overlay={menu}><Button icon={<MoreOutlined/>} type="text"></Button></Dropdown>}
+                extra={ <Dropdown overlay={menu(integration.connected)}><Button icon={<MoreOutlined/>} type="text"></Button></Dropdown>}
               >
                 <div className="integration-card-body">
                   <div>

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
 import { Avatar, Button, Card, Space, Table, Tag, Typography } from 'antd';
 import { Link, useHistory } from "react-router-dom";
-import { NotificationOutlined } from '@ant-design/icons';
+import { BellOutlined } from '@ant-design/icons';
 import { formatRelativeTime, truncateString } from '../../utils';
 
 
@@ -30,7 +30,7 @@ const NotificationList = (props) => {
 
   const columns = [
     {
-      title: <NotificationOutlined/>,
+      title: <BellOutlined/>,
       render: (text, record) => {
         const notification = `[Review] ${record.reviewer.contact.email} submitted review in ${record.audit.title}`
         return (
