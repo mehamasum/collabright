@@ -181,8 +181,8 @@ CELERY_TIMEZONE = TIME_ZONE
 STATIC_URL = env.str('CDN_URL', default='/static/')
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'build', 'static'), 
-    os.path.join(BASE_DIR, 'node_modules','@pdftron','webviewer','public')
+    os.path.join(BASE_DIR, 'build', 'static'),
+    os.path.join(BASE_DIR, 'build', 'webviewer'),
 ]
 
 # Simplified static file serving.
