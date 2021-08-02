@@ -108,7 +108,7 @@ class AuditViewSet(viewsets.ModelViewSet):
         return queryset.filter(user=self.request.user)
 
     def get_permissions(self):
-        if has_review_token(self.request) and self.action in ['retrieve', 'me', 'approve', 'disapprove']:
+        if has_review_token(self.request) and self.action in ['retrieve', 'me', 'verdict']:
             permission_classes = [IsAuditReviewer]
         else:
             permission_classes = [permissions.IsAuthenticated]
