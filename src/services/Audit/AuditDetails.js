@@ -180,7 +180,7 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
   const history = useHistory();
   const {tab} = useParams();
   const handleTabClick = key => {
-    history.push(`/audits/${auditId}/${key}${isAdmin ? '' : '?'+query}`);
+    history.push(`/${isAdmin ? 'audits' :'review'}/${auditId}/${key}${isAdmin ? '' : '?'+query}`);
   }
 
   const versionIndex = parseInt(version, 10) - 1;
@@ -284,6 +284,10 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
                   </List.Item>
                 )}
               />
+              <Divider />
+              <Button>Unsubscribe</Button><br/>
+              <small><Text type="secondary">Stop receiving notifications for this version</Text></small>
+              <Divider />
             </Col>
           </Row>
         </TabPane>
