@@ -45,4 +45,9 @@
   max-width: 1024px;
   margin: auto;
   height: 100%;
+  transition: max-width 250ms;
+}
+
+.common-content-full {
+  max-width: 1200px;
 }
