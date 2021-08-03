@@ -2,8 +2,10 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8000",
   "dependencies": {
-    "@pdftron/webviewer": "^8.0.0",
+    "@pdftron/webviewer": "7.2.0",
+    "@pdftron/webviewer-html": "2.0.5",
     "@rehooks/local-storage": "2.4.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",

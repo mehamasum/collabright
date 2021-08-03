@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Colabright Webmap Viewer</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.37/esri/css/esri.css">
+    <style>
+      html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+      #map { height: 100vh;}
+      #map_zoom_slider { display: none; }
+    </style>
+    <script src="https://js.arcgis.com/3.37/"></script>
+    <script>
+      require([
+        "esri/map",
+        "esri/arcgis/utils",
+      ], function(
+        Map,
+        arcgisUtils,
+      ) {
+          const globalJSON = JSON;
+          const printParams = {};
+          const urlParams = new URLSearchParams(window.location.search);
+          const documentId = urlParams.get('document_id');
+          const reviewerToken = urlParams.get('token');
+          const authToken = localStorage.getItem("token");
+          const fetchUrl = "/api/v1/documents/" + documentId + "/" + (reviewerToken ? "?token="+reviewerToken : "");
+          console.log({fetchUrl, authToken, reviewerToken});
+          // TODO: remove base-url
+          fetch(fetchUrl, {
+            headers: {
+              'Authorization': reviewerToken ? undefined : 'Token ' + authToken,
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(function (response) { console.log(response); return response.json() })
+          .then(function (webmapJson) {
+            console.log(webmapJson);
+            var webmap = arcgisUtils.createMap({
+              item: globalJSON.parse(webmapJson.map_item),
+              itemData: globalJSON.parse(webmapJson.map_item_data),
+            }, "map");
+            webmap.then(function(resp) {
+              const map = resp.map;
+            });
+          });
+        }
+      );
+    </script>
+  </head>
+  <body>
+    <div>
+      <div id="map"></div>
+    </div>
+  </body>
+</html>
