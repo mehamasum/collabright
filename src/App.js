@@ -44,7 +44,7 @@ const App = (props) => {
           <Route exact path="/login">
             <Login/>
           </Route>
-          <Route exact path="/review/:audit/">
+          <Route exact path="/review/:audit/:tab?">
             <ReviewerView/>
           </Route>
           <PrivateRoute exact path="/contacts" component={ContactList} />
