@@ -53,7 +53,7 @@ const App = (props) => {
           <PrivateRoute exact path="/" component={Dashboard} />
           <PrivateRoute exact path="/audits" component={AuditList} />
           <PrivateRoute exact path="/audits/new" component={AuditCreate} />
-          <PrivateRoute exact path="/audits/:id" component={AuditView} />
+          <PrivateRoute exact path="/audits/:id/:tab?" component={AuditView} />
           <PrivateRoute exact path="/oauth/callback/:integration/" component={OAuthCallback} withoutTemplate/>
           <Route render={() => <Result status="404" title="404" subTitle="Sorry, the page you visited does not exist." />} />
         </Switch>

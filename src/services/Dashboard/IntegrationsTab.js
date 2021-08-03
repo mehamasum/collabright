@@ -10,6 +10,7 @@ import esriLogo from "../../assets/icons/esri-logo.png";
 import Banner from "./Banner";
 import './IntegrationsTab.css';
 import { formatRelativeTime } from "../../utils";
+import { RedCross, GreenTick } from "../../components/icons";
 
 
 const {Text} = Typography;
@@ -82,7 +83,7 @@ const IntegrationsTab = () => {
             <Col sm={16} lg={8}>
               <Card
                 key={integration.name}
-                title={<Space><Text>{integration.name}</Text> <Badge status={integration.is_expired ? "error" : integration.connected ? "success" : "default"}/></Space>}
+                title={<><Text>{integration.name}</Text> &nbsp; {integration.is_expired ? <RedCross/> : integration.connected ? <GreenTick/> : null}</>}
                 className="integration-card"
                 cover={<img alt="example" src={integration.logo} className="integration-logo" />}
                 extra={ <Dropdown overlay={menu(integration.connected)}><Button icon={<MoreOutlined/>} type="text"></Button></Dropdown>}

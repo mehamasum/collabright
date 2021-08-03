@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip } from 'antd';
-import { RedoOutlined, DownOutlined, EyeOutlined, CheckOutlined, FileDoneOutlined, FileUnknownOutlined, EditOutlined, SyncOutlined, LinkOutlined } from '@ant-design/icons';
+import { DownOutlined, QuestionOutlined, FileFilled, FileUnknownOutlined, EditOutlined, MoreOutlined, SyncOutlined, LinkOutlined, CloseCircleFilled } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
 import { Row, Col, List, Badge, Divider, Modal } from 'antd';
@@ -10,6 +10,8 @@ import AddAuditors from './AddAuditors';
 import './AuditDetails.css';
 import { message } from 'antd';
 import EsriMap from './EsriMap';
+import { RedCross, GreenTick } from '../../components/icons';
+import {useHistory, useParams} from "react-router";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -79,11 +81,18 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
     setTimeout(() => window.location.reload(false), 1000);
   }
 
+  const menu = (
+    <Menu>
+      <Menu.Item onClick={onAddReviewer} icon={<EditOutlined/>}>Change Auditors</Menu.Item>
+      <Menu.Item danger icon={<CloseCircleFilled/>}>Mark as Closed</Menu.Item>
+    </Menu>
+  );
+
   return (
     <>
       <Space>
-        <Button onClick={onAddReviewer} icon={<EditOutlined/>}>Change Auditors</Button>
         <Button type="primary" onClick={onNewVersionClick} loading={loading} icon={<SyncOutlined/>}>Add Next Version</Button>
+        <Dropdown overlay={menu}><Button icon={<MoreOutlined/>} type="text"></Button></Dropdown>
       </Space>
       <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
         <MapPrinter auditId={auditId} version={version} document={document} onComplete={onPrintComplete} />
@@ -116,10 +125,10 @@ const ReviewerOperations = ({auditId, query}) => {
     <Space>
       <Dropdown overlay={(
         <Menu>
-          <Menu.Item key="1" icon={<RedoOutlined style={{ color: '#ff4d4f' }} />} onClick={setVerdict('REQUESTED_CHANGES')}>
+          <Menu.Item key="1" icon={RedCross()} onClick={setVerdict('REQUESTED_CHANGES')}>
             Request Changes
           </Menu.Item>
-          <Menu.Item key="2" icon={<CheckOutlined style={{ color: '#52c41a' }}/>} onClick={setVerdict('APPROVED')}>
+          <Menu.Item key="2" icon={GreenTick()} onClick={setVerdict('APPROVED')}>
             Approve
           </Menu.Item>
         </Menu>
@@ -148,7 +157,7 @@ const VersionPicker = ({ audit, version, handleVersionChange }) => {
   )
 }
 
-const ReviewHeader = ({ audit, handleVersionChange, version, tab }) => {
+const ReviewHeader = ({ audit, handleVersionChange, version }) => {
   return (
     <PageHeader
       title={truncateString(audit.title, 50)}
@@ -168,6 +177,12 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
   const [user, setUser] = useState(null);
   const [version, setVersion] = useState(null);
 
+  const history = useHistory();
+  const {tab} = useParams();
+  const handleTabClick = key => {
+    history.push(`/audits/${auditId}/${key}${isAdmin ? '' : '?'+query}`);
+  }
+
   const versionIndex = parseInt(version, 10) - 1;
   const { get, post, patch, response } = useFetch();
 
@@ -186,10 +201,6 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
     
   }, []);
 
-  function callback(key) {
-    setKey(key);
-  }
-
   function handleVersionChange(value) {
     const nextVersion = parseInt(value, 10) + 1;
     console.log(`selected ${value}`, nextVersion);
@@ -202,17 +213,17 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
   const latestDocument = audit.documents[audit.documents.length-1];
 
   const getBadgeType = (verdict) => {
-    if(verdict==='PENDING') return <EyeOutlined />;
-    if(verdict==='APPROVED') return <CheckOutlined style={{ color: '#52c41a' }}/>;
-    if(verdict==='REQUESTED_CHANGES') return <RedoOutlined  style={{ color: '#ff4d4f' }}/>;
+    if(verdict==='PENDING') return <QuestionOutlined />;
+    if(verdict==='APPROVED') return <GreenTick/>;
+    if(verdict==='REQUESTED_CHANGES') return <RedCross/>;
     return 'error';
   }
 
   return (
     <div className="audit-content">
-      <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange} tab={key} />
+      <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange}/>
 
-      <Tabs className="reviewer-tabs" defaultActiveKey={key} onChange={callback} tabBarExtraContent={
+      <Tabs className="reviewer-tabs" defaultActiveKey={tab || "details"} onChange={handleTabClick} tabBarExtraContent={
         isAdmin ? <AdminOperations post={post} patch={patch} response={response} audit={audit} version={audit.documents.length + 1}/> :
         <ReviewerOperations auditId={auditId} query={query}/>
       }>
@@ -253,7 +264,7 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
                 renderItem={item => (
                   <List.Item actions={[
                     getBadgeType(item.verdict),
-                    item.has_signed ? <FileDoneOutlined style={{ color: '#52c41a' }}/> : <FileUnknownOutlined />,
+                    item.has_signed ? <FileFilled style={{ color: '#52c41a' }}/> : <FileUnknownOutlined />,
                   ]}>
                     <Tooltip title={item.contact.name}>
                       <span>{item.contact.email}</span>
