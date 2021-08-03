@@ -183,6 +183,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'build', 'static'),
     os.path.join(BASE_DIR, 'build', 'webviewer'),
+    os.path.join(BASE_DIR, 'build', 'webviewer-custom'),
+    os.path.join(BASE_DIR, 'build', 'embeds'),
 ]
 
 # Simplified static file serving.

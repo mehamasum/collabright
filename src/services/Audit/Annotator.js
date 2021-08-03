@@ -4,6 +4,10 @@ import useFetch from "use-http";
 import errorPdf from '../../assets/error.pdf';
 import { initializeHTMLViewer } from '@pdftron/webviewer-html';
 
+const embedPath = process.env.NODE_ENV === 'production' ? '/static/mapviewer-lib/index.html' : '/embeds/mapviewer-lib/index.html';
+const wvPath = process.env.NODE_ENV === 'production' ? '/static/webviewer-lib' : '/webviewer/webviewer-lib';
+const wvCss = process.env.NODE_ENV === 'production' ? '/static/webviewer-css/index.css' : '/webviewer-custom/webviewer-css/index.css';
+
 const Annotator = ({ document, isAdmin, query, user }) => {
   const viewer = useRef(null);
   const documentId = document.id;
@@ -52,8 +56,8 @@ const Annotator = ({ document, isAdmin, query, user }) => {
   useEffect(() => {
     WebViewer(
       {
-        path: process.env.NODE_ENV === 'production' ? '/static/webviewer-lib' : '/webviewer/webviewer-lib',
-        css: process.env.NODE_ENV === 'production' ? '/static/webviewer-css/index.css' : '/webviewer-custom/webviewer-css/index.css',
+        path: wvPath,
+        css: wvCss
       },
       viewer.current
     ).then(async (instance) => {
@@ -80,7 +84,7 @@ const Annotator = ({ document, isAdmin, query, user }) => {
       const htmlModule = await initializeHTMLViewer(instance);
 
       htmlModule.loadHTMLPage(
-        `http://localhost:3000/embeds/mapviewer-lib/index.html?document_id=${documentId}${isAdmin ? '' : '&'+query}`,
+        `${embedPath}?document_id=${documentId}${isAdmin ? '' : '&'+query}`,
         1800,
         1000
       );
