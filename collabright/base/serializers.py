@@ -7,10 +7,14 @@ import validators
 
 
 class DocumentSerializer(serializers.ModelSerializer):
+    comment_count = serializers.SerializerMethodField()
     class Meta:
         model = Document
-        fields = ('id', 'description', 'file', 'audit', 'created_at', 'map_print_definition',)
+        fields = ('id', 'description', 'file', 'audit', 'created_at', 'map_print_definition','comment_count')
         read_only_fields = ('map_item', 'map_item_data', 'created_at', 'file')
+    
+    def get_comment_count(self, obj):
+        return obj.comments.count()
 
     def create(self, validated_data):
         if 'map_item' not in validated_data and 'map_item_data' not in validated_data:

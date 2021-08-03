@@ -43,17 +43,17 @@ const AddAuditors = ({ onComplete, auditId, existingReviewers=[] }) => {
 
   return (
     <>
-      <Text strong>Please add Auditors using their email addresses</Text>
+      <Text strong>Add Auditors using their email addresses</Text>
       <Divider/>
       <div>
-        <Text strong>Reviewers</Text><br/>
-        <small><Text type="secondary">People who will only review the Audit</Text></small>
-        <SearchAuditor className="search-auditor" onChange={setReviewers} reviewers={existingOnlyReviewers}/>
-        <br/>
-        <br/>
-        <Text strong>Reviewers and Signers</Text><br/>
+        <Text strong>Signers</Text><br/>
         <small><Text type="secondary">People who need to sign any uploaded agreements</Text></small>
         <SearchAuditor className="search-auditor" onChange={setSigners} reviewers={existingSigners}/>
+        <br/>
+        <br/>
+        <Text strong>Reviewers</Text><br/>
+        <small><Text type="secondary">People who will only review and give feedback</Text></small>
+        <SearchAuditor className="search-auditor" onChange={setReviewers} reviewers={existingOnlyReviewers}/>
       </div>
       <Divider/>
       <Button type="primary" onClick={setAuditors}>

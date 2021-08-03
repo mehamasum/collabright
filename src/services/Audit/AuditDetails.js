@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip } from 'antd';
-import { RedoOutlined, DownOutlined, EyeOutlined, CheckOutlined, FileDoneOutlined, FileUnknownOutlined, EditOutlined, SyncOutlined } from '@ant-design/icons';
+import { RedoOutlined, DownOutlined, EyeOutlined, CheckOutlined, FileDoneOutlined, FileUnknownOutlined, EditOutlined, SyncOutlined, LinkOutlined } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
 import { Row, Col, List, Badge, Divider, Modal } from 'antd';
-import { truncateString } from '../../utils';
+import { formatRelativeTime, truncateString } from '../../utils';
 import MapPrinter from './MapPrinter';
 import AddAuditors from './AddAuditors';
 import './AuditDetails.css';
@@ -199,6 +199,7 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
   if (!audit) return <div className="full-page-loader"><Spin size="large" /></div>;
 
   const document = audit.documents[versionIndex];
+  const latestDocument = audit.documents[audit.documents.length-1];
 
   const getBadgeType = (verdict) => {
     if(verdict==='PENDING') return <EyeOutlined />;
@@ -218,24 +219,18 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
         <TabPane tab="Details" key="details">
           <Row gutter={8}>
             <Col className="gutter-row" span={16}>
-              <Text strong>Audit Description</Text><br />
-              {audit.decription}
+              {audit.decription || <Text italic>No description</Text>}
               <Divider />
 
-              <Text strong>Audit Map</Text><br />
-              {audit.map_url}
+              <Text strong>What's New</Text><br /><br />
+              v{version}.0 &bull; Created: {formatRelativeTime(document.created_at)}<br />
+
+              {document.description || <Text italic>No description</Text>}
               <Divider />
 
-              <Text strong>Latest Version</Text><br />
-              v{audit.documents.length}.0
+              <Text strong>Map Details</Text><br /><br />
+              On <a href={audit.map_url} target="_blank">{new URL(audit.map_url).hostname} <LinkOutlined/></a>
               <Divider />
-
-              <Text strong>Current Version</Text><br />
-              v{version}.0<br />
-
-              {document.description}
-              <Divider />
-
               <List
                 header={<Text strong>Envelop Details</Text>}
                 dataSource={[
@@ -253,18 +248,6 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
             </Col>
             <Col className="gutter-row" span={8}>
               <List
-                header={<Text strong>Reviewers</Text>}
-                dataSource={audit.reviewers.filter(reviewer => !reviewer.needs_to_sign)}
-                renderItem={(item, index) => (
-                  <List.Item actions={[getBadgeType(item.verdict),]}>
-                    <Tooltip title={item.contact.name}>
-                      <span>{item.contact.email}</span>
-                    </Tooltip>
-                  </List.Item>
-                )}
-              />
-              <Divider />
-              <List
                 header={<Text strong>Signers</Text>}
                 dataSource={audit.reviewers.filter(reviewer => reviewer.needs_to_sign)}
                 renderItem={item => (
@@ -278,13 +261,25 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
                   </List.Item>
                 )}
               />
+              <Divider />
+              <List
+                header={<Text strong>Reviewers</Text>}
+                dataSource={audit.reviewers.filter(reviewer => !reviewer.needs_to_sign)}
+                renderItem={(item, index) => (
+                  <List.Item actions={[getBadgeType(item.verdict),]}>
+                    <Tooltip title={item.contact.name}>
+                      <span>{item.contact.email}</span>
+                    </Tooltip>
+                  </List.Item>
+                )}
+              />
             </Col>
           </Row>
         </TabPane>
         <TabPane tab="Interactive Map" key="map">
           <EsriMap documentId={document.id} className={`map-frame ${isAdmin ? 'map-frame-admin':''}`} isAdmin={isAdmin} query={query} homeButtonId="details-map-home-btn"/>
         </TabPane>
-        <TabPane tab="Discussion" key="discussion">
+        <TabPane tab={document.comment_count > 0 ? `Discussion (${document.comment_count})`:'Discussion'} key="discussion">
           <Annotator key={versionIndex} document={document} isAdmin={isAdmin} query={query} user={isAdmin ? user.username : user.contact.email}/>
         </TabPane>
       </Tabs>
