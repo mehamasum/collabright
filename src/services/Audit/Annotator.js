@@ -2,9 +2,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import WebViewer from '@pdftron/webviewer';
 import useFetch from "use-http";
 import errorPdf from '../../assets/error.pdf';
+import { initializeHTMLViewer } from '@pdftron/webviewer-html';
 
-
-const Annotator = ({document, isAdmin, query, user}) => {
+const Annotator = ({ document, isAdmin, query, user }) => {
   const viewer = useRef(null);
   const documentId = document.id;
   const fileUrl = document.file || errorPdf;
@@ -53,33 +53,56 @@ const Annotator = ({document, isAdmin, query, user}) => {
     WebViewer(
       {
         path: process.env.NODE_ENV === 'production' ? '/static/webviewer-lib' : '/webviewer/webviewer-lib',
-        initialDoc: fileUrl,
-        documentXFDFRetriever: async () => {
-          const data = await get(`/api/v1/comments?document=${documentId}${isAdmin ? '' : '&'+query}`);
-          const xfdfs = [];
-          data.results.forEach(comment => {
-            mapAnnotationToCommnet[comment.annotation] = comment.id;
-            xfdfs.push(comment.xfdf);
-          });
-          return xfdfs;
-        },
-        disabledElements: [
-          'toolbarGroup-View',
-          'toolbarGroup-Edit',
-          'toolbarGroup-Insert',
-          'toolbarGroup-FillAndSign',
-          'toolbarGroup-Forms',
-          'toolbarGroup-Measure',
-        ]
+        css: process.env.NODE_ENV === 'production' ? '/static/webviewer-css/index.css' : '/webviewer-custom/webviewer-css/index.css',
       },
-      viewer.current,
-    ).then((instance) => {
-      instance.UI.openElements(['notesPanel']);
-      
-      const { documentViewer, annotationManager, Annotations } = instance.Core;
+      viewer.current
+    ).then(async (instance) => {
+      const { FitMode, Feature } = instance; // instance.core
 
-      documentViewer.addEventListener('documentLoaded', () => {
+      instance.setFitMode(FitMode.FitPage);
+      // disable built-in search since there is no text layer
+      instance.disableFeatures([Feature.Search]);
+      // disable text based annotations tools since there is no text layer
+      instance.disableElements([
+        'viewControlsButton',
+        'downloadButton',
+        'printButton',
+        'highlightToolGroupButton',
+        'underlineToolGroupButton',
+        'strikeoutToolGroupButton',
+        'squigglyToolGroupButton',
+        'fileAttachmentToolGroupButton',
+        'toolbarGroup-Edit',
+        'toolbarGroup-View',
+        'toolbarGroup-Insert',
+      ]);
+      // Extends WebViewer to allow loading HTML5 files from URL or static folder.
+      const htmlModule = await initializeHTMLViewer(instance);
+
+      htmlModule.loadHTMLPage(
+        `http://localhost:3000/embeds/mapviewer-lib/index.html?document_id=${documentId}${isAdmin ? '' : '&'+query}`,
+        1800,
+        1000
+      );
+
+      const { docViewer: documentViewer, annotManager: annotationManager } = instance;
+
+
+      documentViewer.on('documentLoaded', async () => {
+        const data = await get(`/api/v1/comments?document=${documentId}${isAdmin ? '' : '&'+query}`);
+        console.log({comment: data});
+        data.results.forEach(async (comment) => {
+          mapAnnotationToCommnet[comment.annotation] = comment.id;
+          const annotations = await annotationManager.importAnnotCommand(comment.xfdf);
+          await annotationManager.drawAnnotationsFromList(annotations);
+        });
+
         annotationManager.setCurrentUser(user);
+        instance.openElements(['notesPanel']);
+
+        setTimeout(() => {
+          instance.setFitMode(FitMode.FitPage);
+        }, 1500);
 
         annotationManager.on('annotationChanged', async e => {
           // If annotation change is from import, return
@@ -114,11 +137,7 @@ const Annotator = ({document, isAdmin, query, user}) => {
     });
   }, []);
 
-  return (
-    <>
-      <div className="webviewer" ref={viewer}></div>
-    </>
-  );
+  return <div className="webviewer" ref={viewer}></div>;
 };
 
 export default Annotator;
