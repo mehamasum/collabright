@@ -7,7 +7,7 @@ from .models import (Comment, Document, Integration, Audit, Contact, Notificatio
 from .service import (ArcGISOAuthService, DocuSignOAuthService,
                       download_and_save_file, send_email_to_requester,
                       send_email_to_reviewer, send_notification_to_requester,
-                      ReviewerService, DocuSignService, DocuSignOAuthService)
+                      ReviewerService, DocuSignService)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -112,7 +112,7 @@ class AuditViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if has_review_token(self.request) and self.action in [
-                'retrieve', 'me', 'verdict', 'docusign_recipient_view']:
+                'retrieve', 'me', 'verdict', 'docusign_recipient_view',]:
             permission_classes = [IsAuditReviewer]
         else:
             permission_classes = [permissions.IsAuthenticated]
@@ -193,8 +193,9 @@ class AuditViewSet(viewsets.ModelViewSet):
                     'email': reviewer.contact.email,
                     'client_id': reviewer.contact.id},
                 'access_token': access_token,
-                'envelope_id': envelope_id}
-            )
+                'envelope_id': envelope_id,
+                'return_url': "%s/review/%s/?token=%s" % (settings.APP_URL, str(audit.id), str(reviewer.token))
+            })
             return Response(recipient_view, status.HTTP_200_OK)
         except api_exception.ApiException as e:
             return Response(e.body, status=status.HTTP_403_FORBIDDEN)
