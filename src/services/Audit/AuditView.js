@@ -10,9 +10,7 @@ import './AuditView.css';
 const AuditView = (props) => {
   let { id: auditId } = useParams();
   return (
-    <Card className="audit-details-card">
-      <AuditDetails isAdmin auditId={auditId}></AuditDetails>
-    </Card>
+    <AuditDetails isAdmin auditId={auditId}></AuditDetails>
   );
 };
 

@@ -21,10 +21,6 @@
 }
 
 .map-frame {
-  height: 100%;
+  height: calc(100% - 72px);
   position: relative;
-}
-
-.map-frame-admin {
-  height: 500px;
 }
