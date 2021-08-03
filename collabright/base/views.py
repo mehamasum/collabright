@@ -117,6 +117,7 @@ class AuditViewSet(viewsets.ModelViewSet):
     def add_reviewers(self, request, pk=None):
         user = self.request.user
         audit = self.get_object()
+        version = Document.objects.filter(audit=audit).count()
 
         existing_reviewers = Reviewer.objects.filter(audit=audit).values_list('id', flat=True)
         existing_reviewers = list(existing_reviewers)
@@ -135,7 +136,7 @@ class AuditViewSet(viewsets.ModelViewSet):
                 defaults={'needs_to_sign': needs_to_sign},
             )
             if created:
-                send_email_to_reviewer(user, audit, reviewer, 1)
+                send_email_to_reviewer(user, audit, reviewer, version)
             reviewers.append(reviewer)
             updated_reviewers.append(reviewer.id)
         
