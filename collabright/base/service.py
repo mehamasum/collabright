@@ -16,7 +16,7 @@ from docusign_esign import (ApiClient, SignHere, Tabs,
                             EnvelopesApi, RecipientViewRequest, NameValue,
                             DocumentFieldsInformation)
 from .utils import (create_api_client, create_documents, create_signers,
-                    create_sign_here)
+                    assign_sign_here, create_sign_here)
 
 
 def download_and_save_file(url, audit_id, version, document):
@@ -427,7 +427,7 @@ class DocuSignService:
         status = args.get('status', 'created')
 
         sign_here = args.get('sign_here', {})
-        create_sign_here(signers, sign_here)
+        assign_sign_here(signers, sign_here)
 
         envelope_definition = EnvelopeDefinition(
             email_subject=email_subject,
@@ -538,5 +538,35 @@ class DocuSignService:
             account_id=DocuSignService.account_id,
             envelope_id=envelope_id,
             recipients = Recipients(signers=signers))
+
+        for signer in args['signers']:
+            DocuSignService.create_tabs({
+                'access_token': access_token,
+                'envelope_id': envelope_id,
+                'recipient_id': signer['recipient_id']
+            })
+
+
+        return results.to_dict()
+
+    @staticmethod
+    def create_tabs(args):
+        access_token = args['access_token']
+        envelope_id = args['envelope_id']
+        recipient_id = args['recipient_id']
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+
+        #TODO fix sign here position logic
+        sign_here = create_sign_here()
+        results = envelope_api.create_tabs(
+            account_id=DocuSignService.account_id,
+            envelope_id=envelope_id,
+            recipient_id=recipient_id,
+            tabs=Tabs(sign_here_tabs=[sign_here]))
 
         return results.to_dict()

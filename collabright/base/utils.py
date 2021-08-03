@@ -37,7 +37,7 @@ def create_documents(documents):
 def create_signers(signers):
     def create_signer(signer):
         indx, info = signer
-        recipient_id = info.get('recipient_id', indx+1)
+        recipient_id = info['recipient_id']
         return Signer(
             email=info['email'],
             name=info['name'],
@@ -48,7 +48,7 @@ def create_signers(signers):
     return list(map(create_signer, enumerate(signers)))
 
 
-def create_sign_here(signers, sign_here={}):
+def assign_sign_here(signers, sign_here={}):
     anchor_string = sign_here.get('anchor_string', '/sn1/')
     anchor_units = sign_here.get('anchor_units', 'pixels')
     anchor_x_offset = sign_here.get('anchor_x_offset', 20)
@@ -62,3 +62,16 @@ def create_sign_here(signers, sign_here={}):
             anchor_y_offset=anchor_y_offset*indx
         )
         signer.tabs = Tabs(sign_here_tabs=[sign_here])
+
+def create_sign_here(sign_here={}, indx=0):
+    anchor_string = sign_here.get('anchor_string', '/sn1/')
+    anchor_units = sign_here.get('anchor_units', 'pixels')
+    anchor_x_offset = sign_here.get('anchor_x_offset', 20)
+    anchor_y_offset = sign_here.get('anchor_y_offset', 35)
+
+    return SignHere(
+        anchor_string=anchor_string,
+        anchor_units=anchor_units,
+        anchor_x_offset=anchor_x_offset,
+        anchor_y_offset=anchor_y_offset*indx
+    )
