@@ -481,6 +481,7 @@ class DocuSignService:
         envelope_id = args['envelope_id']
         access_token = args['access_token']
         recipient = args['recipient']
+        return_url = args['return_url']
 
         api_client = create_api_client(
             base_path=DocuSignService.base_api_uri, access_token=access_token)
@@ -489,7 +490,7 @@ class DocuSignService:
         recipient_view_request = RecipientViewRequest(
             authentication_method = 'email',
             client_user_id = recipient['client_id'],
-            return_url = 'http://localhost:3000/',
+            return_url = return_url,
             user_name = recipient['name'],
             email = recipient['email']
         )
