@@ -25,6 +25,7 @@ const { Header, Sider, Content, Footer } = Layout;
 const Template = (props) => {
   const [user, setUser] = useState(null);
   const [notificationCount, setNotificationCount] = useState(null);
+  const [siderCollapsed, setSiderCollapsed] = useState(false);
   const { response, post, get } = useFetch();
 
   useEffect(() => {
@@ -70,6 +71,10 @@ const Template = (props) => {
 
   let pageName = props.path.substring(1).split('/')[0];
   pageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+
+  const onSiderCollapse = (collapsed) => {
+    setSiderCollapsed(collapsed);
+  }
   
   return (
     <Layout className="site-layout">
@@ -102,7 +107,7 @@ const Template = (props) => {
         </div>
       </Header>
       <Layout>
-        <Sider collapsible theme="light">
+        <Sider collapsible theme="light" onCollapse={onSiderCollapse}>
           <Menu mode="inline" defaultSelectedKeys={['1']} selectedKeys={[props.path]}>
             <Menu.Item key="/" icon={<AppstoreOutlined />}>
               <Link to="/">Dashboard</Link>
@@ -120,7 +125,7 @@ const Template = (props) => {
         </Sider>
         <Layout>
           <Content className="common-content-wrapper">
-            <div className="common-content">
+            <div className={`common-content ${siderCollapsed ? 'common-content-full':''}`}>
               {props.children}
             </div>
           </Content>
