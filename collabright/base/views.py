@@ -183,7 +183,7 @@ class AuditViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def docusign_recipient_view(self, request, pk=None):
         audit = self.get_object()
-        reviewer = self.get_reviewer(request)
+        reviewer = self._get_reviewer_by_token(request)
         envelope_id = str(audit.envelope_id)
         access_token = DocuSignOAuthService.get_access_token(reviewer.audit.user)
         try:
