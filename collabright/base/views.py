@@ -75,7 +75,6 @@ class CommentViewSet(viewsets.ModelViewSet):
             permission_classes = [IsCommentReviewer]
         else:
             permission_classes = [permissions.IsAuthenticated]
-        print(permission_classes)
         return [permission() for permission in permission_classes]
 
 class IntegrationViewSet(viewsets.ModelViewSet):

@@ -49,14 +49,5 @@ def export_map_as_pdf(sender, instance, created, **kwargs):
         document.map_item and \
         document.map_item_data:
 
-        version = Document.objects.filter(audit=document.audit).count()
-        response = ArcGISOAuthService.export_map_as_file(
-            document.map_print_definition,
-            document.map_item,
-            document.map_item_data,
-            'Map (v{0}.0)'.format(version)
-        )
-        file_url = response['results'][0]['value']['url']
-        print('printed', file_url)
-        download_and_save_file.delay(file_url, document.audit.id, version, document.id)
+        download_and_save_file.delay(document.audit.id, document.id)
 

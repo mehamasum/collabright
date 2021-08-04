@@ -32,7 +32,7 @@ const MapPrinter = ({ auditId, version, document, onComplete, renderNextButton }
   return (
     <>
       <Text strong>Building v{version}.0 of map</Text>
-      <EsriMap className="map-printer" documentId={document.id} onLoad={onLoad} homeButtonId="map-verify-home-btn"/>
+      <EsriMap className="map-printer" documentId={document.id} onLoad={onLoad} homeButtonId="map-verify-home-btn" isAdmin/>
       {renderNextButton && <Button type="primary" onClick={onComplete} loading={loading}>
         Continue
       </Button>}
