@@ -296,6 +296,6 @@ class DocuSignWebHook(views.APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        body = request.data
-        print(body)
+        data = request.data
+        DocuSignService.handle_webhook_request(data)
         return Response({'ok': True}, status.HTTP_200_OK)
