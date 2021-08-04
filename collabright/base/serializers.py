@@ -67,13 +67,13 @@ class ReviewerSerializer(serializers.ModelSerializer):
 class AuditSerializer(serializers.ModelSerializer):
     documents = DocumentSerializer(many=True, read_only=True)
     reviewers = ReviewerSerializer(many=True, read_only=True)
-    agrement = PDFBase64File(write_only=True)
+    agreement = PDFBase64File()
 
     class Meta:
         model = Audit
         fields = ('id', 'title', 'description', 'user', 'map_url', 'base_url',
                   'map_id', 'created_at', 'documents', 'is_open', 'reviewers',
-                  'envelope_id', 'agrement')
+                  'envelope_id', 'agreement')
         read_only_fields = ('user', 'base_url', 'map_id', 'created_at', 'reviewers')
 
     def validate_map_url(self, value):

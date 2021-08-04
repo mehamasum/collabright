@@ -26,9 +26,9 @@ def add_docusign_document_to_envelope(sender, instance, created, **kwargs):
             'file_path': file_path,
             'document_id': 1
         }]
-        if bool(instance.audit.agrement):
+        if bool(instance.audit.agreement):
             documents.append({
-                'file_path': instance.audit.agrement.path,
+                'file_path': instance.audit.agreement.path,
                 'document_id': 2
             })
         document = DocuSignService.update_document({
