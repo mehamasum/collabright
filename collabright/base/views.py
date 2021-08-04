@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import Group
-from rest_framework import viewsets
+from rest_framework import viewsets, views
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, OrganizationSerializer, ReviewerSerializer, DocumentMapSerializer)
 from .models import (Comment, Document, Integration, Audit, Contact, Notification, Organization, Reviewer)
@@ -291,3 +291,11 @@ class OrganizationViewset(viewsets.ModelViewSet):
         if self.request.user.organization:
             return Organization.objects.filter(pk=self.request.user.organization.id)
         return Organization.objects.none()
+
+class DocuSignWebHook(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        body = request.data
+        print(body)
+        return Response({'ok': True}, status.HTTP_200_OK)
