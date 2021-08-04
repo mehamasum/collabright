@@ -75,7 +75,7 @@ const IntegrationsTab = () => {
 
   return (
     <>
-      {integrations.find(integration => !integration.connected || integration.is_expired) && <Banner />}
+      <Banner />
       <div className="integration-list">
 
         <Row gutter={16}>

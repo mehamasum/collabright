@@ -5,7 +5,7 @@ from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, OrganizationSerializer, ReviewerSerializer, DocumentMapSerializer)
 from .models import (Comment, Document, Integration, Audit, Contact, Notification, Organization, Reviewer)
 from .service import (ArcGISOAuthService, DocuSignOAuthService,
-                      download_and_save_file, send_email_to_requester,
+                      send_email_to_requester,
                       send_email_to_reviewer, send_notification_to_requester,
                       ReviewerService, DocuSignService)
 from rest_framework.decorators import action
@@ -57,22 +57,6 @@ class DocumentViewSet(viewsets.ModelViewSet):
         for reviewer in reviewers:
             send_email_to_reviewer(user, document.audit, reviewer, version)
         return response
-
-    def partial_update(self, request, *args, **kwargs):
-        update_response = super().partial_update(request, *args, **kwargs)
-        document = self._updated_document
-        version = Document.objects.filter(audit=document.audit).count()
-        if not document.file:
-            response = ArcGISOAuthService.export_map_as_file(
-                document.map_print_definition,
-                document.map_item,
-                document.map_item_data,
-                'Map (v{0}.0)'.format(version)
-            )
-            file_url = response['results'][0]['value']['url']
-            print('printed', file_url)
-            download_and_save_file(file_url, document.audit.id, version, document)
-        return update_response
 
 class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
