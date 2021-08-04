@@ -9,6 +9,7 @@ from .views import react
 
 from collabright.base.urls import register_urls as register_base_urls
 from django.conf.urls.static import static
+from .base.views import (DocuSignWebHook, )
 
 drf_session_auth_urls = include('rest_framework.urls')
 
@@ -21,6 +22,7 @@ urlpatterns = [
     path('api/admin/', admin.site.urls),
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
+    path('docusign/webhook/', DocuSignWebHook.as_view()),
 ]
 
 if settings.DEBUG:
