@@ -263,10 +263,10 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
                   Audit Details
                 </List.Item>
                 <List.Item>
-                <Space><span>Map &bull; v{audit.documents.length}.0 (Latest version as PDF)</span> <a href={latestDocument.file} target="_blank"><EyeOutlined/></a></Space>
+                <Space><span>Map &bull; v{audit.documents.length}.0</span> {latestDocument.file && <a href={latestDocument.file} target="_blank"><EyeOutlined/></a>}</Space>
                 </List.Item>
                 <List.Item>
-                  <Space>Agreement {(isAdmin || needsToSign) && <a href={audit.agreement} target="_blank"><EyeOutlined/></a>}</Space>
+                  <Space>Agreement {(isAdmin || needsToSign) && audit.agreement && <a href={audit.agreement} target="_blank"><EyeOutlined/></a>}</Space>
                 </List.Item>
               </List>
               <Divider />

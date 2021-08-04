@@ -49,6 +49,9 @@ Install docker and docker compose
 - run backend server  
 `python manage.py runserver 0.0.0.0:8000`
 
+- run celery
+`celery -A collabright worker -l INFO`
+
 ---
 
 # Client

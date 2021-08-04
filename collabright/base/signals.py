@@ -1,6 +1,7 @@
 from django.db.models.signals import post_save
-from .service import DocuSignOAuthService, DocuSignService
-from .models import Audit
+from .service import DocuSignOAuthService, DocuSignService, ArcGISOAuthService
+from .models import Audit, Document
+from .tasks import download_and_save_file
 
 
 def create_docusign_envelope(sender, instance, created, **kwargs):
@@ -19,6 +20,9 @@ def create_docusign_envelope(sender, instance, created, **kwargs):
 def add_docusign_document_to_envelope(sender, instance, created, **kwargs):
     if not created and bool(instance.file):
         user = instance.audit.user
+        if not instance.audit.envelope_id:
+            print("No envelop found for this audit", "add_docusign_document_to_envelope")
+            return
         envelope_id = str(instance.audit.envelope_id)
         token = DocuSignOAuthService.get_access_token(user)
         file_path = instance.file.path
@@ -37,3 +41,22 @@ def add_docusign_document_to_envelope(sender, instance, created, **kwargs):
             'documents': documents
         })
         print(document)
+
+def export_map_as_pdf(sender, instance, created, **kwargs):
+    document = instance
+    if not document.file and \
+        document.map_print_definition and \
+        document.map_item and \
+        document.map_item_data:
+
+        version = Document.objects.filter(audit=document.audit).count()
+        response = ArcGISOAuthService.export_map_as_file(
+            document.map_print_definition,
+            document.map_item,
+            document.map_item_data,
+            'Map (v{0}.0)'.format(version)
+        )
+        file_url = response['results'][0]['value']['url']
+        print('printed', file_url)
+        download_and_save_file.delay(file_url, document.audit.id, version, document.id)
+
