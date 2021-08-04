@@ -4,7 +4,10 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, OrganizationSerializer, ReviewerSerializer, DocumentMapSerializer)
 from .models import (Comment, Document, Integration, Audit, Contact, Notification, Organization, Reviewer)
-from .service import (ArcGISOAuthService, DocuSignOAuthService, download_and_save_file, send_email_to_requester, send_email_to_reviewer, send_notification_to_requester)
+from .service import (ArcGISOAuthService, DocuSignOAuthService,
+                      download_and_save_file, send_email_to_requester,
+                      send_email_to_reviewer, send_notification_to_requester,
+                      ReviewerService, DocuSignService)
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,6 +16,7 @@ from rest_framework import filters
 from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsDocumentReviewer, IsOrgAdmin
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from docusign_esign.client import api_exception
 
 
 def has_review_token(request):
@@ -107,7 +111,8 @@ class AuditViewSet(viewsets.ModelViewSet):
         return queryset.filter(user=self.request.user)
 
     def get_permissions(self):
-        if has_review_token(self.request) and self.action in ['retrieve', 'me', 'verdict']:
+        if has_review_token(self.request) and self.action in [
+                'retrieve', 'me', 'verdict', 'docusign_recipient_view',]:
             permission_classes = [IsAuditReviewer]
         else:
             permission_classes = [permissions.IsAuthenticated]
@@ -137,15 +142,14 @@ class AuditViewSet(viewsets.ModelViewSet):
             )
             if created:
                 send_email_to_reviewer(user, audit, reviewer, version)
+                ReviewerService.assign_reviewer_to_audit_evelope(user, audit, reviewers)
             reviewers.append(reviewer)
             updated_reviewers.append(reviewer.id)
-        
 
         diff = lambda l1,l2: [x for x in l1 if x not in l2]
         deleted_reviewers = diff(existing_reviewers, updated_reviewers)
 
         Reviewer.objects.filter(pk__in=deleted_reviewers).delete()
-        
         reviewer_serializer = ReviewerSerializer(reviewers, many=True)
         return Response(reviewer_serializer.data)
 
@@ -175,6 +179,26 @@ class AuditViewSet(viewsets.ModelViewSet):
         
         reviewer_serializer = ReviewerSerializer(reviewer)
         return Response(reviewer_serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def docusign_recipient_view(self, request, pk=None):
+        audit = self.get_object()
+        reviewer = self._get_reviewer_by_token(request)
+        envelope_id = str(audit.envelope_id)
+        access_token = DocuSignOAuthService.get_access_token(reviewer.audit.user)
+        try:
+            recipient_view = DocuSignService.recipient_view_request({
+                'recipient': {
+                    'name': reviewer.contact.name,
+                    'email': reviewer.contact.email,
+                    'client_id': reviewer.contact.id},
+                'access_token': access_token,
+                'envelope_id': envelope_id,
+                'return_url': "%s/review/%s/?token=%s" % (settings.APP_URL, str(audit.id), str(reviewer.token))
+            })
+            return Response(recipient_view, status.HTTP_200_OK)
+        except api_exception.ApiException as e:
+            return Response(e.body, status=status.HTTP_403_FORBIDDEN)
 
 
 class ContactViewSet(viewsets.ModelViewSet):

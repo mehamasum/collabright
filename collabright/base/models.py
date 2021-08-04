@@ -35,15 +35,25 @@ class Contact(models.Model):
 # notification: user, review_history
 
 class Audit(models.Model):
+    CREATED = 'created'
+    SENT = 'sent'
+    STATUS_CHOICES = (
+        (CREATED, 'Created'),
+        (SENT, 'Sent'),)
+
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=1024, null=True, blank=True)
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    envelope_id = models.UUIDField(null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     map_url = models.CharField(max_length=512) # arcjs web map url
     base_url = models.CharField(max_length=200) # arcjs url from map_url
     map_id = models.CharField(max_length=200) # arcjs map id from map_url
     created_at = models.DateTimeField(auto_now_add=True)
     is_open = models.BooleanField(default=True)
+    agrement = models.FileField(blank=True)
+    status = models.CharField(
+        choices=STATUS_CHOICES, max_length=64, default=CREATED)
 
 def get_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/<audit_id>/<filename>
