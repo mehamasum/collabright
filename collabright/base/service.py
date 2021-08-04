@@ -1,6 +1,6 @@
 import json
 import base64
-from .models import (Integration, Notification, Reviewer)
+from .models import (Integration, Notification, Reviewer, Audit)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -16,7 +16,7 @@ from docusign_esign import (ApiClient, SignHere, Tabs,
                             EnvelopesApi, RecipientViewRequest, NameValue,
                             DocumentFieldsInformation)
 from .utils import (create_api_client, create_documents, create_signers,
-                    create_sign_here)
+                    assign_sign_here, create_sign_here)
 
 
 def download_and_save_file(url, audit_id, version, document):
@@ -78,6 +78,56 @@ def send_notification_to_requester(user, audit, reviewer, notifcation_type):
 
 def json_decoder(payload):
     return json.loads(payload.decode('utf-8'))
+
+
+class AuditService:
+    def update_audit_envelope(user, audit):
+        access_token = DocuSignOAuthService.get_access_token(user)
+        envelope_id = str(audit.envelope_id)
+        results = DocuSignService.update_envelope({
+            'access_token': access_token,
+            'envelope_id': envelope_id,
+            'envelope': {
+                'status': Audit.SENT
+            }
+        })
+        print(results)
+        if results['error_details'] is None:
+            audit.status = Audit.SENT
+            audit.save()
+
+class ReviewerService:
+    def assign_reviewer_to_audit_evelope(user, audit, reviewers=[]):
+        access_token = DocuSignOAuthService.get_access_token(user)
+        envelope_id = str(audit.envelope_id)
+        signers = []
+        for reviewer in reviewers:
+            if not reviewer.needs_to_sign:
+                continue
+            signer = {
+                'name': reviewer.contact.name,
+                'email': reviewer.contact.email,
+                'client_id': reviewer.contact_id,
+                'recipient_id': reviewer.id
+            }
+            signers.append(signer)
+
+        results = None
+        if len(signers):
+            results = DocuSignService.create_signers({
+                'access_token': access_token,
+                'envelope_id': envelope_id,
+                'signers': signers,
+            })
+
+        if audit.status == Audit.CREATED:
+            try:
+                AuditService.update_audit_envelope(user, audit)
+            except:
+                pass
+
+        return results
+
 
 class ArcGISOAuthService:
     service = OAuth2Service(
@@ -374,15 +424,16 @@ class DocuSignService:
             'email_subject', 'Please sign this document sent from the collabright')
         documents = create_documents(args['documents'])
         signers = create_signers(args['signers'])
+        status = args.get('status', 'created')
 
         sign_here = args.get('sign_here', {})
-        create_sign_here(signers, sign_here)
+        assign_sign_here(signers, sign_here)
 
         envelope_definition = EnvelopeDefinition(
-            email_subject = email_subject,
-            documents = documents,
-            recipients = Recipients(signers=signers),
-            status = "sent"
+            email_subject=email_subject,
+            documents=documents,
+            recipients=Recipients(signers=signers),
+            status=status
         )
 
         return envelope_definition
@@ -405,10 +456,32 @@ class DocuSignService:
         return results.to_dict()
 
     @staticmethod
+    def update_envelope(args):
+        access_token = args['access_token']
+        envelope_id = args['envelope_id']
+        envelope = args['envelope']
+
+        status = envelope.get('status', 'created')
+        envelope_definition = EnvelopeDefinition(status=status)
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+        results = envelope_api.update(
+            account_id=DocuSignService.account_id,
+            envelope_id=envelope_id,
+            envelope=envelope_definition)
+
+        return results.to_dict()
+
+    @staticmethod
     def recipient_view_request(args={}):
         envelope_id = args['envelope_id']
         access_token = args['access_token']
         recipient = args['recipient']
+        return_url = args['return_url']
 
         api_client = create_api_client(
             base_path=DocuSignService.base_api_uri, access_token=access_token)
@@ -417,7 +490,7 @@ class DocuSignService:
         recipient_view_request = RecipientViewRequest(
             authentication_method = 'email',
             client_user_id = recipient['client_id'],
-            return_url = 'http://localhost:3000/',
+            return_url = return_url,
             user_name = recipient['name'],
             email = recipient['email']
         )
@@ -447,5 +520,54 @@ class DocuSignService:
             account_id=DocuSignService.account_id,
             envelope_id=envelope_id,
             envelope_definition=envelope_definition)
+
+        return results.to_dict()
+
+    @staticmethod
+    def create_signers(args):
+        access_token = args['access_token']
+        envelope_id = args['envelope_id']
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+
+        signers = create_signers(args['signers'])
+        results = envelope_api.create_recipient(
+            account_id=DocuSignService.account_id,
+            envelope_id=envelope_id,
+            recipients = Recipients(signers=signers))
+
+        for signer in args['signers']:
+            DocuSignService.create_tabs({
+                'access_token': access_token,
+                'envelope_id': envelope_id,
+                'recipient_id': signer['recipient_id']
+            })
+
+
+        return results.to_dict()
+
+    @staticmethod
+    def create_tabs(args):
+        access_token = args['access_token']
+        envelope_id = args['envelope_id']
+        recipient_id = args['recipient_id']
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+        envelope_api = EnvelopesApi(api_client)
+
+        #TODO fix sign here position logic
+        sign_here = create_sign_here()
+        results = envelope_api.create_tabs(
+            account_id=DocuSignService.account_id,
+            envelope_id=envelope_id,
+            recipient_id=recipient_id,
+            tabs=Tabs(sign_here_tabs=[sign_here]))
 
         return results.to_dict()
