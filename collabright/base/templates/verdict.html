@@ -1,3 +1,5 @@
+{% extends "base_email.html" %}
+{% block pre_cta %}
 Hello <strong>{{ username }}</strong>,<br/>
 <br/>
 Your Audit has been reviewd by <strong>{{ name }}</strong>.<br/>
@@ -6,8 +8,10 @@ Audit Name: <strong>{{ audit_title }}</strong><br/>
 Reviewer: <strong>{{ name }}</strong><br/>
 Decision: <strong>{{ verdict }}</strong><br/>
 <br/>
-Please click on this link to see the latest comments and updates:<br/>
-<a href={{ private_url }}>{{ private_url }}</a><br/>
-<br/>
+Please click on this link to see the latest comments and updates:
+{% endblock pre_cta %}
+{% block cta %}<a target="_blank" href={{ private_url }}>Open Audit</a>{% endblock cta %}
+{% block post_cta %}
 Best,<br/>
 Collabright Team
+{% endblock post_cta %}
