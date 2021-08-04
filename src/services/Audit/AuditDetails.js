@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip } from 'antd';
-import { DownOutlined, QuestionOutlined, FileFilled, FileUnknownOutlined, EditOutlined, MoreOutlined, SyncOutlined, LinkOutlined, CloseCircleFilled } from '@ant-design/icons';
+import { DownOutlined, QuestionOutlined, FileFilled, FileUnknownOutlined, EditOutlined, MoreOutlined, SyncOutlined, LinkOutlined, CloseCircleFilled, EyeOutlined } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
 import { Row, Col, List, Badge, Divider, Modal } from 'antd';
@@ -12,6 +12,7 @@ import { message } from 'antd';
 import EsriMap from './EsriMap';
 import { RedCross, GreenTick } from '../../components/icons';
 import {useHistory, useParams} from "react-router";
+import { Link } from 'react-router-dom';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -105,7 +106,7 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
   )
 };
 
-const ReviewerOperations = ({auditId, query}) => {
+const ReviewerOperations = ({audit, auditId, query, user}) => {
   const { get, post, response } = useFetch();
 
   const setVerdict = (verdict) => () => {
@@ -129,6 +130,8 @@ const ReviewerOperations = ({auditId, query}) => {
     });
   };
 
+  const needsToSign = audit.reviewers.find(reviewer => reviewer.id === user.id && !!reviewer.needs_to_sign);
+
   return (
     <Space>
       <Dropdown overlay={(
@@ -141,11 +144,11 @@ const ReviewerOperations = ({auditId, query}) => {
           </Menu.Item>
         </Menu>
       )}>
-        <Button>
+        <Button type={!needsToSign && "primary"}>
           Submit Review <DownOutlined />
         </Button>
       </Dropdown>
-      <Button type="primary" onClick={getDocuSignRecipientView}>Approve and Sign</Button>
+      {needsToSign && <Button type="primary" onClick={getDocuSignRecipientView}>Approve and Sign</Button>}
     </Space>
   )
 };
@@ -227,13 +230,16 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
     return 'error';
   }
 
+  const needsToSign = audit.reviewers.find(reviewer => reviewer.id === user.id && !!reviewer.needs_to_sign);
+
+
   return (
     <div className="audit-content">
       <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange}/>
 
       <Tabs className="reviewer-tabs" defaultActiveKey={tab || "details"} onChange={handleTabClick} tabBarExtraContent={
         isAdmin ? <AdminOperations post={post} patch={patch} response={response} audit={audit} version={audit.documents.length + 1}/> :
-        <ReviewerOperations auditId={auditId} query={query}/>
+        <ReviewerOperations user={user} auditId={auditId} query={query} audit={audit}/>
       }>
         <TabPane tab="Details" key="details">
           <Row gutter={8}>
@@ -247,22 +253,22 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
               {document.description || <Text italic>No description</Text>}
               <Divider />
 
-              <Text strong>Map Details</Text><br /><br />
-              On <a href={audit.map_url} target="_blank">{new URL(audit.map_url).hostname} <LinkOutlined/></a>
+              <Text strong>Map Details</Text> &nbsp; <a href={audit.map_url} target="_blank"><LinkOutlined/> Open</a><br /><br />
+              On {new URL(audit.map_url).hostname} 
               <Divider />
               <List
-                header={<Text strong>Envelop Details</Text>}
-                dataSource={[
-                  'Audit Details',
-                  'Map',
-                  <Space>Agreement {isAdmin && <Button type="link" size="small">Attach</Button>}</Space>
-                ]}
-                renderItem={(item, index) => (
-                  <List.Item>
-                    {item} {index == 1 && <>&bull; v{audit.documents.length}.0 (Latest Version)</>}
-                  </List.Item>
-                )}
-              />
+                header={<Space><Text strong>Envelop Details</Text>{isAdmin && <Button type="link" size="small" icon={<LinkOutlined/>}>Open</Button>}</Space>}
+              >
+                <List.Item>
+                  Audit Details
+                </List.Item>
+                <List.Item>
+                <Space><span>Map &bull; v{audit.documents.length}.0 (Latest version as PDF)</span> <a href={latestDocument.file} target="_blank"><EyeOutlined/></a></Space>
+                </List.Item>
+                <List.Item>
+                  <Space>Agreement {(isAdmin || needsToSign) && <a href={audit.agreement} target="_blank"><EyeOutlined/></a>}</Space>
+                </List.Item>
+              </List>
               <Divider />
             </Col>
             <Col className="gutter-row" span={8}>

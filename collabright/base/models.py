@@ -34,6 +34,9 @@ class Contact(models.Model):
 
 # notification: user, review_history
 
+def get_agreement_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/<audit_id>/<filename>
+    return '{0}/agreement_{1}'.format(instance.id, filename)
 class Audit(models.Model):
     CREATED = 'created'
     SENT = 'sent'
@@ -51,7 +54,7 @@ class Audit(models.Model):
     map_id = models.CharField(max_length=200) # arcjs map id from map_url
     created_at = models.DateTimeField(auto_now_add=True)
     is_open = models.BooleanField(default=True)
-    agrement = models.FileField(blank=True)
+    agreement = models.FileField(blank=True, upload_to=get_agreement_directory_path)
     status = models.CharField(
         choices=STATUS_CHOICES, max_length=64, default=CREATED)
 

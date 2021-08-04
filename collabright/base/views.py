@@ -70,6 +70,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
                 'Map (v{0}.0)'.format(version)
             )
             file_url = response['results'][0]['value']['url']
+            print('printed', file_url)
             download_and_save_file(file_url, document.audit.id, version, document)
         return update_response
 

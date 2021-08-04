@@ -21,14 +21,14 @@ const AuditForm = ({ onComplete }) => {
   const { post, response, loading } = useFetch();
 
   const onFinish = values => {
-    values.agrement = base64File;
+    values.agreement = base64File;
     post('/api/v1/audits/', values).then(data => {
       if (response.ok) {
         return onComplete(data);
       }
       console.error(data);
 
-      if(data.auth) {
+      if (data.auth) {
         setErrorMsg(data.auth);
       }
     });
@@ -46,7 +46,7 @@ const AuditForm = ({ onComplete }) => {
     onChange(info) {
       console.log("call file upload onChange", info);
       const { file } = info;
-      if(file) {
+      if (file) {
         const reader = new FileReader();
         reader.onload = (readerEvt) => {
           const binaryString = readerEvt.target.result;
@@ -64,7 +64,7 @@ const AuditForm = ({ onComplete }) => {
   return (
     <>
       <Text strong>Please fill up the form</Text>
-      {errorMsg && <Alert message={errorMsg} type="error" banner closable/> }
+      {errorMsg && <Alert message={errorMsg} type="error" banner closable />}
       <Form
         name="audit"
         initialValues={{}}
@@ -82,7 +82,7 @@ const AuditForm = ({ onComplete }) => {
             },
           ]}
         >
-          <Input placeholder="Title for this audit"/>
+          <Input placeholder="Title for this audit" />
         </Form.Item>
 
         <Form.Item
@@ -95,7 +95,7 @@ const AuditForm = ({ onComplete }) => {
             },
           ]}
         >
-          <Input.TextArea placeholder="A description to ive reviewers context" rows={6}/>
+          <Input.TextArea placeholder="A description to ive reviewers context" rows={6} />
         </Form.Item>
 
         <Form.Item
@@ -108,20 +108,21 @@ const AuditForm = ({ onComplete }) => {
             },
           ]}
         >
-          <Input placeholder="Copy the map URL from your GIS site and paste here" type="url"/>
+          <Input placeholder="Copy the map URL from your GIS site and paste here" type="url" />
         </Form.Item>
 
-        <Form.Item>
-            <Upload.Dragger {...fileUploadProps}>
-    <p className="ant-upload-drag-icon">
-      <InboxOutlined />
-    </p>
-    <p className="ant-upload-text">Click or drag file to this area to upload</p>
-    <p className="ant-upload-hint">
-      Support for a single or bulk upload. Strictly prohibit from uploading company data or other
-      band files
-    </p>
-  </Upload.Dragger>
+        <Form.Item
+          label="Agreement Document"
+        >
+          <Upload.Dragger {...fileUploadProps}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Click or drag your file to this area to upload</p>
+            <p className="ant-upload-hint">
+              This file will be sent in an Envelop to selected auditors for signature
+            </p>
+          </Upload.Dragger>
         </Form.Item>
         <Form.Item >
           <Button type="primary" htmlType="submit" loading={loading}>
@@ -167,9 +168,9 @@ const PostCreateView = () => {
           <Row>
             <Col span={16} offset={4}>
               <div className="audit-create-step">
-                { current === 0 && <AuditForm onComplete={onComplete} />}
-                { current === 1 && <MapPrinter auditId={audit.id} document={audit.documents[0]} onComplete={onVerify} version={1} renderNextButton/>}
-                { current === 2 && <AddAuditors auditId={audit.id} onComplete={onFinish}/>}
+                {current === 0 && <AuditForm onComplete={onComplete} />}
+                {current === 1 && <MapPrinter auditId={audit.id} document={audit.documents[0]} onComplete={onVerify} version={1} renderNextButton />}
+                {current === 2 && <AddAuditors auditId={audit.id} onComplete={onFinish} />}
               </div>
             </Col>
           </Row>
