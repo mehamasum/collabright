@@ -6,7 +6,7 @@ import {Avatar, Button, Card, Space, Table, Tag, Typography} from 'antd';
 import {Link, useHistory} from "react-router-dom";
 import {LinkOutlined} from '@ant-design/icons';
 import {formatRelativeTime, truncateString} from '../../utils';
-
+import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
 
 const columns = [
   {
@@ -72,7 +72,10 @@ const PostListView = (props) => {
   return (
     <div>
       <Card title="Audits" extra={
-        <Button type="primary"><Link to={`/audits/new`}>New Audit Request</Link></Button>
+        <Space>
+          <Button icon={<SearchOutlined />}>Search</Button>
+          <Link to={`/audits/new`}><Button type="primary" icon={<PlusOutlined/>}>Audit Request</Button></Link>
+        </Space>
       }>
         <Table
           loading={loading}

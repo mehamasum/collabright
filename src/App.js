@@ -48,7 +48,7 @@ const App = (props) => {
             <ReviewerView/>
           </Route>
           <PrivateRoute exact path="/contacts" component={ContactList} />
-          <PrivateRoute exact path="/settings" component={Settings} />
+          <PrivateRoute exact path="/settings/:tab?" component={Settings} />
           <PrivateRoute exact path="/notifications" component={NotificationList} />
           <PrivateRoute exact path="/" component={Dashboard} />
           <PrivateRoute exact path="/audits" component={AuditList} />

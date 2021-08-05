@@ -81,10 +81,7 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
 
   return (
     <>
-      <Space>
-        <Button type="primary" onClick={onNewVersionClick} loading={loading} icon={<SyncOutlined/>}>Add Next Version</Button>
-        <Dropdown overlay={menu}><Button icon={<MoreOutlined/>} type="text"></Button></Dropdown>
-      </Space>
+      <Dropdown.Button type="primary" overlay={menu} onClick={onNewVersionClick} loading={loading}>Create Next Version</Dropdown.Button>
       <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
         <MapPrinter auditId={auditId} version={version} document={document} onComplete={onPrintComplete} />
         <TextArea placeholder="What's new in this version?" showCount maxLength={100} onChange={onChange} />
