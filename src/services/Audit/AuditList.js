@@ -72,7 +72,7 @@ const PostListView = (props) => {
   return (
     <div>
       <Card title="Audits" extra={
-        <Button type="primary"><Link to={`/audits/new`}>Create New Audit</Link></Button>
+        <Button type="primary"><Link to={`/audits/new`}>New Audit Request</Link></Button>
       }>
         <Table
           loading={loading}

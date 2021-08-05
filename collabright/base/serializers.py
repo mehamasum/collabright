@@ -67,7 +67,7 @@ class ReviewerSerializer(serializers.ModelSerializer):
 class AuditSerializer(serializers.ModelSerializer):
     documents = DocumentSerializer(many=True, read_only=True)
     reviewers = ReviewerSerializer(many=True, read_only=True)
-    agreement = PDFBase64File()
+    agreement = PDFBase64File(required=False)
 
     class Meta:
         model = Audit
