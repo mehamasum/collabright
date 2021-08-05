@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
 import { Button, Card, Space, Table, Modal, Typography, Form, Input, } from 'antd';
 import { formatRelativeTime, truncateString } from '../../utils';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 
 
 const ContactForm = ({ editingContact, onComplete }) => {
@@ -160,7 +160,11 @@ const ContactList = (props) => {
   return (
     <div>
       <Card title="Contacts" extra={
-        <Button type="primary" onClick={showModal}>Add New Contact</Button>
+        <Space>
+          <Button icon={<SearchOutlined />}>Search</Button>
+          <Button type="primary" onClick={showModal} icon={<PlusOutlined/>}>New Contact</Button>
+        </Space>
+        
       }>
         <Table
           loading={loading}

@@ -7,7 +7,6 @@ import { DisconnectOutlined, MoreOutlined } from "@ant-design/icons";
 
 import docuSignLogo from "../../assets/icons/docuSign.svg";
 import esriLogo from "../../assets/icons/esri-logo.png";
-import Banner from "./Banner";
 import './IntegrationsTab.css';
 import { formatRelativeTime } from "../../utils";
 import { RedCross, GreenTick } from "../../components/icons";
@@ -75,9 +74,7 @@ const IntegrationsTab = () => {
 
   return (
     <>
-      <Banner />
       <div className="integration-list">
-
         <Row gutter={16}>
           {integrations.map(integration => (
             <Col sm={16} lg={8}>
