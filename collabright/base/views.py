@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, OrganizationSerializer, ReviewerSerializer, DocumentMapSerializer)
 from .models import (Comment, Document, Integration, Audit, Contact, Notification, Organization, Reviewer)
-from .service import (ArcGISOAuthService, DocuSignOAuthService,
+from .service import (ArcGISOAuthService, AuditService, DocuSignOAuthService,
                       send_email_to_requester,
                       send_email_to_reviewer, send_notification_to_requester,
                       ReviewerService, DocuSignService)
@@ -126,14 +126,17 @@ class AuditViewSet(viewsets.ModelViewSet):
             )
             if created:
                 send_email_to_reviewer(user, audit, reviewer, version)
-                ReviewerService.assign_reviewer_to_audit_evelope(user, audit, reviewers)
             reviewers.append(reviewer)
             updated_reviewers.append(reviewer.id)
+
+        ReviewerService.assign_reviewer_to_audit_evelope(user, audit, reviewers)
 
         diff = lambda l1,l2: [x for x in l1 if x not in l2]
         deleted_reviewers = diff(existing_reviewers, updated_reviewers)
 
         Reviewer.objects.filter(pk__in=deleted_reviewers).delete()
+        # TODO: remove from envelop
+
         reviewer_serializer = ReviewerSerializer(reviewers, many=True)
         return Response(reviewer_serializer.data)
 
@@ -181,6 +184,42 @@ class AuditViewSet(viewsets.ModelViewSet):
                 'return_url': "%s/review/%s/?token=%s" % (settings.APP_URL, str(audit.id), str(reviewer.token))
             })
             return Response(recipient_view, status.HTTP_200_OK)
+        except api_exception.ApiException as e:
+            return Response(e.body, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=True, methods=['get'])
+    def docusign_sender_view(self, request, pk=None):
+        audit = self.get_object()
+        envelope_id = str(audit.envelope_id)
+        access_token = DocuSignOAuthService.get_access_token(audit.user)
+        try:
+            #lock_token_response = DocuSignService.create_lock({'access_token': access_token, 'envelope_id': envelope_id})
+            #lock_token = lock_token_response['lock_token']
+
+            recipient_view =  DocuSignService.sender_view_request({
+                'access_token': access_token,
+                'return_url': "%s/audits/%s/" % (settings.APP_URL, str(audit.id)),
+                'envelope_id': envelope_id
+            })
+            url = recipient_view['url']
+            url = url.replace('send=1', 'send=0')
+            #url = url.replace('showEditPages=true', 'showEditPages=false')
+            #url = url.replace('showHeaderActions=true', 'showHeaderActions=false')
+            #url = url.replace('sendButtonAction=send', 'sendButtonAction=redirect')
+            #url = url.replace('backButtonAction=previousPage', 'backButtonAction=redirect')
+            #url += '&lockToken={0}'.format(lock_token)
+            print('sender url', url)
+            recipient_view['url'] = url
+            return Response(recipient_view, status.HTTP_200_OK)
+        except api_exception.ApiException as e:
+            return Response(e.body, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=True, methods=['post'])
+    def send_envelop(self, request, pk=None):
+        audit = self.get_object()
+        try:
+            response =  AuditService.send_envelope(audit.user, audit)
+            return Response(response, status.HTTP_200_OK)
         except api_exception.ApiException as e:
             return Response(e.body, status=status.HTTP_403_FORBIDDEN)
 
