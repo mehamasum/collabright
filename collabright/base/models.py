@@ -54,7 +54,7 @@ class Audit(models.Model):
     map_id = models.CharField(max_length=200) # arcjs map id from map_url
     created_at = models.DateTimeField(auto_now_add=True)
     is_open = models.BooleanField(default=True)
-    agreement = models.FileField(blank=True, upload_to=get_agreement_directory_path)
+    agreement = models.FileField(null=True, blank=True, upload_to=get_agreement_directory_path)
     status = models.CharField(
         choices=STATUS_CHOICES, max_length=64, default=CREATED)
 

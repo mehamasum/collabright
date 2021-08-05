@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, Layout, Alert, Form, Input, Button, Row, Col, Divider, Upload } from 'antd';
 import { Steps, message, Space, Typography } from 'antd';
-import { InboxOutlined } from '@ant-design/icons';
 
 import { useHistory } from "react-router-dom";
 import useFetch from 'use-http';
-import { loadModules } from 'esri-loader';
 import MapPrinter from './MapPrinter';
-import AddAuditors from './AddAuditors';
 
 
 import './AuditCreate.css';
@@ -17,11 +14,9 @@ const { Text } = Typography;
 
 const AuditForm = ({ onComplete }) => {
   const [errorMsg, setErrorMsg] = useState(null);
-  const [base64File, setBase64File] = useState(null);
   const { post, response, loading } = useFetch();
 
   const onFinish = values => {
-    values.agreement = base64File;
     post('/api/v1/audits/', values).then(data => {
       if (response.ok) {
         return onComplete(data);
@@ -38,32 +33,8 @@ const AuditForm = ({ onComplete }) => {
     console.log('Failed:', errorInfo);
   };
 
-  const fileUploadProps = {
-    name: 'file',
-    multiple: false,
-    maxCount: 1,
-    accept: '.pdf',
-    onChange(info) {
-      console.log("call file upload onChange", info);
-      const { file } = info;
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (readerEvt) => {
-          const binaryString = readerEvt.target.result;
-          setBase64File(btoa(binaryString))
-        };
-        reader.readAsBinaryString(file);
-      }
-    },
-    beforeUpload() {
-      return false;
-    }
-  };
-
-  console.log("base64File", base64File);
   return (
     <>
-      <Text strong>Please fill up the form</Text>
       {errorMsg && <Alert message={errorMsg} type="error" banner closable />}
       <Form
         name="audit"
@@ -82,7 +53,7 @@ const AuditForm = ({ onComplete }) => {
             },
           ]}
         >
-          <Input placeholder="Title for this audit" />
+          <Input placeholder="A high-level overview of the Audit Request" />
         </Form.Item>
 
         <Form.Item
@@ -95,7 +66,7 @@ const AuditForm = ({ onComplete }) => {
             },
           ]}
         >
-          <Input.TextArea placeholder="A description to ive reviewers context" rows={6} />
+          <Input.TextArea placeholder="A description or summary of the Audit Request." rows={4} />
         </Form.Item>
 
         <Form.Item
@@ -104,26 +75,13 @@ const AuditForm = ({ onComplete }) => {
           rules={[
             {
               required: true,
-              message: 'Please input your map_url!',
+              message: 'Please input your map url!',
             },
           ]}
         >
           <Input placeholder="Copy the map URL from your GIS site and paste here" type="url" />
         </Form.Item>
 
-        <Form.Item
-          label="Agreement Document"
-        >
-          <Upload.Dragger {...fileUploadProps}>
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Click or drag your file to this area to upload</p>
-            <p className="ant-upload-hint">
-              This file will be sent in an Envelop to selected auditors for signature
-            </p>
-          </Upload.Dragger>
-        </Form.Item>
         <Form.Item >
           <Button type="primary" htmlType="submit" loading={loading}>
             Continue
@@ -147,22 +105,17 @@ const PostCreateView = () => {
 
   const onVerify = () => {
     setCurrent(current + 1);
-  };
-
-  const onFinish = () => {
-    setCurrent(current + 1);
     history.push(`/audits/${audit.id}`);
-  }
+  };
 
   return (
     <React.Fragment>
       <Layout.Content>
-        <Card title="New Audit">
+        <Card title="New Audit Request">
           <div className="audit-create-steps">
             <Steps current={current} size="small">
               <Step title="Create" />
               <Step title="Verify" />
-              <Step title="Add Reviewers" />
             </Steps>
           </div>
           <Row>
@@ -170,7 +123,6 @@ const PostCreateView = () => {
               <div className="audit-create-step">
                 {current === 0 && <AuditForm onComplete={onComplete} />}
                 {current === 1 && <MapPrinter auditId={audit.id} document={audit.documents[0]} onComplete={onVerify} version={1} renderNextButton />}
-                {current === 2 && <AddAuditors auditId={audit.id} onComplete={onFinish} />}
               </div>
             </Col>
           </Row>
