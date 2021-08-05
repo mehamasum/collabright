@@ -7,7 +7,7 @@ import SearchAuditor from './SearchAuditor';
 
 const { Text } = Typography;
 
-const AddAuditors = ({ onComplete, auditId, existingReviewers=[] }) => {
+const AddAuditors = ({ onComplete, auditId, existingReviewers=[], showSigners }) => {
   const existingOnlyReviewers = existingReviewers.filter(reviewer => !reviewer.needs_to_sign).map(reviewer => reviewer.contact.email);
   const existingSigners = existingReviewers.filter(reviewer => reviewer.needs_to_sign).map(reviewer => reviewer.contact.email);
   const [ signers, setSigners ] = useState(existingSigners || []);
@@ -41,22 +41,29 @@ const AddAuditors = ({ onComplete, auditId, existingReviewers=[] }) => {
     })
   }
 
+  const getView = () => {
+    if (showSigners) {
+      return (
+        <>
+        <small><Text type="secondary">People who will review and sign the sent envelop</Text></small>
+        <SearchAuditor className="search-auditor" onChange={setSigners} reviewers={existingSigners}/>
+        </>
+      )
+    };
+
+    return (
+      <>
+        <small><Text type="secondary">People who will only review</Text></small>
+        <SearchAuditor className="search-auditor" onChange={setReviewers} reviewers={existingOnlyReviewers}/>
+      </>
+    );
+  }
+
   return (
     <>
-      <Text strong>Add Auditors using their email addresses</Text>
-      <Divider/>
-      <div>
-        <Text strong>Signers</Text><br/>
-        <small><Text type="secondary">People who need to sign any uploaded agreements</Text></small>
-        <SearchAuditor className="search-auditor" onChange={setSigners} reviewers={existingSigners}/>
-        <br/>
-        <br/>
-        <Text strong>Reviewers</Text><br/>
-        <small><Text type="secondary">People who will only review and give feedback</Text></small>
-        <SearchAuditor className="search-auditor" onChange={setReviewers} reviewers={existingOnlyReviewers}/>
-      </div>
-      <Divider/>
-      <Button type="primary" onClick={setAuditors}>
+      <div>{getView()}</div>
+      <br/>
+      <Button type="primary" onClick={setAuditors} loading={loading}>
         Continue
       </Button>
     </>

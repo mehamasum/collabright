@@ -73,8 +73,8 @@ class AuditSerializer(serializers.ModelSerializer):
         model = Audit
         fields = ('id', 'title', 'description', 'user', 'map_url', 'base_url',
                   'map_id', 'created_at', 'documents', 'is_open', 'reviewers',
-                  'envelope_id', 'agreement')
-        read_only_fields = ('user', 'base_url', 'map_id', 'created_at', 'reviewers')
+                  'envelope_id', 'agreement', 'status')
+        read_only_fields = ('user', 'base_url', 'map_id', 'created_at', 'reviewers', 'status')
 
     def validate_map_url(self, value):
         parsed_uri = urlparse(value)

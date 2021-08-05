@@ -13,6 +13,7 @@ import EsriMap from './EsriMap';
 import { RedCross, GreenTick } from '../../components/icons';
 import {useHistory, useParams} from "react-router";
 import { Link } from 'react-router-dom';
+import EnvelopDetails from './EnvelopDetails';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -27,7 +28,6 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(true);
-  const [isReviewerModalVisible, setIsReviewerModalVisible] = useState(false);
   const auditId = audit.id;
 
   const handleOk = () => {
@@ -72,19 +72,9 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
     setDescription(value);
   }
 
-  const onAddReviewer = (e) => {
-    setIsReviewerModalVisible(true);
-  }
-
-  const onAuditorAddSuccess = () => {
-    setIsReviewerModalVisible(false);
-    message.success('Auditor added!');
-    setTimeout(() => window.location.reload(false), 1000);
-  }
 
   const menu = (
     <Menu>
-      <Menu.Item onClick={onAddReviewer} icon={<EditOutlined/>}>Change Auditors</Menu.Item>
       <Menu.Item danger icon={<CloseCircleFilled/>}>Mark as Closed</Menu.Item>
     </Menu>
   );
@@ -99,9 +89,7 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
         <MapPrinter auditId={auditId} version={version} document={document} onComplete={onPrintComplete} />
         <TextArea placeholder="What's new in this version?" showCount maxLength={100} onChange={onChange} />
       </Modal>
-      <Modal title="Change Auditors" visible={isReviewerModalVisible} footer={null} onCancel={() => setIsReviewerModalVisible(false)}>
-        <AddAuditors auditId={auditId} onComplete={onAuditorAddSuccess} existingReviewers={audit.reviewers}/>
-      </Modal>
+      
     </>
   )
 };
@@ -125,12 +113,13 @@ const ReviewerOperations = ({audit, auditId, query, user}) => {
   const getDocuSignRecipientView = () => {
     get(`/api/v1/audits/${auditId}/docusign_recipient_view/?${query}`).then(data => {
       if(response.ok) {
-        window.location.replace(data.url);
+        window.location.assign(data.url);
       }
     });
   };
 
   const needsToSign = audit.reviewers.find(reviewer => reviewer.id === user.id && !!reviewer.needs_to_sign);
+  const isSent = audit.status === 'sent';
 
   return (
     <Space>
@@ -148,7 +137,7 @@ const ReviewerOperations = ({audit, auditId, query, user}) => {
           Submit Review <DownOutlined />
         </Button>
       </Dropdown>
-      {needsToSign && <Button type="primary" onClick={getDocuSignRecipientView}>Approve and Sign</Button>}
+      {needsToSign && <Button type="primary" onClick={getDocuSignRecipientView} disabled={!isSent}>Approve and Sign</Button>}
     </Space>
   )
 };
@@ -182,11 +171,13 @@ const ReviewHeader = ({ audit, handleVersionChange, version }) => {
 
 
 
-const AuditDetails = ({ auditId, isAdmin, query }) => {
+const AuditDetails = ({ auditId, isAdmin=false, query }) => {
   const [key, setKey] = useState('details'); // tab key
   const [audit, setAudit] = useState(null);
   const [user, setUser] = useState(null);
   const [version, setVersion] = useState(null);
+  const [isReviewerModalVisible, setIsReviewerModalVisible] = useState(null);
+
 
   const history = useHistory();
   const {tab} = useParams();
@@ -218,6 +209,21 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
     setVersion(nextVersion);
   }
 
+
+  const onEditReviewer = (e) => {
+    setIsReviewerModalVisible('Reviewers');
+  }
+
+  const onEditSigner = (e) => {
+    setIsReviewerModalVisible('Signers');
+  }
+
+  const onAuditorAddSuccess = () => {
+    setIsReviewerModalVisible(false);
+    message.success('Auditors updated!');
+    setTimeout(() => window.location.reload(false), 1000);
+  }
+
   if (!audit) return <div className="full-page-loader"><Spin size="large" /></div>;
 
   const document = audit.documents[versionIndex];
@@ -230,9 +236,7 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
     return 'error';
   }
 
-  const needsToSign = audit.reviewers.find(reviewer => reviewer.id === user.id && !!reviewer.needs_to_sign);
-
-
+  const needsToSign = !!audit.reviewers.find(reviewer => reviewer.id === user.id && !!reviewer.needs_to_sign);
   return (
     <div className="audit-content">
       <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange}/>
@@ -244,7 +248,7 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
         <TabPane tab="Details" key="details">
           <Row gutter={8}>
             <Col className="gutter-row" span={16}>
-              {audit.decription || <Text italic>No description</Text>}
+              {audit.description || <Text italic>No description</Text>}
               <Divider />
 
               <Text strong>What's New</Text><br /><br />
@@ -256,24 +260,13 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
               <Text strong>Map Details</Text> &nbsp; <a href={audit.map_url} target="_blank"><LinkOutlined/> Open</a><br /><br />
               On {new URL(audit.map_url).hostname} 
               <Divider />
-              <List
-                header={<Space><Text strong>Envelop Details</Text>{isAdmin && <Button type="link" size="small" icon={<LinkOutlined/>}>Open</Button>}</Space>}
-              >
-                <List.Item>
-                  Audit Details
-                </List.Item>
-                <List.Item>
-                <Space><span>Map &bull; v{audit.documents.length}.0</span> {latestDocument.file && <a href={latestDocument.file} target="_blank"><EyeOutlined/></a>}</Space>
-                </List.Item>
-                <List.Item>
-                  <Space>Agreement {(isAdmin || needsToSign) && audit.agreement && <a href={audit.agreement} target="_blank"><EyeOutlined/></a>}</Space>
-                </List.Item>
-              </List>
+              
+              <EnvelopDetails isAdmin={isAdmin} audit={audit} latestDocument={latestDocument} needsToSign={needsToSign}/>
               <Divider />
             </Col>
             <Col className="gutter-row" span={8}>
               <List
-                header={<Text strong>Signers</Text>}
+                header={<><Text strong>Signers</Text> <Button type="link" onClick={onEditSigner}> <EditOutlined /> Edit</Button></>}
                 dataSource={audit.reviewers.filter(reviewer => reviewer.needs_to_sign)}
                 renderItem={item => (
                   <List.Item actions={[
@@ -288,7 +281,7 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
               />
               <Divider />
               <List
-                header={<Text strong>Reviewers</Text>}
+                header={<><Text strong>Reviewers</Text> <Button type="link" onClick={onEditReviewer}> <EditOutlined /> Edit</Button></>}
                 dataSource={audit.reviewers.filter(reviewer => !reviewer.needs_to_sign)}
                 renderItem={(item, index) => (
                   <List.Item actions={[getBadgeType(item.verdict),]}>
@@ -312,6 +305,9 @@ const AuditDetails = ({ auditId, isAdmin, query }) => {
           <Annotator key={versionIndex} document={document} isAdmin={isAdmin} query={query} user={isAdmin ? user.username : user.contact.email}/>
         </TabPane>
       </Tabs>
+      <Modal title={`Update ${isReviewerModalVisible}`} visible={!!isReviewerModalVisible} footer={null} onCancel={() => setIsReviewerModalVisible(false)}>
+        <AddAuditors auditId={auditId} onComplete={onAuditorAddSuccess} existingReviewers={audit.reviewers} showSigners={isReviewerModalVisible==='Signers'}/>
+      </Modal>
     </div>
   );
 };
