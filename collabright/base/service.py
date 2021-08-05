@@ -11,7 +11,7 @@ from django.template.loader import render_to_string
 from docusign_esign import (ApiClient, SignHere, Tabs,
                             EnvelopeDefinition, Signer, Recipients,
                             EnvelopesApi, RecipientViewRequest, NameValue,
-                            DocumentFieldsInformation)
+                            DocumentFieldsInformation, ReturnUrlRequest)
 from .utils import (create_api_client, create_documents, create_signers,
                     assign_sign_here, create_sign_here)
 
@@ -458,6 +458,30 @@ class DocuSignService:
             account_id=DocuSignService.account_id,
             envelope_id=envelope_id,
             envelope=envelope_definition)
+
+        return results.to_dict()
+
+    @staticmethod
+    def sender_view_request(args={}):
+        '''
+            DocuSignService.sender_view_request({
+                'access_token': token,
+                'return_url': 'http://localhost:3000/redirect',
+                'envelope_id': envelope_id
+                })
+        '''
+        envelope_id = args['envelope_id']
+        access_token = args['access_token']
+        return_url = args['return_url']
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri, access_token=access_token)
+        envelope_api = EnvelopesApi(api_client)
+
+        results = envelope_api.create_sender_view(
+            DocuSignService.account_id,
+            envelope_id,
+            return_url_request=ReturnUrlRequest(return_url=return_url))
 
         return results.to_dict()
 
