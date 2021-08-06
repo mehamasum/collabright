@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip } from 'antd';
+import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip, Popconfirm } from 'antd';
 import { DownOutlined, QuestionOutlined, FileFilled, FileUnknownOutlined, EditOutlined, MoreOutlined, SyncOutlined, LinkOutlined, CloseCircleFilled, EyeOutlined } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
@@ -71,10 +71,26 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
     setDescription(value);
   }
 
+  const handleClose = () => {
+    patch(`/api/v1/audits/${audit.id}/`, {
+      is_open: false,
+    }).then(data => {
+      if (response.ok) {
+        window.location.reload(false);
+        return;
+      }
+      console.error(data);
+    });
+  };
+
 
   const menu = (
     <Menu>
-      <Menu.Item danger icon={<CloseCircleFilled />}>Mark as Closed</Menu.Item>
+      <Menu.Item key="close-audit" danger icon={<CloseCircleFilled />}>
+        <Popconfirm title="Are you sure?" onConfirm={handleClose}>
+          Mark as Closed
+        </Popconfirm>
+      </Menu.Item>
     </Menu>
   );
 
@@ -82,7 +98,7 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
     <>
       <Space>
         <SendEnvelop audit={audit} />
-        <Dropdown.Button type="primary" overlay={menu} onClick={onNewVersionClick} loading={loading}>Create Next Version</Dropdown.Button>
+        {audit.is_open && <Dropdown.Button type="primary" overlay={menu} onClick={onNewVersionClick} loading={loading}>Create Next Version</Dropdown.Button>}
       </Space>
       <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
         <MapPrinter auditId={auditId} version={version} document={document} onComplete={onPrintComplete} />
@@ -108,7 +124,7 @@ const ReviewerOperations = ({ audit, auditId, query, user, count }) => {
       console.error(data);
     });
   }
-  
+
   return (
     <Space>
       <Dropdown overlay={(
