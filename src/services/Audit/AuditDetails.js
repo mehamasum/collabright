@@ -96,7 +96,19 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
     <>
       <Space>
         <SendEnvelop audit={audit} />
-        {audit.is_open && <Dropdown.Button type="primary" overlay={menu} onClick={onNewVersionClick} loading={loading}>Create Next Version</Dropdown.Button>}
+        {audit.is_open &&
+          <Dropdown.Button
+            type="primary"
+            overlay={menu}
+            onClick={onNewVersionClick}
+            loading={loading}
+            buttonsRender={([leftButton, rightButton]) => [
+              React.cloneElement(leftButton, { loading }),
+              rightButton
+            ]}
+          >
+            Create Next Version
+          </Dropdown.Button>}
       </Space>
       <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
         <MapPrinter version={version} document={document} onComplete={onPrintComplete} />
