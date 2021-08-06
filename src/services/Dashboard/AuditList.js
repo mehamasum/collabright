@@ -65,10 +65,9 @@ const PostListView = (props) => {
 
   return (
     <>
-      <Text strong>Recent Activity</Text><br />
+      <Text strong>Recent Activity</Text><br /><br />
       <Table
         showHeader={false}
-        size="small"
         loading={loading}
         columns={columns}
         dataSource={tableData}

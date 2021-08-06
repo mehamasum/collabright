@@ -1,6 +1,6 @@
 import './index.css';
 import { Link } from "react-router-dom";
-import { Card, Alert } from 'antd';
+import { Card, Alert, Row, Col } from 'antd';
 import Banner from "./Banner";
 import AuditList from "./AuditList";
 import { useEffect, useState } from 'react';
@@ -31,7 +31,13 @@ const Dashboard = () => {
             description={<>Head over to <Link to="/settings/integrations">Settings</Link> to integrate Collabright with your GIS and eSignature platform</>}
             banner
           />}
-          <AuditList />
+
+          <Row>
+            <Col span={16} offset={4}>
+              <AuditList />
+            </Col>
+          </Row>
+
         </div>
       </Card>
     </div>
