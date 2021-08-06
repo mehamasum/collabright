@@ -193,7 +193,7 @@ class AuditViewSet(viewsets.ModelViewSet):
 
         if reviewer.audit.user.email:
             send_email_to_requester(reviewer.audit.user, reviewer.audit, reviewer, verdict)
-        send_notification_to_requester(reviewer.audit.user, reviewer.audit, reviewer, Notification.REVIEW)
+        send_notification_to_requester(reviewer.audit.user, reviewer.audit, reviewer, Notification.REVIEW, None)
         
         reviewer_serializer = ReviewerSerializer(reviewer)
         return Response(reviewer_serializer.data)

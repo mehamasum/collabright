@@ -14,10 +14,13 @@ class User(AbstractUser):
     is_org_admin = models.BooleanField(default=True)
 
 class Contact(models.Model):
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
     name = models.CharField(max_length=200, null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [['email', 'created_by']]
 
     def save(self, *args, **kwargs):
         if not self.name:
