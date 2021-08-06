@@ -24,3 +24,9 @@
   height: calc(100% - 72px);
   position: relative;
 }
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

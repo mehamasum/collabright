@@ -268,7 +268,7 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
             </Col>
             <Col className="gutter-row" span={8}>
               <List
-                header={<><Text strong>Signers</Text> <Button type="link" onClick={onEditSigner}> <EditOutlined /> Edit</Button></>}
+                header={<div className="list-header"><Text strong>Signers</Text> <Button type="link" onClick={onEditSigner}> <EditOutlined /> Edit</Button></div>}
                 dataSource={audit.reviewers.filter(reviewer => reviewer.needs_to_sign)}
                 renderItem={item => (
                   <List.Item actions={[
@@ -283,7 +283,7 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
               />
               <Divider />
               <List
-                header={<><Text strong>Reviewers</Text> <Button type="link" onClick={onEditReviewer}> <EditOutlined /> Edit</Button></>}
+                header={<div className="list-header"><Text strong>Reviewers</Text> <Button type="link" onClick={onEditReviewer}> <EditOutlined /> Edit</Button></div>}
                 dataSource={audit.reviewers.filter(reviewer => !reviewer.needs_to_sign)}
                 renderItem={(item, index) => (
                   <List.Item actions={[getBadgeType(item.verdict),]}>
