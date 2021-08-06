@@ -36,7 +36,7 @@ const PostListView = (props) => {
     get(`/api/v1/audits/?page=${page}`).then(data => {
       if (response.ok) {
         console.log(data);
-        setEmpty(data.count > 0);
+        setEmpty(data.count === 0);
         const newData = data.results
           .slice(0, 5)
           .sort((audit1, audit2) => {
@@ -67,8 +67,8 @@ const PostListView = (props) => {
   };
 
   return (
-    <Space direction="vertical">
-      <Text strong>Recent Activity</Text>
+    <>
+      <Text strong>Recent Activity</Text><br/>
       <Table
         showHeader={false}
         size="small"
@@ -78,7 +78,7 @@ const PostListView = (props) => {
         pagination={{ position: ['none', 'none'] }}
         onChange={onChange}
       />
-    </Space >
+    </>
   );
 };
 
