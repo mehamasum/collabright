@@ -21,7 +21,6 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from docusign_esign.client import api_exception
 import json
-from .utils import hash_is_valid
 
 
 def has_review_token(request):
