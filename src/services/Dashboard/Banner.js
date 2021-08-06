@@ -9,9 +9,10 @@ const Banner = () => {
       <div className="banner-header">
         <div className="banner-header-container">
           <div className="banner-header-content_container">
-            <Typography.Title>Work with people outside your GIS Provider in Collabright</Typography.Title>
+            <Typography.Title>Work with people outside your GIS provider in Collabright</Typography.Title>
             <Typography.Text className="banner-header-subtext">
-              A secure space to share maps and collaborate with other people, just like you do with your own team
+              A secure space to share maps and collaborate with external stakeholders, just like you do with your own team.
+              Collect feeback and get approval through eSignature, in a jiffy!
             </Typography.Text>
 
             <Button type="link" className="banner-cta">

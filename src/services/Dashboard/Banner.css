@@ -36,10 +36,10 @@
 
 .banner-header-image {
     display: flex;
-    width: 500px;
-    height: 500px;
+    width: 600px;
+    height: 600px;
     position: relative;
-    bottom: -100px;
+    bottom: -90px;
     right: -50px;
 }
 
