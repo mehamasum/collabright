@@ -8,31 +8,51 @@ import {LinkOutlined} from '@ant-design/icons';
 import {formatRelativeTime, truncateString} from '../../utils';
 import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
 
+
 const columns = [
   {
     title: 'Title',
     dataIndex: 'title',
     render: (text, record) => (
-      <Space direction="vertical">
-        <div><Tag size="small" color={record.is_open ? 'success' : 'purple'}>{record.is_open ? 'Open' : 'Closed'}</Tag><Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 64)}</Link></Typography.Text></div>
-        <small><Typography.Paragraph>Created {formatRelativeTime(record.created_at)}</Typography.Paragraph></small>
+      <Space>
+        <Tag size="small" color={record.is_open ? 'success' : 'purple'}>{record.is_open ? 'Open' : 'Closed'}</Tag>
+        <Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 20)}</Link></Typography.Text>
       </Space>
     )
   },
   {
-    title: 'Map',
+    title: 'Created',
     render: (text, record) => (
-      <Space size="middle">
-        <a target="_blank" rel="noopener noreferrer" href={record.map_url}><LinkOutlined/> Link</a>
-      </Space>
+      <Typography.Text>{formatRelativeTime(record.created_at)}</Typography.Text>
     ),
   },
   {
     title: 'Latest',
     render: (text, record) => (
-      <Typography.Text>v{record.documents.length}.0</Typography.Text>
+      <Space>
+        <Typography.Text>v{record.documents.length}.0</Typography.Text>
+      </Space>
     ),
-  }
+  },
+  {
+    title: 'Updated',
+    render: (text, record) => (
+      <Typography.Text>{formatRelativeTime(record.documents[record.documents.length-1]?.created_at)}</Typography.Text>
+    ),
+  },
+  {
+    title: 'Map',
+    render: (text, record) => (
+      <a target="_blank" rel="noopener noreferrer" href={record.map_url}><LinkOutlined/> Link</a>
+    )
+  },
+  {
+    title: 'Agreement',
+    render: (text, record) => (
+      <Typography.Text>{record.status === 'sent' ? 'Sent' : 'In Draft'}</Typography.Text>
+    )
+  },
+  
 ];
 
 const PostListView = (props) => {

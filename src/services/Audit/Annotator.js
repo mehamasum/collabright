@@ -8,7 +8,8 @@ const embedPath = process.env.NODE_ENV === 'production' ? '/static/mapviewer-lib
 const wvPath = process.env.NODE_ENV === 'production' ? '/static/webviewer-lib' : '/webviewer/webviewer-lib';
 const wvCss = process.env.NODE_ENV === 'production' ? '/static/webviewer-css/index.css' : '/webviewer-custom/webviewer-css/index.css';
 
-const Annotator = ({ document, isAdmin, query, user }) => {
+const Annotator = ({ document, isAdmin, query, user, onCountChange }) => {
+  const [count, setCount] = useState(0);
   const viewer = useRef(null);
   const documentId = document.id;
   const fileUrl = document.file || errorPdf;
@@ -16,6 +17,10 @@ const Annotator = ({ document, isAdmin, query, user }) => {
   const serializer = new XMLSerializer();
   const {post, get, put, del} = useFetch();
   const mapAnnotationToCommnet = {};
+
+  useEffect(() => {
+    onCountChange(count);
+  }, [count])
 
   const convertToXfdf = (changedAnnotation, action) => {
     let xfdfString = `<?xml version="1.0" encoding="UTF-8" ?><xfdf xmlns="http://ns.adobe.com/xfdf/" xml:space="preserve"><fields />`;
@@ -39,7 +44,7 @@ const Annotator = ({ document, isAdmin, query, user }) => {
         annotation: annotationId,
         xfdf: convertToXfdf(annotationString, action)
       };
-      console.log({ annotationId, annotation });
+      console.log({ annotationId, annotation, action });
       if (action==='add') {
         const newComment = await post(`/api/v1/comments/${isAdmin ? '' : '?'+query}`, comment);
         mapAnnotationToCommnet[annotationId] = newComment.id;
@@ -125,6 +130,7 @@ const Annotator = ({ document, isAdmin, query, user }) => {
           // List of added annotations
           addedAnnots.childNodes.forEach((child) => {
             sendAnnotationChange(child, 'add');
+            setCount(count => count+1);
           });
 
           // List of modified annotations
@@ -135,6 +141,7 @@ const Annotator = ({ document, isAdmin, query, user }) => {
           // List of deleted annotations
           deletedAnnots.childNodes.forEach((child) => {
             sendAnnotationChange(child, 'delete');
+            setCount(count => count-1);
           });
         });
       });
