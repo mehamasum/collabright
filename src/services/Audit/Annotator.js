@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import WebViewer from '@pdftron/webviewer';
 import useFetch from "use-http";
-import errorPdf from '../../assets/error.pdf';
 import { initializeHTMLViewer } from '@pdftron/webviewer-html';
 
 const embedPath = process.env.NODE_ENV === 'production' ? '/static/mapviewer-lib/index.html' : '/embeds/mapviewer-lib/index.html';
@@ -12,10 +11,9 @@ const Annotator = ({ document, isAdmin, query, user, onCountChange }) => {
   const [count, setCount] = useState(0);
   const viewer = useRef(null);
   const documentId = document.id;
-  const fileUrl = document.file || errorPdf;
 
   const serializer = new XMLSerializer();
-  const {post, get, put, del} = useFetch();
+  const { post, get, put, del } = useFetch();
   const mapAnnotationToCommnet = {};
 
   useEffect(() => {
@@ -44,16 +42,15 @@ const Annotator = ({ document, isAdmin, query, user, onCountChange }) => {
         annotation: annotationId,
         xfdf: convertToXfdf(annotationString, action)
       };
-      console.log({ annotationId, annotation, action });
-      if (action==='add') {
-        const newComment = await post(`/api/v1/comments/${isAdmin ? '' : '?'+query}`, comment);
+      if (action === 'add') {
+        const newComment = await post(`/api/v1/comments/${isAdmin ? '' : '?' + query}`, comment);
         mapAnnotationToCommnet[annotationId] = newComment.id;
-      } else if (action==='modify') {
+      } else if (action === 'modify') {
         const commentId = mapAnnotationToCommnet[annotationId];
-        put(`/api/v1/comments/${commentId}/${isAdmin ? '' : '?'+query}`, comment);
-      } else if (action==='delete') {
+        put(`/api/v1/comments/${commentId}/${isAdmin ? '' : '?' + query}`, comment);
+      } else if (action === 'delete') {
         const commentId = mapAnnotationToCommnet[annotation.textContent];
-        del(`/api/v1/comments/${commentId}/${isAdmin ? '' : '?'+query}`);
+        del(`/api/v1/comments/${commentId}/${isAdmin ? '' : '?' + query}`);
       }
     }
   }
@@ -89,7 +86,7 @@ const Annotator = ({ document, isAdmin, query, user, onCountChange }) => {
       const htmlModule = await initializeHTMLViewer(instance);
 
       htmlModule.loadHTMLPage(
-        `${embedPath}?document_id=${documentId}${isAdmin ? '' : '&'+query}`,
+        `${embedPath}?document_id=${documentId}${isAdmin ? '' : '&' + query}`,
         1800,
         1000
       );
@@ -98,8 +95,7 @@ const Annotator = ({ document, isAdmin, query, user, onCountChange }) => {
 
 
       documentViewer.on('documentLoaded', async () => {
-        const data = await get(`/api/v1/comments?document=${documentId}${isAdmin ? '' : '&'+query}`);
-        console.log({comment: data});
+        const data = await get(`/api/v1/comments?document=${documentId}${isAdmin ? '' : '&' + query}`);
         data.results.forEach(async (comment) => {
           mapAnnotationToCommnet[comment.annotation] = comment.id;
           const annotations = await annotationManager.importAnnotCommand(comment.xfdf);
@@ -130,18 +126,18 @@ const Annotator = ({ document, isAdmin, query, user, onCountChange }) => {
           // List of added annotations
           addedAnnots.childNodes.forEach((child) => {
             sendAnnotationChange(child, 'add');
-            setCount(count => count+1);
+            setCount(count => count + 1);
           });
 
           // List of modified annotations
           modifiedAnnots.childNodes.forEach((child) => {
             sendAnnotationChange(child, 'modify');
           });
-          
+
           // List of deleted annotations
           deletedAnnots.childNodes.forEach((child) => {
             sendAnnotationChange(child, 'delete');
-            setCount(count => count-1);
+            setCount(count => count - 1);
           });
         });
       });

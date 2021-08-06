@@ -26,17 +26,14 @@
           const reviewerToken = urlParams.get('token');
           const authToken = localStorage.getItem("token");
           const fetchUrl = "/api/v1/documents/" + documentId + "/" + (reviewerToken ? "?token="+reviewerToken : "");
-          console.log({fetchUrl, authToken, reviewerToken});
-          // TODO: remove base-url
           fetch(fetchUrl, {
             headers: {
               'Authorization': reviewerToken ? undefined : 'Token ' + authToken,
               'Content-Type': 'application/json'
             }
           })
-          .then(function (response) { console.log(response); return response.json() })
+          .then(function (response) { return response.json() })
           .then(function (webmapJson) {
-            console.log(webmapJson);
             var webmap = arcgisUtils.createMap({
               item: globalJSON.parse(webmapJson.map_item),
               itemData: globalJSON.parse(webmapJson.map_item_data),

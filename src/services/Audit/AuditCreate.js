@@ -1,7 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Layout, Alert, Form, Input, Button, Row, Col, Divider, Upload } from 'antd';
-import { Steps, message, Space, Typography } from 'antd';
-
+import React, { useState } from 'react';
+import { Card, Layout, Alert, Form, Input, Button, Row, Col, Steps } from 'antd';
 import { useHistory } from "react-router-dom";
 import useFetch from 'use-http';
 import MapPrinter from './MapPrinter';
@@ -10,7 +8,6 @@ import MapPrinter from './MapPrinter';
 import './AuditCreate.css';
 
 const { Step } = Steps;
-const { Text } = Typography;
 
 const AuditForm = ({ onComplete }) => {
   const [errorMsg, setErrorMsg] = useState(null);
@@ -98,7 +95,6 @@ const PostCreateView = () => {
   const [audit, setAudit] = React.useState(0);
 
   const onComplete = (data) => {
-    console.log(data);
     setAudit(data);
     setCurrent(current + 1);
   };
@@ -122,7 +118,7 @@ const PostCreateView = () => {
             <Col span={16} offset={4}>
               <div className="audit-create-step">
                 {current === 0 && <AuditForm onComplete={onComplete} />}
-                {current === 1 && <MapPrinter auditId={audit.id} document={audit.documents[0]} onComplete={onVerify} version={1} renderNextButton />}
+                {current === 1 && <MapPrinter document={audit.documents[0]} onComplete={onVerify} version={1} renderNextButton />}
               </div>
             </Col>
           </Row>

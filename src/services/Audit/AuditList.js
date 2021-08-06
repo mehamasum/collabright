@@ -1,11 +1,11 @@
 import './AuditList.css';
 
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
-import {Avatar, Button, Card, Space, Table, Tag, Typography} from 'antd';
-import {Link, useHistory} from "react-router-dom";
-import {LinkOutlined} from '@ant-design/icons';
-import {formatRelativeTime, truncateString} from '../../utils';
+import { Button, Card, Space, Table, Tag, Typography } from 'antd';
+import { Link } from "react-router-dom";
+import { LinkOutlined } from '@ant-design/icons';
+import { formatRelativeTime, truncateString } from '../../utils';
 import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
 
 
@@ -37,13 +37,13 @@ const columns = [
   {
     title: 'Updated',
     render: (text, record) => (
-      <Typography.Text>{formatRelativeTime(record.documents[record.documents.length-1]?.created_at)}</Typography.Text>
+      <Typography.Text>{formatRelativeTime(record.documents[record.documents.length - 1]?.created_at)}</Typography.Text>
     ),
   },
   {
     title: 'Map',
     render: (text, record) => (
-      <a target="_blank" rel="noopener noreferrer" href={record.map_url}><LinkOutlined/> Link</a>
+      <a target="_blank" rel="noopener noreferrer" href={record.map_url}><LinkOutlined /> Link</a>
     )
   },
   {
@@ -52,7 +52,7 @@ const columns = [
       <Typography.Text>{record.status === 'sent' ? 'Sent' : 'In Draft'}</Typography.Text>
     )
   },
-  
+
 ];
 
 const PostListView = (props) => {
@@ -67,8 +67,7 @@ const PostListView = (props) => {
   const fetchList = (page) => {
     get(`/api/v1/audits/?page=${page}`).then(data => {
       if (response.ok) {
-        console.log(data);
-        const newData = data.results.map(audit => ({ ...audit, key: audit.id}));
+        const newData = data.results.map(audit => ({ ...audit, key: audit.id }));
         setPage({
           ...page,
           total: data.count
@@ -85,8 +84,7 @@ const PostListView = (props) => {
 
 
   const onChange = (nextPage) => {
-    console.log(nextPage);
-    fetchList(nextPage.current);  
+    fetchList(nextPage.current);
   };
 
   return (
@@ -94,7 +92,7 @@ const PostListView = (props) => {
       <Card title="Audits" extra={
         <Space>
           <Button icon={<SearchOutlined />}>Search</Button>
-          <Link to={`/audits/new`}><Button type="primary" icon={<PlusOutlined/>}>Audit Request</Button></Link>
+          <Link to={`/audits/new`}><Button type="primary" icon={<PlusOutlined />}>Audit Request</Button></Link>
         </Space>
       }>
         <Table

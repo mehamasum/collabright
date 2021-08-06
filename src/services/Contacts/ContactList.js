@@ -3,7 +3,7 @@ import './ContactList.css';
 import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
 import { Button, Card, Space, Table, Modal, Typography, Form, Input, } from 'antd';
-import { formatRelativeTime, truncateString } from '../../utils';
+import { formatRelativeTime } from '../../utils';
 import { EditOutlined, DeleteOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 
 
@@ -16,7 +16,6 @@ const ContactForm = ({ editingContact, onComplete }) => {
     const url = editingContact ? `/api/v1/contacts/${editingContact.id}/` : '/api/v1/contacts/';
     method(url, values).then(data => {
       if (response.ok) {
-        console.log(data);
         onComplete(data);
         return;
       }
@@ -96,7 +95,6 @@ const ContactList = (props) => {
   };
 
   const handleCancel = () => {
-    console.log('on cancel');
     setIsModalVisible(false);
     setEditingContact(null);
   };
@@ -104,7 +102,6 @@ const ContactList = (props) => {
   const fetchList = (page) => {
     get(`/api/v1/contacts/?page=${page}`).then(data => {
       if (response.ok) {
-        console.log(data);
         const newData = data.results.map(audit => ({ ...audit, key: audit.id }));
         setPage({
           ...page,
@@ -122,7 +119,6 @@ const ContactList = (props) => {
 
 
   const onChange = (nextPage) => {
-    console.log(nextPage);
     fetchList(nextPage.current);
   };
 
@@ -162,9 +158,9 @@ const ContactList = (props) => {
       <Card title="Contacts" extra={
         <Space>
           <Button icon={<SearchOutlined />}>Search</Button>
-          <Button type="primary" onClick={showModal} icon={<PlusOutlined/>}>New Contact</Button>
+          <Button type="primary" onClick={showModal} icon={<PlusOutlined />}>New Contact</Button>
         </Space>
-        
+
       }>
         <Table
           loading={loading}

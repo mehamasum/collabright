@@ -1,21 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Typography, Spin } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Spin } from 'antd';
 
 import useFetch from 'use-http';
 import { loadModules } from 'esri-loader';
 
 import './EsriMap.css';
 
-const { Text } = Typography;
-
 const EsriMap = ({ className, homeButtonId, documentId, onLoad, isAdmin, query }) => {
   const globalJSON = JSON;
-  const { get, post, response } = useFetch();
-  const [loading, setLoading] = useState(true);
+  const { get, response } = useFetch();
 
   const [document, setDocument] = useState(null);
   const mapDivId = (Math.random() + 1).toString(36).substring(7);
-  const mapHomeDivId = (Math.random() + 1).toString(36).substring(7);
 
   useEffect(() => {
     get(`/api/v1/documents/${documentId}/${isAdmin ? '' : '?' + query}`).then(data => {
@@ -27,7 +23,7 @@ const EsriMap = ({ className, homeButtonId, documentId, onLoad, isAdmin, query }
 
   useEffect(() => {
     if (!document) return;
-    
+
     loadModules([
       "esri/map",
       "esri/arcgis/utils",
@@ -57,7 +53,7 @@ const EsriMap = ({ className, homeButtonId, documentId, onLoad, isAdmin, query }
         }, mapDivId);
         webmap.then(function (resp) {
           const map = resp.map;
-          const home = new HomeButton({map}, homeButtonId);
+          const home = new HomeButton({ map }, homeButtonId);
           home.startup();
           onLoad && onLoad(map, modules);
         });

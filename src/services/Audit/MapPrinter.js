@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Typography, Button } from 'antd';
 
 import useFetch from 'use-http';
@@ -7,9 +7,8 @@ import './MapPrinter.css';
 
 const { Text } = Typography;
 
-const MapPrinter = ({ auditId, version, document, onComplete, renderNextButton }) => {
-  const globalJSON = JSON;
-  const { get, patch, response } = useFetch();
+const MapPrinter = ({ version, document, onComplete, renderNextButton }) => {
+  const { patch } = useFetch();
   const [ loading, setLoading ] = useState(true);
   
   const onLoad = (map, modules) => {
@@ -19,7 +18,6 @@ const MapPrinter = ({ auditId, version, document, onComplete, renderNextButton }
 
     setTimeout(() => {
       const Web_Map_as_JSON = modules.JSON.toJson(printTask._getPrintDefinition(map, printParams));
-      console.log('native', Web_Map_as_JSON);
       patch(`/api/v1/documents/${document.id}/`, {
         map_print_definition: Web_Map_as_JSON
       }).then(update => {

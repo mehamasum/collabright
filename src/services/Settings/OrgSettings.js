@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Input, message, Tag, Form, Alert, Spin } from 'antd';
+import { Button, Input, message, Form, Alert, Spin } from 'antd';
 import useFetch from 'use-http';
-import { Tabs } from 'antd';
 
-const { TabPane } = Tabs;
-
-function callback(key) {
-  console.log(key);
-}
 
 const OrgSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -18,7 +12,6 @@ const OrgSettings = () => {
   useEffect(() => {
     get('/api/v1/organizations/').then(res => {
       if (response.ok) {
-        console.log(res);
         setData(res.results[0]);
         setLoading(false);
         setError(null);
@@ -50,8 +43,6 @@ const OrgSettings = () => {
   if (error?.non_field_errors) return <Alert message={error.non_field_errors[0]} type="error" showIcon />
 
   if (loading) return <div className="full-page-loader"><Spin size="large" /></div>;
-
-  console.log(data);
 
   return (
     <>

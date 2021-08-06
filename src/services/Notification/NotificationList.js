@@ -2,10 +2,10 @@ import './NotificationList.css';
 
 import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
-import { Avatar, Button, Card, Space, Table, Tag, Typography } from 'antd';
-import { Link, useHistory } from "react-router-dom";
+import { Button, Card, Space, Table, Typography } from 'antd';
+import { Link, } from "react-router-dom";
 import { BellOutlined } from '@ant-design/icons';
-import { formatRelativeTime, truncateString } from '../../utils';
+import { formatRelativeTime } from '../../utils';
 import { CommentOutlined, AuditOutlined } from '@ant-design/icons';
 
 
@@ -31,10 +31,10 @@ const NotificationList = (props) => {
 
   const getNotificationText = (record) => {
     let verb = null, icon = null, target = null;
-    switch(record.type) {
+    switch (record.type) {
       case 'COMMENT':
         verb = 'commented';
-        icon = <CommentOutlined/>;
+        icon = <CommentOutlined />;
         target = `in v${JSON.parse(record.payload).version}.0 of ${record.audit.title}`
         break;
       case 'REVIEW':
@@ -42,16 +42,17 @@ const NotificationList = (props) => {
         icon = <AuditOutlined />;
         target = `in ${record.audit.title}`
         break;
+      default:
+        break;
     }
-    return {icon, verb, target};
+    return { icon, verb, target };
   }
 
   const columns = [
     {
-      title: <BellOutlined/>,
+      title: <BellOutlined />,
       render: (text, record) => {
-        const {verb, icon, target} = getNotificationText(record);
-        console.log({verb, icon})
+        const { verb, icon, target } = getNotificationText(record);
         const notification = `${record.reviewer.contact.email} ${verb} ${target}`
         return (
           <Space direction="vertical">
@@ -69,20 +70,19 @@ const NotificationList = (props) => {
         )
       }
     },
-  {
-    title: '',
+    {
+      title: '',
       render: (text, record) => {
         return (
           <Button type="link"><Link to={`/audits/${record.audit.id}/`}>Open</Link></Button>
         )
       }
-  }
+    }
   ];
 
   const fetchList = (page) => {
     get(`/api/v1/notifications/?page=${page}`).then(data => {
       if (response.ok) {
-        console.log(data);
         const newData = data.results.map(notification => ({ ...notification, key: notification.id }));
         setPage({
           ...page,
@@ -100,7 +100,6 @@ const NotificationList = (props) => {
 
 
   const onChange = (nextPage) => {
-    console.log(nextPage);
     fetchList(nextPage.current);
   };
 

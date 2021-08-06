@@ -7,14 +7,12 @@ const { Option } = Select;
 const SearchAuditor = ({ className, onChange, reviewers }) => {
   const [data, setData] = useState([]);
   const [value, setValue] = useState(undefined);
-  const { get, post, patch, response } = useFetch();
+  const { get, response } = useFetch();
 
   const getData = (searchText, onSuccess) => {
-    console.log('getting');
     get(`/api/v1/contacts/?search=${searchText}`)
     .then(result => {
       if (response.ok) {
-        console.log('got', result);
         onSuccess(result.results);
       }
       console.error(result);
@@ -22,7 +20,6 @@ const SearchAuditor = ({ className, onChange, reviewers }) => {
   }
 
   const handleSearch = searchText => {
-    console.log('searching', searchText);
     if (searchText) {
       getData(searchText, data => setData(data));
     } else {
@@ -31,7 +28,6 @@ const SearchAuditor = ({ className, onChange, reviewers }) => {
   };
 
   const handleChange = value => {
-    console.log('handleChange', value);
     setValue(value);
     onChange(value);
   };
