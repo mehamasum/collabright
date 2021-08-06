@@ -108,18 +108,7 @@ const ReviewerOperations = ({ audit, auditId, query, user, count }) => {
       console.error(data);
     });
   }
-
-  const getDocuSignRecipientView = () => {
-    get(`/api/v1/audits/${auditId}/docusign_recipient_view/?${query}`).then(data => {
-      if (response.ok) {
-        window.location.assign(data.url);
-      }
-    });
-  };
-
-  const needsToSign = audit.reviewers.find(reviewer => reviewer.id === user.id && !!reviewer.needs_to_sign);
-  const isSent = audit.status === 'sent';
-
+  
   return (
     <Space>
       <Dropdown overlay={(
@@ -132,11 +121,10 @@ const ReviewerOperations = ({ audit, auditId, query, user, count }) => {
           </Menu.Item>
         </Menu>
       )}>
-        <Button type={!needsToSign && "primary"}>
+        <Button type="primary">
           Submit Review {count > 0 && <>&nbsp; <Badge count={count} /> &nbsp;</>} <DownOutlined />
         </Button>
       </Dropdown>
-      {needsToSign && <Button type="primary" onClick={getDocuSignRecipientView} disabled={!isSent}>Approve and Sign</Button>}
     </Space>
   )
 };
