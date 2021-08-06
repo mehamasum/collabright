@@ -11,9 +11,9 @@ import './AuditDetails.css';
 import { message } from 'antd';
 import EsriMap from './EsriMap';
 import { RedCross, GreenTick } from '../../components/icons';
-import {useHistory, useParams} from "react-router";
+import { useHistory, useParams } from "react-router";
 import { Link } from 'react-router-dom';
-import EnvelopDetails from './EnvelopDetails';
+import EnvelopDetails, { SendEnvelop } from './EnvelopDetails';
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -23,8 +23,8 @@ const { TextArea } = Input;
 
 
 const AdminOperations = ({ post, patch, response, audit, version }) => {
-  const [ document, setDocument ] = useState(null);
-  const [ description, setDescription ] = useState('');
+  const [document, setDocument] = useState(null);
+  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(true);
@@ -43,7 +43,6 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
       }
       console.error(data);
     });
-     
   };
 
   const onPrintComplete = () => {
@@ -75,23 +74,26 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
 
   const menu = (
     <Menu>
-      <Menu.Item danger icon={<CloseCircleFilled/>}>Mark as Closed</Menu.Item>
+      <Menu.Item danger icon={<CloseCircleFilled />}>Mark as Closed</Menu.Item>
     </Menu>
   );
 
   return (
     <>
-      <Dropdown.Button type="primary" overlay={menu} onClick={onNewVersionClick} loading={loading}>Create Next Version</Dropdown.Button>
+      <Space>
+        <SendEnvelop audit={audit} />
+        <Dropdown.Button type="primary" overlay={menu} onClick={onNewVersionClick} loading={loading}>Create Next Version</Dropdown.Button>
+      </Space>
       <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
         <MapPrinter auditId={auditId} version={version} document={document} onComplete={onPrintComplete} />
         <TextArea placeholder="What's new in this version?" showCount maxLength={100} onChange={onChange} />
       </Modal>
-      
+
     </>
   )
 };
 
-const ReviewerOperations = ({audit, auditId, query, user, count}) => {
+const ReviewerOperations = ({ audit, auditId, query, user, count }) => {
   const { get, post, response } = useFetch();
 
   const setVerdict = (verdict) => () => {
@@ -99,7 +101,7 @@ const ReviewerOperations = ({audit, auditId, query, user, count}) => {
       verdict
     }).then(data => {
       if (response.ok) {
-        message.success(`Review Submitted - ${verdict==='REQUESTED_CHANGES' ? 'Requested Change' : 'Approved'}`);
+        message.success(`Review Submitted - ${verdict === 'REQUESTED_CHANGES' ? 'Requested Change' : 'Approved'}`);
         setTimeout(() => window.location.reload(false), 1000);
         return;
       }
@@ -109,7 +111,7 @@ const ReviewerOperations = ({audit, auditId, query, user, count}) => {
 
   const getDocuSignRecipientView = () => {
     get(`/api/v1/audits/${auditId}/docusign_recipient_view/?${query}`).then(data => {
-      if(response.ok) {
+      if (response.ok) {
         window.location.assign(data.url);
       }
     });
@@ -131,7 +133,7 @@ const ReviewerOperations = ({audit, auditId, query, user, count}) => {
         </Menu>
       )}>
         <Button type={!needsToSign && "primary"}>
-          Submit Review {count > 0 && <>&nbsp; <Badge count={count}/> &nbsp;</>} <DownOutlined />
+          Submit Review {count > 0 && <>&nbsp; <Badge count={count} /> &nbsp;</>} <DownOutlined />
         </Button>
       </Dropdown>
       {needsToSign && <Button type="primary" onClick={getDocuSignRecipientView} disabled={!isSent}>Approve and Sign</Button>}
@@ -168,7 +170,7 @@ const ReviewHeader = ({ audit, handleVersionChange, version }) => {
 
 
 
-const AuditDetails = ({ auditId, isAdmin=false, query }) => {
+const AuditDetails = ({ auditId, isAdmin = false, query }) => {
   const [count, setCount] = useState(0);
   const [audit, setAudit] = useState(null);
   const [user, setUser] = useState(null);
@@ -176,15 +178,15 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
   const [isReviewerModalVisible, setIsReviewerModalVisible] = useState(null);
 
   const onCountChange = (newCount) => {
-    console.log({count, newCount});
+    console.log({ count, newCount });
     setCount(newCount);
   }
 
 
   const history = useHistory();
-  const {tab} = useParams();
+  const { tab } = useParams();
   const handleTabClick = key => {
-    history.push(`/${isAdmin ? 'audits' :'review'}/${auditId}/${key}${isAdmin ? '' : '?'+query}`);
+    history.push(`/${isAdmin ? 'audits' : 'review'}/${auditId}/${key}${isAdmin ? '' : '?' + query}`);
   }
 
   const versionIndex = parseInt(version, 10) - 1;
@@ -194,7 +196,7 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
     get(isAdmin ? '/api/auth/users/me/' : `/api/v1/audits/${auditId}/me?${query}`).then(userData => {
       if (response.ok) {
         setUser(userData);
-        get(`/api/v1/audits/${auditId}/${isAdmin ? '' : '?'+query}`).then(data => {
+        get(`/api/v1/audits/${auditId}/${isAdmin ? '' : '?' + query}`).then(data => {
           if (response.ok) {
             setVersion(data.documents.length);
             setAudit(data);
@@ -202,7 +204,7 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
         });
       }
     });
-    
+
   }, []);
 
   function handleVersionChange(value) {
@@ -229,23 +231,23 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
   if (!audit) return <div className="full-page-loader"><Spin size="large" /></div>;
 
   const document = audit.documents[versionIndex];
-  const latestDocument = audit.documents[audit.documents.length-1];
+  const latestDocument = audit.documents[audit.documents.length - 1];
 
   const getBadgeType = (verdict) => {
-    if(verdict==='PENDING') return <QuestionOutlined />;
-    if(verdict==='APPROVED') return <GreenTick/>;
-    if(verdict==='REQUESTED_CHANGES') return <RedCross/>;
+    if (verdict === 'PENDING') return <QuestionOutlined />;
+    if (verdict === 'APPROVED') return <GreenTick />;
+    if (verdict === 'REQUESTED_CHANGES') return <RedCross />;
     return 'error';
   }
 
   const needsToSign = !!audit.reviewers.find(reviewer => reviewer.id === user.id && !!reviewer.needs_to_sign);
   return (
     <div className="audit-content">
-      <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange}/>
+      <ReviewHeader audit={audit} version={version} handleVersionChange={handleVersionChange} />
 
       <Tabs className="reviewer-tabs" defaultActiveKey={tab || "details"} onChange={handleTabClick} tabBarExtraContent={
-        isAdmin ? <AdminOperations post={post} patch={patch} response={response} audit={audit} version={audit.documents.length + 1}/> :
-        <ReviewerOperations user={user} auditId={auditId} query={query} audit={audit} count={count}/>
+        isAdmin ? <AdminOperations post={post} patch={patch} response={response} audit={audit} version={audit.documents.length + 1} /> :
+          <ReviewerOperations user={user} auditId={auditId} query={query} audit={audit} count={count} />
       }>
         <TabPane tab="Details" key="details">
           <Row gutter={8}>
@@ -259,11 +261,11 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
               {document.description || <Text italic>No description</Text>}
               <Divider />
 
-              <Text strong>Map</Text> &nbsp; <a href={audit.map_url} target="_blank"><LinkOutlined/> Open</a><br /><br />
-              On {new URL(audit.map_url).hostname} 
+              <Text strong>Map</Text> &nbsp; <a href={audit.map_url} target="_blank"><LinkOutlined /> Open</a><br /><br />
+              On {new URL(audit.map_url).hostname}
               <Divider />
-              
-              <EnvelopDetails isAdmin={isAdmin} audit={audit} latestDocument={latestDocument} needsToSign={needsToSign}/>
+
+              <EnvelopDetails isAdmin={isAdmin} audit={audit} latestDocument={latestDocument} needsToSign={needsToSign} />
               <Divider />
             </Col>
             <Col className="gutter-row" span={8}>
@@ -273,10 +275,10 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
                 renderItem={item => (
                   <List.Item actions={[
                     getBadgeType(item.verdict),
-                    item.has_signed ? <FileFilled style={{ color: '#52c41a' }}/> : <FileUnknownOutlined />,
+                    item.has_signed ? <FileFilled style={{ color: '#52c41a' }} /> : <FileUnknownOutlined />,
                   ]}>
                     <Tooltip title={item.contact.name}>
-                      <Text>{item.contact.email} {item.id === user.id ? <Text type="secondary">(You)</Text>:''}</Text>
+                      <Text>{item.contact.email} {item.id === user.id ? <Text type="secondary">(You)</Text> : ''}</Text>
                     </Tooltip>
                   </List.Item>
                 )}
@@ -288,27 +290,27 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
                 renderItem={(item, index) => (
                   <List.Item actions={[getBadgeType(item.verdict),]}>
                     <Tooltip title={item.contact.name}>
-                      <Text>{item.contact.email} {item.id === user.id ? <Text type="secondary">(You)</Text>:''}</Text>
+                      <Text>{item.contact.email} {item.id === user.id ? <Text type="secondary">(You)</Text> : ''}</Text>
                     </Tooltip>
                   </List.Item>
                 )}
               />
               <Divider />
-              <Button>Unsubscribe</Button><br/>
+              <Button>Unsubscribe</Button><br />
               <small><Text type="secondary">Stop receiving notifications for this version</Text></small>
               <Divider />
             </Col>
           </Row>
         </TabPane>
         <TabPane tab="Interactive Map" key="map">
-          <EsriMap documentId={document.id} className="map-frame" isAdmin={isAdmin} query={query} homeButtonId="details-map-home-btn"/>
+          <EsriMap documentId={document.id} className="map-frame" isAdmin={isAdmin} query={query} homeButtonId="details-map-home-btn" />
         </TabPane>
-        <TabPane tab={document.comment_count > 0 ? `Discussion (${document.comment_count})`:'Discussion'} key="discussion">
-          <Annotator key={versionIndex} document={document} isAdmin={isAdmin} query={query} user={isAdmin ? user.username : user.contact.email} count={count} onCountChange={onCountChange}/>
+        <TabPane tab={document.comment_count > 0 ? `Discussion (${document.comment_count})` : 'Discussion'} key="discussion">
+          <Annotator key={versionIndex} document={document} isAdmin={isAdmin} query={query} user={isAdmin ? user.username : user.contact.email} count={count} onCountChange={onCountChange} />
         </TabPane>
       </Tabs>
       <Modal title={`Update ${isReviewerModalVisible}`} visible={!!isReviewerModalVisible} footer={null} onCancel={() => setIsReviewerModalVisible(false)}>
-        <AddAuditors auditId={auditId} onComplete={onAuditorAddSuccess} existingReviewers={audit.reviewers} showSigners={isReviewerModalVisible==='Signers'}/>
+        <AddAuditors auditId={auditId} onComplete={onAuditorAddSuccess} existingReviewers={audit.reviewers} showSigners={isReviewerModalVisible === 'Signers'} />
       </Modal>
     </div>
   );
