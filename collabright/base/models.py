@@ -106,6 +106,7 @@ class Notification(models.Model):
     reviewer = models.ForeignKey(Reviewer, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True)
+    payload = models.TextField(null=True, blank=True)
     class Meta:
         ordering = ['created_at']
 

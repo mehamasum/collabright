@@ -54,12 +54,13 @@ def send_email_to_requester(user, audit, reviewer, verdict):
         html_message=msg_html,
     )
 
-def send_notification_to_requester(user, audit, reviewer, notifcation_type):
+def send_notification_to_requester(user, audit, reviewer, notifcation_type, payload):
     return Notification.objects.create(
         type=notifcation_type,
         user=user,
         audit=audit,
-        reviewer=reviewer
+        reviewer=reviewer,
+        payload=payload
     )
 
 def json_decoder(payload):
