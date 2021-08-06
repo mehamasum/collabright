@@ -117,12 +117,6 @@ class ReviewerService:
             })
             print('create_signers', results)
 
-        if audit.status == Audit.CREATED:
-            try:
-                AuditService.update_audit_envelope(user, audit)
-            except:
-                pass
-
         return results
 
 
