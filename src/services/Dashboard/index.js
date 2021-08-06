@@ -19,8 +19,8 @@ const Dashboard = ({ ...props }) => {
         if(data.count === 0) {
           return setConnected(false);
         }
-        const expired = !!data.results.find(integration => new Date(integration.refresh_expiry_date) < new Date() && new Date(integration.expiry_date) < new Date());
-        setConnected(expired);
+        const expired = data.results.find(integration => new Date(integration.refresh_expiry_date) < new Date() && new Date(integration.expiry_date) < new Date());
+        setConnected(!expired);
       }
     });
   }, []);
@@ -29,7 +29,7 @@ const Dashboard = ({ ...props }) => {
       <Card title="Dashboard">
         <Banner />
         <div className="dash-content">
-          {connected && <Alert className="no-integration-alert" 
+          {!connected && <Alert className="no-integration-alert" 
             message="Integrations are not connected!"
             description={<>Head over to <Link to="/settings/integrations">Settings</Link> to integrate Collabright with your GIS and eSignature platform</>}
             banner
