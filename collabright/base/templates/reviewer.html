@@ -5,7 +5,7 @@ Hello <strong>{{ name }}</strong>,<br/>
 Your review has been requested by <strong>{{ username }}</strong> in an Audit.<br/>
 <br/>
 Audit Name: <strong>{{ audit_title }}</strong><br/>
-Please click on this link to review and sign:<br/>
+Please click on this link to review:<br/>
 {% endblock pre_cta %}
 {% block cta %}<a target="_blank" href="{{ presigned_url }}">Open Audit to Review</a>{% endblock cta %}
 {% block post_cta %}

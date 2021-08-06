@@ -26,7 +26,6 @@ const columns = [
 ];
 
 const PostListView = (props) => {
-  const [empty, setEmpty] = useState(true);
   const [, setPage] = useState({
     current: 1,
     pageSize: 10,
@@ -38,7 +37,6 @@ const PostListView = (props) => {
   const fetchList = (page) => {
     get(`/api/v1/audits/?page=${page}`).then(data => {
       if (response.ok) {
-        setEmpty(data.count === 0);
         const newData = data.results
           .slice(0, 5)
           .sort((audit1, audit2) => {
@@ -60,8 +58,6 @@ const PostListView = (props) => {
   useEffect(() => {
     fetchList(1);
   }, []);
-
-  if (empty) return null;
 
   const onChange = (nextPage) => {
     fetchList(nextPage.current);
