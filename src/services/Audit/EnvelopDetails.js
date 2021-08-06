@@ -25,7 +25,7 @@ const SendEnvelop = ({ audit }) => {
   const hasEnvelop = !!audit.envelope_id;
   const signers = audit.reviewers.filter(reviewer => reviewer.needs_to_sign);
   const hasSigners = signers.length > 0;
-  const allSignersApproved = signers.reduce((prev, curr) => curr.has_signed && prev, true);
+  const allSignersApproved = signers.every(val => val.verdict === 'APPROVED');
   const isEnvelopSent = audit.status === 'sent';
 
   return (
