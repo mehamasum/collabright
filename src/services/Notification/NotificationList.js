@@ -6,6 +6,7 @@ import { Avatar, Button, Card, Space, Table, Tag, Typography } from 'antd';
 import { Link, useHistory } from "react-router-dom";
 import { BellOutlined } from '@ant-design/icons';
 import { formatRelativeTime, truncateString } from '../../utils';
+import { CommentOutlined, AuditOutlined } from '@ant-design/icons';
 
 
 
@@ -28,14 +29,33 @@ const NotificationList = (props) => {
     });
   };
 
+  const getNotificationText = (record) => {
+    let verb = null, icon = null, target = null;
+    switch(record.type) {
+      case 'COMMENT':
+        verb = 'commented';
+        icon = <CommentOutlined/>;
+        target = `in v${JSON.parse(record.payload).version}.0 of ${record.audit.title}`
+        break;
+      case 'REVIEW':
+        verb = 'submitted review';
+        icon = <AuditOutlined />;
+        target = `in ${record.audit.title}`
+        break;
+    }
+    return {icon, verb, target};
+  }
+
   const columns = [
     {
       title: <BellOutlined/>,
       render: (text, record) => {
-        const notification = `[Review] ${record.reviewer.contact.email} submitted review in ${record.audit.title}`
+        const {verb, icon, target} = getNotificationText(record);
+        console.log({verb, icon})
+        const notification = `${record.reviewer.contact.email} ${verb} ${target}`
         return (
           <Space direction="vertical">
-            <Typography.Text strong={!record.read_at}>{notification}</Typography.Text>
+            <Typography.Text strong={!record.read_at}>{icon} {notification}</Typography.Text>
             <Typography.Text>{formatRelativeTime(record.created_at)}</Typography.Text>
           </Space>
         )

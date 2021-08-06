@@ -112,8 +112,8 @@ class NotificationSerializer(serializers.ModelSerializer):
     reviewer = ReviewerSerializer(read_only=True)
     class Meta:
         model = Notification
-        fields = ('id', 'type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')
-        read_only_fields = ('type', 'user', 'audit', 'reviewer', 'created_at', 'read_at')
+        fields = ('id', 'type', 'user', 'audit', 'reviewer', 'created_at', 'read_at', 'payload')
+        read_only_fields = ('type', 'user', 'audit', 'reviewer', 'created_at', 'read_at', 'payload')
 
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:

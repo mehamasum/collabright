@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.db.models.fields import json
 from rest_framework import viewsets, views
 from rest_framework import permissions
 from .serializers import (DocumentSerializer, CommentSerializer, IntegrationSerializer, AuditSerializer, ContactSerializer, NotificationSerializer, OrganizationSerializer, ReviewerSerializer, DocumentMapSerializer)
@@ -17,7 +18,7 @@ from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsD
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from docusign_esign.client import api_exception
-
+import json
 
 def has_review_token(request):
     token = request.query_params.get('token')
@@ -62,6 +63,12 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
     serializer_class = CommentSerializer
 
+    _created_comment = None
+
+    def _get_reviewer_by_token(self, request, comment):
+        token = request.query_params.get('token')
+        return get_object_or_404(Reviewer, token=token, audit=comment.document.audit)
+
     def get_queryset(self):
         queryset = Comment.objects.all().order_by('id')
         document = self.request.query_params.get('document') or self.request.data.get('document')
@@ -76,6 +83,27 @@ class CommentViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
+
+    def perform_create(self, serializer):
+        self._created_comment = serializer.save()
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        comment = self._created_comment
+        reviewer = self._get_reviewer_by_token(request, comment)
+
+        all_documents = comment.document.audit.documents.values_list('id', flat=True)
+        
+        send_notification_to_requester(
+            comment.document.audit.user,
+            comment.document.audit,
+            reviewer,
+            Notification.COMMENT,
+            json.dumps({
+                'version': list(all_documents).index(comment.document.id) + 1.
+            })
+        )
+        return response
 
 class IntegrationViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, )
