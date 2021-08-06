@@ -11,7 +11,7 @@ import './AuditDetails.css';
 import { message } from 'antd';
 import EsriMap from './EsriMap';
 import { RedCross, GreenTick } from '../../components/icons';
-import { useHistory, useParams } from "react-router";
+import { useHistory, useParams, useLocation } from "react-router";
 import EnvelopDetails, { SendEnvelop } from './EnvelopDetails';
 
 const { TabPane } = Tabs;
@@ -183,7 +183,6 @@ const ReviewHeader = ({ audit, handleVersionChange, version }) => {
 }
 
 
-
 const AuditDetails = ({ auditId, isAdmin = false, query }) => {
   const [count, setCount] = useState(0);
   const [audit, setAudit] = useState(null);
@@ -198,6 +197,7 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
 
   const history = useHistory();
   const { tab } = useParams();
+  const location = useLocation();
   const handleTabClick = key => {
     history.push(`/${isAdmin ? 'audits' : 'review'}/${auditId}/${key}${isAdmin ? '' : '?' + query}`);
   }
@@ -219,6 +219,17 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
     });
 
   }, []);
+
+  useEffect(() => {
+    // docusign return catcher - ?envelopeId=123&event=Save
+    if (!audit) return;
+    const docusignUrlParams = new URLSearchParams(location.search);
+    const hasEnvelopeIdParam = docusignUrlParams.get('envelopeId') === audit.envelope_id;
+    const hasEnvelopeEventParam = docusignUrlParams.get('event') === 'Save';
+
+    if (hasEnvelopeEventParam && hasEnvelopeIdParam)
+      message.success('Envelope was saved');
+  }, [location.search, audit])
 
   function handleVersionChange(value) {
     const nextVersion = parseInt(value, 10) + 1;

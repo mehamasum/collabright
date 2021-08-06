@@ -14,7 +14,7 @@ const SendEnvelop = ({ audit }) => {
   const sendEnvelop = () => {
     post(`/api/v1/audits/${audit.id}/send_envelop/`).then(data => {
       if (response.ok) {
-        message.success('Envelop is sent!');
+        message.success('Envelope is sent!');
         window.location.reload(false);
       }
 
@@ -31,7 +31,7 @@ const SendEnvelop = ({ audit }) => {
   return (
     <>
       {(hasEnvelop && hasSigners) &&
-        <Tooltip title="You can only send out the envelop once all Signers have aprroved the Audit">
+        <Tooltip title="You can only send out the envelope once all Signers have aprroved the Audit">
           <Button
             onClick={sendEnvelop}
             loading={loading}
@@ -66,7 +66,7 @@ const EnvelopDetails = ({ isAdmin, audit, latestDocument, needsToSign }) => {
           <Text strong>Agreement Envelop</Text>
           {((isAdmin || needsToSign) && hasEnvelop) && (isEnvelopSent ? <Text type="success"><GreenTick /> Sent</Text> : <Text type="warning"><Warning /> Draft</Text>)}
           {(isAdmin && hasEnvelop) &&
-            <Popconfirm title="Please 'Save and Close' the Envelop when you are done" onConfirm={getEnvelopSenderView}>
+            <Popconfirm title="Please 'Save and Close' the Envelope when you are done" onConfirm={getEnvelopSenderView}>
               <Button type="link" loading={loading} disabled={isEnvelopSent}>
                 <LinkOutlined /> Edit
               </Button>
