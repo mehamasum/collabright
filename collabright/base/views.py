@@ -14,11 +14,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime, timedelta
 from rest_framework import filters
-from collabright.base.permissions import IsAuditReviewer, IsCommentReviewer, IsDocumentReviewer, IsOrgAdmin
+from collabright.base.permissions import (IsAuditReviewer, IsCommentReviewer,
+                                          IsDocumentReviewer, IsOrgAdmin,
+                                          IsDocuSignWebHookRequest)
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from docusign_esign.client import api_exception
 import json
+from .utils import hash_is_valid
+
 
 def has_review_token(request):
     token = request.query_params.get('token')
@@ -321,7 +325,7 @@ class OrganizationViewset(viewsets.ModelViewSet):
         return Organization.objects.none()
 
 class DocuSignWebHook(views.APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsDocuSignWebHookRequest]
 
     def post(self, request):
         data = request.data
