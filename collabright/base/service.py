@@ -105,6 +105,7 @@ class ReviewerService:
             print('appending signer', reviewer.contact.email)
             signers.append(signer)
 
+        print("signers =>", signers)
         results = None
         if len(signers):
             results = DocuSignService.create_signers({
@@ -113,6 +114,13 @@ class ReviewerService:
                 'signers': signers,
             })
             print('create_signers', results)
+
+        if audit.status == Audit.CREATED:
+            try:
+                AuditService.update_audit_envelope(user, audit)
+            except:
+                pass
+
         return results
 
 
@@ -596,3 +604,25 @@ class DocuSignService:
             tabs=Tabs(sign_here_tabs=[sign_here]))
 
         return results.to_dict()
+
+    def handle_webhook_request(envelope):
+        print(envelope)
+        envelopeId = envelope.get('envelopeId', None)
+        status = envelope.get('status', None)
+
+        try:
+            audit = Audit.objects.get(envelope_id=envelopeId)
+        except Audit.DoesNotExist:
+            audit = None
+        if audit and audit.status != status:
+            audit.status = status
+            audit.save()
+
+        recipients = envelope.get('recipients', {})
+        signers = recipients.get('signers', [])
+        complete_signers = [
+            int(signer['recipientId'])
+            for signer in signers if signer['status']=='completed']
+        Reviewer.objects.filter(
+            id__in=complete_signers, has_signed=False).update(has_signed=True)
+        print(complete_signers)
