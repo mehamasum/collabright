@@ -101,7 +101,7 @@ class ReviewerService:
             signer = {
                 'name': reviewer.contact.name,
                 'email': reviewer.contact.email,
-                'client_id': reviewer.contact_id,
+                'client_id': None,
                 'recipient_id': reviewer.id
             }
             print('appending signer', reviewer.contact.email)
@@ -549,8 +549,8 @@ class DocuSignService:
             envelope_id=envelope_id,
             recipients = Recipients(signers=signers))
 
+        """
         for signer in args['signers']:
-            """
             DocuSignService.create_tabs({
                 'access_token': access_token,
                 'envelope_id': envelope_id,
