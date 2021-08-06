@@ -12,7 +12,8 @@ from docusign_esign import (ApiClient, SignHere, Tabs,
                             EnvelopeDefinition, Signer, Recipients,
                             EnvelopesApi, RecipientViewRequest, NameValue,
                             DocumentFieldsInformation, ReturnUrlRequest,
-                            LockRequest)
+                            LockRequest, ConnectCustomConfiguration, ConnectApi,
+                            ConnectEventData)
 from .utils import (create_api_client, create_documents, create_signers,
                     assign_sign_here, create_sign_here)
 
@@ -115,12 +116,6 @@ class ReviewerService:
                 'signers': signers,
             })
             print('create_signers', results)
-
-        if audit.status == Audit.CREATED:
-            try:
-                AuditService.update_audit_envelope(user, audit)
-            except:
-                pass
 
         return results
 
@@ -627,3 +622,93 @@ class DocuSignService:
         Reviewer.objects.filter(
             id__in=complete_signers, has_signed=False).update(has_signed=True)
         print(complete_signers)
+
+    def create_connect(args):
+        access_token = args['access_token']
+        url_to_publish_to = args['url_to_publish_to']
+        name = args.get('name', 'Collabright')
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+
+        connect_api = ConnectApi(api_client)
+
+        results = connect_api.create_configuration(
+            account_id=DocuSignService.account_id,
+            connect_custom_configuration=ConnectCustomConfiguration(
+                configuration_type='custom',
+                url_to_publish_to=url_to_publish_to,
+                name=name,
+                allow_envelope_publish=True,
+                enable_log=True,
+                requires_acknowledgement=True,
+                include_hmac=True,
+                envelope_events=[
+                    "Completed",
+                    "Sent",
+                    "Delivered",
+                    "Declined",
+                    "Voided"
+                ],
+                recipient_events=[
+                    "Completed",
+                    "Sent",
+                    "AutoResponded",
+                    "Delivered",
+                    "Declined",
+                    "AuthenticationFailed"
+                ],
+                soap_namespace='',
+                all_users=True,
+                event_data=ConnectEventData(format='json', include_data=[
+                    'recipients',
+                ], version='restv2.1')
+            ))
+        print(results.to_dict())
+
+    def update_connect(args):
+        access_token = args['access_token']
+        url_to_publish_to = args['url_to_publish_to']
+        connect_id = args['connect_id']
+
+        api_client = create_api_client(
+            base_path=DocuSignService.base_api_uri,
+            access_token=access_token)
+
+
+        connect_api = ConnectApi(api_client)
+
+        results = connect_api.update_configuration(
+            account_id=DocuSignService.account_id,
+            connect_custom_configuration=ConnectCustomConfiguration(
+                configuration_type='custom',
+                url_to_publish_to=url_to_publish_to,
+                connect_id=connect_id,
+                allow_envelope_publish=True,
+                enable_log=True,
+                requires_acknowledgement=True,
+                include_hmac=True,
+                envelope_events=[
+                    "Completed",
+                    "Sent",
+                    "Delivered",
+                    "Declined",
+                    "Voided"
+                ],
+                recipient_events=[
+                    "Completed",
+                    "Sent",
+                    "AutoResponded",
+                    "Delivered",
+                    "Declined",
+                    "AuthenticationFailed"
+                ],
+                soap_namespace='',
+                all_users=True,
+                event_data=ConnectEventData(format='json', include_data=[
+                    'recipients',
+                ], version='restv2.1')
+            ))
+        print(results.to_dict())

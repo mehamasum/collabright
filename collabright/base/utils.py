@@ -1,3 +1,5 @@
+import hmac
+import hashlib
 import base64
 from docusign_esign import (ApiClient, Document, SignHere, Tabs,
                             EnvelopeDefinition, Signer, Recipients,
@@ -75,3 +77,11 @@ def create_sign_here(sign_here={}, indx=0):
         anchor_x_offset=anchor_x_offset,
         anchor_y_offset=anchor_y_offset*indx
     )
+
+def compute_hash(secret, payload):
+    hashBytes = hmac.new(secret, msg=payload, digestmod=hashlib.sha256).digest()
+    base64Hash = base64.b64encode(hashBytes)
+    return base64Hash;
+
+def hash_is_valid(secret, payload, verify):
+    return hmac.compare_digest(verify, compute_hash(secret,payload))
