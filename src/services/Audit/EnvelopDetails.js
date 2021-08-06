@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Button, Space, Tooltip, List } from 'antd';
+import { Typography, Button, Space, Tooltip, List, Popconfirm } from 'antd';
 import { SendOutlined, LinkOutlined } from '@ant-design/icons';
 import useFetch from 'use-http';
 import './AuditDetails.css';
@@ -65,7 +65,12 @@ const EnvelopDetails = ({ isAdmin, audit, latestDocument, needsToSign }) => {
         <Space>
           <Text strong>Agreement Envelop</Text>
           {((isAdmin || needsToSign) && hasEnvelop) && (isEnvelopSent ? <Text type="success"><GreenTick /> Sent</Text> : <Text type="warning"><Warning /> Draft</Text>)}
-          {(isAdmin && hasEnvelop) && <Button type="link" onClick={getEnvelopSenderView} loading={loading} disabled={isEnvelopSent}><LinkOutlined /> Edit</Button>}
+          {(isAdmin && hasEnvelop) &&
+            <Popconfirm title="Please 'Save and Close' the Envelop when you are done" onConfirm={getEnvelopSenderView}>
+              <Button type="link" loading={loading} disabled={isEnvelopSent}>
+                <LinkOutlined /> Edit
+              </Button>
+            </Popconfirm>}
         </Space>}
     >
       <List.Item>
