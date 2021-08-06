@@ -19,16 +19,8 @@ const { Option } = Select;
 const { Text } = Typography;
 const { TextArea } = Input;
 
-const EnvelopDetails = ({isAdmin, audit, latestDocument, needsToSign}) => {
-  const { get, post, response, loading } = useFetch();
-
-  const getEnvelopSenderView = () => {
-    get(`/api/v1/audits/${audit.id}/docusign_sender_view/`).then(data => {
-      if (response.ok) {
-        window.location.assign(data.url);
-      }
-    });
-  }
+const SendEnvelop = ({audit}) => {
+  const { post, response, loading } = useFetch();
 
   const sendEnvelop = () => {
     post(`/api/v1/audits/${audit.id}/send_envelop/`).then(data => {
@@ -41,14 +33,42 @@ const EnvelopDetails = ({isAdmin, audit, latestDocument, needsToSign}) => {
     });
   }
 
-  const hasAgreement = !!audit.agreement;
   const hasEnvelop = !!audit.envelope_id;
   const signers = audit.reviewers.filter(reviewer => reviewer.needs_to_sign);
   const hasSigners = signers.length > 0;
-  const docuSignEnvelopEditUrl = `https://appdemo.docusign.com/prepare/${audit.envelope_id}/`;
+  const allSignersApproved = signers.reduce((prev, curr) => curr.has_signed && prev, true);
   const isEnvelopSent = audit.status === 'sent';
 
-  console.error({isAdmin ,needsToSign, hasEnvelop, isEnvelopSent}, ((isAdmin || needsToSign) && hasEnvelop))
+  return (
+    <>
+        {(hasEnvelop && hasSigners) &&
+          <Tooltip title="You can only send out the envelop once all Signers have aprroved the Audit">
+            <Button
+              onClick={sendEnvelop}
+              loading={loading}
+              disabled={!allSignersApproved || isEnvelopSent}
+            >
+              <SendOutlined /> Send Agreement
+            </Button>
+          </Tooltip>
+        }
+      </>
+  );
+};
+
+const EnvelopDetails = ({isAdmin, audit, latestDocument, needsToSign}) => {
+  const { get, post, response, loading } = useFetch();
+
+  const getEnvelopSenderView = () => {
+    get(`/api/v1/audits/${audit.id}/docusign_sender_view/`).then(data => {
+      if (response.ok) {
+        window.location.assign(data.url);
+      }
+    });
+  }
+
+  const hasEnvelop = !!audit.envelope_id;
+  const isEnvelopSent = audit.status === 'sent';
 
   return (
     <List
@@ -57,17 +77,17 @@ const EnvelopDetails = ({isAdmin, audit, latestDocument, needsToSign}) => {
         <Text strong>Agreement Envelop</Text>
         {((isAdmin || needsToSign) && hasEnvelop)  &&  (isEnvelopSent ? <Text type="success"><GreenTick/> Sent</Text> : <Text type="warning"><Warning/> Draft</Text>)}
         {(isAdmin && hasEnvelop) && <Button type="link" onClick={getEnvelopSenderView} loading={loading} disabled={isEnvelopSent}><LinkOutlined/> Edit</Button>}
-        {(isAdmin && hasEnvelop && hasSigners) && <Button type="link" onClick={sendEnvelop} loading={loading} disabled={isEnvelopSent}><SendOutlined/> Send</Button>}
       </Space>}
     >
       <List.Item>
         Audit Details
       </List.Item>
       <List.Item>
-      <Space><span>Map &bull; v{audit.documents.length}.0</span> {latestDocument.file && <a href={latestDocument.file} target="_blank"><EyeOutlined/> View</a>}</Space>
+      {latestDocument.file && <span>Map PDF &bull; <a href={latestDocument.file} target="_blank">v{audit.documents.length}.0</a></span>}
       </List.Item>
     </List>
   );
 };
 
 export default EnvelopDetails;
+export { SendEnvelop };
