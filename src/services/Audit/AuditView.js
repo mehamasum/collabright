@@ -1,9 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import useFetch from 'use-http';
-import {Avatar, Button, Card, Space, Table, Tag, Typography} from 'antd';
-import {Link, useParams, useHistory} from "react-router-dom";
-import {StopOutlined, CloseOutlined, IssuesCloseOutlined} from '@ant-design/icons';
-import {formatRelativeTime, truncateString} from '../../utils';
+import React from 'react';
+import { useParams } from "react-router-dom";
 import AuditDetails from './AuditDetails';
 import './AuditView.css';
 

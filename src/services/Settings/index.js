@@ -1,5 +1,5 @@
 import './index.css';
-import {Card} from 'antd';
+import { Card } from 'antd';
 
 import Tabs from "./SettingsTabs";
 
@@ -10,7 +10,7 @@ const Settings = () => {
   return (
     <div>
       <Card title="Settings">
-        <Tabs/>
+        <Tabs />
       </Card>
     </div>
   );

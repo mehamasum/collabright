@@ -1,17 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Card, Layout, Alert, Form, Input, Button, Row, Col, Divider } from 'antd';
-import { Steps, message, Space, Typography } from 'antd';
+import React, { useState } from 'react';
+import { Button, Typography } from 'antd';
 
 import useFetch from 'use-http';
 import SearchAuditor from './SearchAuditor';
 
 const { Text } = Typography;
 
-const AddAuditors = ({ onComplete, auditId, existingReviewers=[], showSigners }) => {
+const AddAuditors = ({ onComplete, auditId, existingReviewers = [], showSigners }) => {
   const existingOnlyReviewers = existingReviewers.filter(reviewer => !reviewer.needs_to_sign).map(reviewer => reviewer.contact.email);
   const existingSigners = existingReviewers.filter(reviewer => reviewer.needs_to_sign).map(reviewer => reviewer.contact.email);
-  const [ signers, setSigners ] = useState(existingSigners || []);
-  const [ reviewers, setReviewers ] = useState(existingOnlyReviewers || []);
+  const [signers, setSigners] = useState(existingSigners || []);
+  const [reviewers, setReviewers] = useState(existingOnlyReviewers || []);
   const { post, response, loading } = useFetch();
 
   const setAuditors = () => {
@@ -34,7 +33,7 @@ const AddAuditors = ({ onComplete, auditId, existingReviewers=[], showSigners })
       }
     });
     post(`/api/v1/audits/${auditId}/add_reviewers/`, body).then(data => {
-      if(response.ok) {
+      if (response.ok) {
         return onComplete();
       }
       console.error(data);
@@ -45,8 +44,8 @@ const AddAuditors = ({ onComplete, auditId, existingReviewers=[], showSigners })
     if (showSigners) {
       return (
         <>
-        <small><Text type="secondary">People who will review and sign the sent envelop</Text></small>
-        <SearchAuditor className="search-auditor" onChange={setSigners} reviewers={existingSigners}/>
+          <small><Text type="secondary">People who will review and sign the sent envelop</Text></small>
+          <SearchAuditor className="search-auditor" onChange={setSigners} reviewers={existingSigners} />
         </>
       )
     };
@@ -54,7 +53,7 @@ const AddAuditors = ({ onComplete, auditId, existingReviewers=[], showSigners })
     return (
       <>
         <small><Text type="secondary">People who will only review</Text></small>
-        <SearchAuditor className="search-auditor" onChange={setReviewers} reviewers={existingOnlyReviewers}/>
+        <SearchAuditor className="search-auditor" onChange={setReviewers} reviewers={existingOnlyReviewers} />
       </>
     );
   }
@@ -62,7 +61,7 @@ const AddAuditors = ({ onComplete, auditId, existingReviewers=[], showSigners })
   return (
     <>
       <div>{getView()}</div>
-      <br/>
+      <br />
       <Button type="primary" onClick={setAuditors} loading={loading}>
         Continue
       </Button>

@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-import { Button, Card, Row, Col, Tag, Menu, Dropdown, Typography, Badge, Space } from 'antd';
+import { Button, Card, Row, Col, Menu, Dropdown, Typography } from 'antd';
 import useFetch from 'use-http';
-
-import { DisconnectOutlined, MoreOutlined } from "@ant-design/icons";
-
+import { MoreOutlined } from "@ant-design/icons";
 import docuSignLogo from "../../assets/icons/docuSign.svg";
 import esriLogo from "../../assets/icons/esri-logo.png";
 import './IntegrationsTab.css';
@@ -12,7 +10,7 @@ import { formatRelativeTime } from "../../utils";
 import { RedCross, GreenTick } from "../../components/icons";
 
 
-const {Text} = Typography;
+const { Text } = Typography;
 
 const IntegrationsTab = () => {
   const [integrations, setIntegrations] = useState([
@@ -35,7 +33,7 @@ const IntegrationsTab = () => {
       ready: true,
     },
   ]);
-  const { get, response, loading } = useFetch();
+  const { get, response } = useFetch();
 
   useEffect(() => {
     get('/api/v1/integrations/').then(data => {
@@ -80,14 +78,14 @@ const IntegrationsTab = () => {
             <Col sm={16} lg={8}>
               <Card
                 key={integration.name}
-                title={<><Text>{integration.name}</Text> &nbsp; {integration.is_expired ? <RedCross/> : integration.connected ? <GreenTick/> : null}</>}
+                title={<><Text>{integration.name}</Text> &nbsp; {integration.is_expired ? <RedCross /> : integration.connected ? <GreenTick /> : null}</>}
                 className="integration-card"
                 cover={<img alt="example" src={integration.logo} className="integration-logo" />}
-                extra={ <Dropdown overlay={menu(integration.connected)}><Button icon={<MoreOutlined/>} type="text"></Button></Dropdown>}
+                extra={<Dropdown overlay={menu(integration.connected)}><Button icon={<MoreOutlined />} type="text"></Button></Dropdown>}
               >
                 <div className="integration-card-body">
                   <Text type="secondary">{integration.connected ? `Expires ${formatRelativeTime(integration.expires_at)}` : 'Not Connected'}</Text>
-                  <br/>
+                  <br />
                   <div>
                     <Button
                       type="primary"

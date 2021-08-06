@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip, Popconfirm } from 'antd';
-import { DownOutlined, QuestionOutlined, FileFilled, FileUnknownOutlined, EditOutlined, MoreOutlined, SyncOutlined, LinkOutlined, CloseCircleFilled, EyeOutlined } from '@ant-design/icons';
+import { DownOutlined, QuestionOutlined, FileFilled, FileUnknownOutlined, EditOutlined, LinkOutlined, CloseCircleFilled } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
 import { Row, Col, List, Badge, Divider, Modal } from 'antd';
@@ -12,7 +12,6 @@ import { message } from 'antd';
 import EsriMap from './EsriMap';
 import { RedCross, GreenTick } from '../../components/icons';
 import { useHistory, useParams } from "react-router";
-import { Link } from 'react-router-dom';
 import EnvelopDetails, { SendEnvelop } from './EnvelopDetails';
 
 const { TabPane } = Tabs;
@@ -67,7 +66,6 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
 
   const onChange = (e) => {
     const value = e.target.value;
-    console.log('Change:', value);
     setDescription(value);
   }
 
@@ -101,7 +99,7 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
         {audit.is_open && <Dropdown.Button type="primary" overlay={menu} onClick={onNewVersionClick} loading={loading}>Create Next Version</Dropdown.Button>}
       </Space>
       <Modal title="Building next version" visible={isModalVisible} onOk={handleOk} confirmLoading={confirmLoading} cancelButtonProps={{ style: { display: 'none' } }} closable={false}>
-        <MapPrinter auditId={auditId} version={version} document={document} onComplete={onPrintComplete} />
+        <MapPrinter version={version} document={document} onComplete={onPrintComplete} />
         <TextArea placeholder="What's new in this version?" showCount maxLength={100} onChange={onChange} />
       </Modal>
 
@@ -110,7 +108,7 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
 };
 
 const ReviewerOperations = ({ audit, auditId, query, user, count }) => {
-  const { get, post, response } = useFetch();
+  const { post, response } = useFetch();
 
   const setVerdict = (verdict) => () => {
     post(`/api/v1/audits/${auditId}/verdict/?${query}`, {
@@ -182,7 +180,6 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
   const [isReviewerModalVisible, setIsReviewerModalVisible] = useState(null);
 
   const onCountChange = (newCount) => {
-    console.log({ count, newCount });
     setCount(newCount);
   }
 
@@ -213,7 +210,6 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
 
   function handleVersionChange(value) {
     const nextVersion = parseInt(value, 10) + 1;
-    console.log(`selected ${value}`, nextVersion);
     setVersion(nextVersion);
   }
 
@@ -265,7 +261,7 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
               {document.description || <Text italic>No description</Text>}
               <Divider />
 
-              <Text strong>Map</Text> &nbsp; <a href={audit.map_url} target="_blank"><LinkOutlined /> Open</a><br /><br />
+              <Text strong>Map</Text> &nbsp; <a href={audit.map_url} target="_blank" rel="noreferrer"><LinkOutlined /> Open</a><br /><br />
               On {new URL(audit.map_url).hostname}
               <Divider />
 

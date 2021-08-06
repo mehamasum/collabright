@@ -1,5 +1,5 @@
 import './login.css';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import { Form, Input, Button, Layout, Card } from 'antd';
 import { Redirect } from "react-router-dom";
 import logo from '../../assets/images/logo.svg';
@@ -23,7 +23,7 @@ const LoginView = () => {
     console.log('Failed:', errorInfo);
   };
 
-  if (isLoggedIn) return <Redirect to={{pathname: '/',}}/>
+  if (isLoggedIn) return <Redirect to={{ pathname: '/', }} />
 
   return (
     <React.Fragment>
@@ -46,7 +46,7 @@ const LoginView = () => {
                   },
                 ]}
               >
-                <Input placeholder="Username"/>
+                <Input placeholder="Username" />
               </Form.Item>
 
               <Form.Item
@@ -58,7 +58,7 @@ const LoginView = () => {
                   },
                 ]}
               >
-                <Input placeholder="Password" type="password"/>
+                <Input placeholder="Password" type="password" />
               </Form.Item>
               <Form.Item >
                 <Button type="primary" htmlType="submit" className="login-form-submit" loading={loading}>

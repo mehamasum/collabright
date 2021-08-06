@@ -2,11 +2,9 @@ import './AuditList.css';
 
 import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
-import { Avatar, Button, Card, Space, Table, Tag, Typography } from 'antd';
-import { Link, useHistory } from "react-router-dom";
-import { LinkOutlined } from '@ant-design/icons';
-import { formatRelativeTime, truncateString } from '../../utils';
-import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import { Space, Table, Tag, Typography } from 'antd';
+import { Link } from "react-router-dom";
+import { truncateString } from '../../utils';
 
 const { Text } = Typography;
 
@@ -16,7 +14,12 @@ const columns = [
     dataIndex: 'title',
     render: (text, record) => (
       <Space direction="vertical">
-        <div><Tag size="small" color={record.is_open ? 'success' : 'purple'}>{record.is_open ? 'Open' : 'Closed'}</Tag><Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 120)}</Link></Typography.Text></div>
+        <div>
+          <Tag size="small" color={record.is_open ? 'success' : 'purple'}>
+            {record.is_open ? 'Open' : 'Closed'}
+          </Tag>
+          <Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 120)}</Link></Typography.Text>
+        </div>
       </Space>
     )
   }
@@ -24,7 +27,7 @@ const columns = [
 
 const PostListView = (props) => {
   const [empty, setEmpty] = useState(true);
-  const [page, setPage] = useState({
+  const [, setPage] = useState({
     current: 1,
     pageSize: 10,
   });
@@ -35,7 +38,6 @@ const PostListView = (props) => {
   const fetchList = (page) => {
     get(`/api/v1/audits/?page=${page}`).then(data => {
       if (response.ok) {
-        console.log(data);
         setEmpty(data.count === 0);
         const newData = data.results
           .slice(0, 5)
@@ -59,16 +61,15 @@ const PostListView = (props) => {
     fetchList(1);
   }, []);
 
-  if(empty) return null;
+  if (empty) return null;
 
   const onChange = (nextPage) => {
-    console.log(nextPage);
     fetchList(nextPage.current);
   };
 
   return (
     <>
-      <Text strong>Recent Activity</Text><br/>
+      <Text strong>Recent Activity</Text><br />
       <Table
         showHeader={false}
         size="small"
