@@ -54,7 +54,7 @@ const EnvelopDetails = ({isAdmin, audit, latestDocument, needsToSign}) => {
     <List
       header={
       <Space>
-        <Text strong>Envelop Details</Text>
+        <Text strong>Agreement Envelop</Text>
         {((isAdmin || needsToSign) && hasEnvelop)  &&  (isEnvelopSent ? <Text type="success"><GreenTick/> Sent</Text> : <Text type="warning"><Warning/> Draft</Text>)}
         {(isAdmin && hasEnvelop) && <Button type="link" onClick={getEnvelopSenderView} loading={loading} disabled={isEnvelopSent}><LinkOutlined/> Edit</Button>}
         {(isAdmin && hasEnvelop && hasSigners) && <Button type="link" onClick={sendEnvelop} loading={loading} disabled={isEnvelopSent}><SendOutlined/> Send</Button>}

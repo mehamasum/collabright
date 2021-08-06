@@ -91,7 +91,7 @@ const AdminOperations = ({ post, patch, response, audit, version }) => {
   )
 };
 
-const ReviewerOperations = ({audit, auditId, query, user}) => {
+const ReviewerOperations = ({audit, auditId, query, user, count}) => {
   const { get, post, response } = useFetch();
 
   const setVerdict = (verdict) => () => {
@@ -131,7 +131,7 @@ const ReviewerOperations = ({audit, auditId, query, user}) => {
         </Menu>
       )}>
         <Button type={!needsToSign && "primary"}>
-          Submit Review <DownOutlined />
+          Submit Review {count > 0 && <>&nbsp; <Badge count={count}/> &nbsp;</>} <DownOutlined />
         </Button>
       </Dropdown>
       {needsToSign && <Button type="primary" onClick={getDocuSignRecipientView} disabled={!isSent}>Approve and Sign</Button>}
@@ -169,11 +169,16 @@ const ReviewHeader = ({ audit, handleVersionChange, version }) => {
 
 
 const AuditDetails = ({ auditId, isAdmin=false, query }) => {
-  const [key, setKey] = useState('details'); // tab key
+  const [count, setCount] = useState(0);
   const [audit, setAudit] = useState(null);
   const [user, setUser] = useState(null);
   const [version, setVersion] = useState(null);
   const [isReviewerModalVisible, setIsReviewerModalVisible] = useState(null);
+
+  const onCountChange = (newCount) => {
+    console.log({count, newCount});
+    setCount(newCount);
+  }
 
 
   const history = useHistory();
@@ -240,7 +245,7 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
 
       <Tabs className="reviewer-tabs" defaultActiveKey={tab || "details"} onChange={handleTabClick} tabBarExtraContent={
         isAdmin ? <AdminOperations post={post} patch={patch} response={response} audit={audit} version={audit.documents.length + 1}/> :
-        <ReviewerOperations user={user} auditId={auditId} query={query} audit={audit}/>
+        <ReviewerOperations user={user} auditId={auditId} query={query} audit={audit} count={count}/>
       }>
         <TabPane tab="Details" key="details">
           <Row gutter={8}>
@@ -254,7 +259,7 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
               {document.description || <Text italic>No description</Text>}
               <Divider />
 
-              <Text strong>Map Details</Text> &nbsp; <a href={audit.map_url} target="_blank"><LinkOutlined/> Open</a><br /><br />
+              <Text strong>Map</Text> &nbsp; <a href={audit.map_url} target="_blank"><LinkOutlined/> Open</a><br /><br />
               On {new URL(audit.map_url).hostname} 
               <Divider />
               
@@ -271,7 +276,7 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
                     item.has_signed ? <FileFilled style={{ color: '#52c41a' }}/> : <FileUnknownOutlined />,
                   ]}>
                     <Tooltip title={item.contact.name}>
-                      <span>{item.contact.email}</span>
+                      <Text>{item.contact.email} {item.id === user.id ? <Text type="secondary">(You)</Text>:''}</Text>
                     </Tooltip>
                   </List.Item>
                 )}
@@ -283,7 +288,7 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
                 renderItem={(item, index) => (
                   <List.Item actions={[getBadgeType(item.verdict),]}>
                     <Tooltip title={item.contact.name}>
-                      <span>{item.contact.email}</span>
+                      <Text>{item.contact.email} {item.id === user.id ? <Text type="secondary">(You)</Text>:''}</Text>
                     </Tooltip>
                   </List.Item>
                 )}
@@ -299,7 +304,7 @@ const AuditDetails = ({ auditId, isAdmin=false, query }) => {
           <EsriMap documentId={document.id} className="map-frame" isAdmin={isAdmin} query={query} homeButtonId="details-map-home-btn"/>
         </TabPane>
         <TabPane tab={document.comment_count > 0 ? `Discussion (${document.comment_count})`:'Discussion'} key="discussion">
-          <Annotator key={versionIndex} document={document} isAdmin={isAdmin} query={query} user={isAdmin ? user.username : user.contact.email}/>
+          <Annotator key={versionIndex} document={document} isAdmin={isAdmin} query={query} user={isAdmin ? user.username : user.contact.email} count={count} onCountChange={onCountChange}/>
         </TabPane>
       </Tabs>
       <Modal title={`Update ${isReviewerModalVisible}`} visible={!!isReviewerModalVisible} footer={null} onCancel={() => setIsReviewerModalVisible(false)}>

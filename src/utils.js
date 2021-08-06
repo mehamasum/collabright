@@ -1,6 +1,8 @@
 import moment from "moment";
 
 const formatRelativeTime = (time) => {
+  if (!time) return "N/A";
+  
   var now = moment(new Date()); //todays date
   var end = moment(time); // another date
   var duration = moment.duration(now.diff(end));

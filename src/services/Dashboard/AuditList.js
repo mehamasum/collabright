@@ -1,12 +1,14 @@
 import './AuditList.css';
 
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
-import {Avatar, Button, Card, Space, Table, Tag, Typography} from 'antd';
-import {Link, useHistory} from "react-router-dom";
-import {LinkOutlined} from '@ant-design/icons';
-import {formatRelativeTime, truncateString} from '../../utils';
+import { Avatar, Button, Card, Space, Table, Tag, Typography } from 'antd';
+import { Link, useHistory } from "react-router-dom";
+import { LinkOutlined } from '@ant-design/icons';
+import { formatRelativeTime, truncateString } from '../../utils';
 import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
+
+const { Text } = Typography;
 
 const columns = [
   {
@@ -33,7 +35,14 @@ const PostListView = (props) => {
     get(`/api/v1/audits/?page=${page}`).then(data => {
       if (response.ok) {
         console.log(data);
-        const newData = data.results.slice(0, 5).map(audit => ({ ...audit, key: audit.id}));
+        const newData = data.results
+          .slice(0, 5)
+          .sort((audit1, audit2) => {
+            const date1 = audit1.documents[audit1.documents.length - 1]?.created_at;
+            const date2 = audit2.documents[audit2.documents.length - 1]?.created_at;
+            return new Date(date2) - new Date(date1);
+          })
+          .map(audit => ({ ...audit, key: audit.id }));
         setPage({
           ...page,
           total: data.count
@@ -51,23 +60,22 @@ const PostListView = (props) => {
 
   const onChange = (nextPage) => {
     console.log(nextPage);
-    fetchList(nextPage.current);  
+    fetchList(nextPage.current);
   };
 
   return (
-    <div>
-      <Card title="Recent Activity">
-        <Table
-          showHeader={false}
-          size="small"
-          loading={loading}
-          columns={columns}
-          dataSource={tableData}
-          pagination={{ position: ['none', 'none'] }}
-          onChange={onChange}
-        />
-      </Card>
-    </div>
+    <Space direction="vertical">
+      <Text strong>Recent Activity</Text>
+      <Table
+        showHeader={false}
+        size="small"
+        loading={loading}
+        columns={columns}
+        dataSource={tableData}
+        pagination={{ position: ['none', 'none'] }}
+        onChange={onChange}
+      />
+    </Space >
   );
 };
 
