@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    table {
+      border: solid 1px #DDEEEE;
+      border-collapse: collapse;
+      border-spacing: 0;
+      font: normal 13px Arial, sans-serif;
+    }
+
+    table thead th {
+      background-color: #d0e9ff;
+      border: solid 1px #DDEEEE;
+      color: #1890ff;
+      padding: 10px;
+      text-align: left;
+      text-shadow: 1px 1px 1px #fff;
+    }
+
+    table tbody td {
+      border: solid 1px #DDEEEE;
+      color: #333;
+      padding: 10px;
+      text-shadow: 1px 1px 1px #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>Audit Metadata from Collabright</th>
+        <th>&nbsp;</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Audit ID:</td>
+        <td>{{ audit_id }}</td>
+      </tr>
+      <tr>
+        <td>Audit Created:</td>
+        <td>{{ audit_created_at }}</td>
+      </tr>
+      <tr>
+        <td>Audit Title:</td>
+        <td>{{ audit_title }}</td>
+      </tr>
+      <tr>
+        <td>Audit Description:</td>
+        <td>{{ audit_description }}</td>
+      </tr>
+      <tr>
+        <td>Audit Created By ID:</td>
+        <td>{{ audit_user }}</td>
+      </tr>
+      <tr>
+        <td>Audit Created By Username:</td>
+        <td>{{ audit_user_username }}</td>
+      </tr>
+      <tr>
+        <td>Audit Created By Org ID:</td>
+        <td>{{ audit_org }}</td>
+      </tr>
+      <tr>
+        <td>Audit Created By Org Name:</td>
+        <td>{{ audit_orgname }}</td>
+      </tr>
+      <tr>
+        <td>GIS Map Url:</td>
+        <td>{{ audit_map_url }}</td>
+      </tr>
+  </table>
+  </tbody>
+</body>
+
+</html>
