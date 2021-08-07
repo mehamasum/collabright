@@ -4,7 +4,9 @@ import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
 import { Space, Table, Tag, Typography } from 'antd';
 import { Link } from "react-router-dom";
-import { truncateString } from '../../utils';
+import { truncateString, formatRelativeTime } from '../../utils';
+import { CommentOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { GreenTick } from '../../components/icons';
 
 const { Text } = Typography;
 
@@ -13,16 +15,33 @@ const columns = [
     title: 'Title',
     dataIndex: 'title',
     render: (text, record) => (
-      <Space direction="vertical">
-        <div>
-          <Tag size="small" color={record.is_open ? 'success' : 'purple'}>
-            {record.is_open ? 'Open' : 'Closed'}
-          </Tag>
+      <Space>
+          <Tag>v{record.documents.length}.0</Tag>
           <Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 120)}</Link></Typography.Text>
-        </div>
       </Space>
     )
-  }
+  },
+  {
+    title: 'Updated',
+    render: (text, record) => (
+      <Typography.Text><ClockCircleOutlined/> {formatRelativeTime(record.documents[record.documents.length - 1]?.created_at)}</Typography.Text>
+    ),
+  },
+  {
+    title: 'Updated',
+    render: (text, record) => (
+      <Typography.Text><CommentOutlined/> {record.documents[record.documents.length - 1].comment_count}</Typography.Text>
+    ),
+  },
+  {
+    title: 'Updated',
+    render: (text, record) => (
+      <Typography.Text><GreenTick/> {
+          record.reviewers.reduce((prev, curr) => curr.verdict === 'APPROVED' ? prev + 1: prev, 0)
+        } / {record.reviewers.length}
+        </Typography.Text>
+    ),
+  },
 ];
 
 const PostListView = (props) => {
@@ -65,7 +84,6 @@ const PostListView = (props) => {
 
   return (
     <>
-      <Text strong>Recent Activity</Text><br /><br />
       <Table
         showHeader={false}
         loading={loading}

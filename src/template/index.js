@@ -16,8 +16,8 @@ import {
 import { Link } from 'react-router-dom';
 import useFetch from "use-http";
 import { deleteFromStorage } from '@rehooks/local-storage';
-import {Helmet} from "react-helmet";
-
+import { Helmet } from "react-helmet";
+import Banner from "../services/Dashboard/Banner";
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -75,7 +75,7 @@ const Template = (props) => {
   const onSiderCollapse = (collapsed) => {
     setSiderCollapsed(collapsed);
   }
-  
+
   return (
     <Layout className="site-layout">
       <Header className="site-header">
@@ -107,8 +107,8 @@ const Template = (props) => {
         </div>
       </Header>
       <Layout>
-        <Sider collapsible theme="light" onCollapse={onSiderCollapse}>
-          <Menu mode="inline" defaultSelectedKeys={['1']} selectedKeys={[props.path]}>
+        <Sider collapsible theme="dark" onCollapse={onSiderCollapse} breakpoint="lg" collapsedWidth="50" width="300">
+          <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']} selectedKeys={[props.path]}>
             <Menu.Item key="/" icon={<AppstoreOutlined />}>
               <Link to="/">Dashboard</Link>
             </Menu.Item>
@@ -125,7 +125,7 @@ const Template = (props) => {
         </Sider>
         <Layout>
           <Content className="common-content-wrapper">
-            <div className={`common-content ${siderCollapsed ? 'common-content-full':''}`}>
+            <div className={`common-content ${siderCollapsed ? 'common-content-full' : ''}`}>
               {props.children}
             </div>
           </Content>

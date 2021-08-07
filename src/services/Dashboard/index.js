@@ -23,21 +23,18 @@ const Dashboard = () => {
   }, []);
   return (
     <div>
-      <Card title="Dashboard">
+      <Card>
         <Banner />
+      </Card>
+      <br />
+      <Card title="Recent Audit Activity">
         <div className="dash-content">
           {!connected && <Alert className="no-integration-alert"
             message="Integrations are not connected!"
             description={<>Head over to <Link to="/settings/integrations">Settings</Link> to integrate Collabright with your GIS and eSignature platform</>}
             banner
           />}
-
-          <Row>
-            <Col span={16} offset={4}>
-              <AuditList />
-            </Col>
-          </Row>
-
+          <AuditList />
         </div>
       </Card>
     </div>
