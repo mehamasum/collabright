@@ -25,7 +25,7 @@ urlpatterns = [
     path('docusign/webhook/', DocuSignWebHook.as_view()),
 ]
 
-if settings.DEBUG:
+if settings.DEFAULT_FILE_STORAGE == 'django.core.files.storage.FileSystemStorage':
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
