@@ -13,7 +13,7 @@ from docusign_esign import (ApiClient, SignHere, Tabs,
                             EnvelopesApi, RecipientViewRequest, NameValue,
                             DocumentFieldsInformation, ReturnUrlRequest,
                             LockRequest, ConnectCustomConfiguration, ConnectApi,
-                            ConnectEventData, EventNotification)
+                            ConnectEventData, EventNotification, EnvelopeEvent)
 from .utils import (create_api_client, create_documents, create_signers,
                     assign_sign_here, create_sign_here)
 
@@ -445,9 +445,10 @@ class DocuSignService:
         audit_id = str(args.get('audit_id'))
         event_notification = EventNotification(
             envelope_events=[
-                RecipientEvent(
-                    recipient_event_status_code='Completed'
-                ),
+                EnvelopeEvent(envelope_event_status_code='Sent'),
+            ],
+            recipient_events=[
+                RecipientEvent(recipient_event_status_code='Completed'),
             ],
             url="{0}/api/webhook/docusign/{1}/{2}/".format(settings.APP_URL, audit_id, audit_token),
             event_data=ConnectEventData(format='json', include_data=[
@@ -639,9 +640,9 @@ class DocuSignService:
             tabs=Tabs(sign_here_tabs=[sign_here]))
 
         return results.to_dict()
-
+        
     def handle_webhook_request(envelope):
-        print(envelope)
+        print("webhook", envelope)
         envelopeId = envelope.get('envelopeId', None)
         status = envelope.get('status', None)
 
