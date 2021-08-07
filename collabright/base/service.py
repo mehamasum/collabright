@@ -644,8 +644,12 @@ class DocuSignService:
         complete_signers = [
             int(signer['recipientId'])
             for signer in signers if signer['status']=='completed']
-        Reviewer.objects.filter(
-            id__in=complete_signers, has_signed=False).update(has_signed=True)
+        new_signers = Reviewer.objects.filter(
+            id__in=complete_signers, has_signed=False)
+        for signer in new_signers:
+            send_notification_to_requester(
+                audit.user, audit, signer, Notification.SIGNED, None)
+        new_signers.update(has_signed=True)
         print(complete_signers)
 
     def create_connect(args):
