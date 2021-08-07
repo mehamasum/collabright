@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip, Popconfirm } from 'antd';
+import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip, Popconfirm, Card } from 'antd';
 import { DownOutlined, QuestionOutlined, FileFilled, FileUnknownOutlined, EditOutlined, LinkOutlined, CloseCircleFilled } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
