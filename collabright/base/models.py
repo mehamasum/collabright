@@ -99,9 +99,11 @@ class Reviewer(models.Model):
 class Notification(models.Model):
     REVIEW = 'REVIEW'
     COMMENT = 'COMMENT'
+    SIGNED = 'SIGNED'
     TYPE_CHOICES = (
         (REVIEW, 'Review'),
         (COMMENT, 'Comment'),
+        (SIGNED, 'Signed'),
     )
     type = models.CharField(choices=TYPE_CHOICES, max_length=64, default=REVIEW)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
