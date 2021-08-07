@@ -1,6 +1,6 @@
 import json
 import base64
-from .models import (Integration, Notification, Reviewer, Audit)
+from .models import (Integration, Notification, Reviewer, Audit, Document)
 from rauth import OAuth2Service
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -88,6 +88,31 @@ class AuditService:
             return results
         
         return None
+
+class DocumentService:
+    def add_document_to_docusign_envelope(document):
+        version = Document.objects.filter(audit=document.audit).count()
+        user = document.audit.user
+
+        if not document.audit.envelope_id:
+            print("No envelop found for this audit", "add_docusign_document_to_envelope")
+            return
+
+        envelope_id = str(document.audit.envelope_id)
+        token = DocuSignOAuthService.get_access_token(user)
+        file_path = document.file.path
+        documents = [{
+            'file_path': file_path,
+            'document_id': 1,
+            'name': 'Map (v{0}.0)'.format(version)
+        }]
+
+        document = DocuSignService.update_document({
+            'access_token': token,
+            'envelope_id': envelope_id,
+            'documents': documents
+        })
+        print('added document to envelop => ', document)
 
 class ReviewerService:
     def assign_reviewer_to_audit_evelope(user, audit, reviewers=[]):
@@ -619,8 +644,12 @@ class DocuSignService:
         complete_signers = [
             int(signer['recipientId'])
             for signer in signers if signer['status']=='completed']
-        Reviewer.objects.filter(
-            id__in=complete_signers, has_signed=False).update(has_signed=True)
+        new_signers = Reviewer.objects.filter(
+            id__in=complete_signers, has_signed=False)
+        for signer in new_signers:
+            send_notification_to_requester(
+                audit.user, audit, signer, Notification.SIGNED, None)
+        new_signers.update(has_signed=True)
         print(complete_signers)
 
     def create_connect(args):

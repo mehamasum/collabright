@@ -6,7 +6,7 @@ import { Button, Card, Space, Table, Typography } from 'antd';
 import { Link, } from "react-router-dom";
 import { BellOutlined } from '@ant-design/icons';
 import { formatRelativeTime } from '../../utils';
-import { CommentOutlined, AuditOutlined } from '@ant-design/icons';
+import { CommentOutlined, AuditOutlined, HighlightOutlined } from '@ant-design/icons';
 
 
 
@@ -41,6 +41,11 @@ const NotificationList = (props) => {
         verb = 'submitted review';
         icon = <AuditOutlined />;
         target = `in ${record.audit.title}`
+        break;
+      case 'SIGNED':
+        verb = 'signed audit';
+        icon = <HighlightOutlined />;
+        target = `${record.audit.title}`
         break;
       default:
         break;
