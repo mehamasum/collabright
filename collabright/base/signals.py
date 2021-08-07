@@ -12,7 +12,13 @@ def create_docusign_envelope(sender, instance, created, **kwargs):
             'email_subject': 'Please sign the agreement from Collabright - Audit {0}'.format(instance.title),
             'access_token': token,
             'signers': [],
-            'documents': []
+            'documents': [{
+                'html_definition': {
+                    'source': "<html><body><div>Example HTML page source</div></body></html>"
+                },
+                'document_id': 2,
+                'name': 'Audit Details'
+            }]
         });
         envelope_id = envelope.get('envelope_id', None)
         Audit.objects.filter(id=instance.id).update(envelope_id=envelope_id)

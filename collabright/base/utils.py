@@ -3,7 +3,7 @@ import hashlib
 import base64
 from docusign_esign import (ApiClient, Document, SignHere, Tabs,
                             EnvelopeDefinition, Signer, Recipients,
-                            EnvelopesApi, RecipientViewRequest)
+                            EnvelopesApi, RecipientViewRequest, DocumentHtmlDefinition)
 
 def create_api_client(base_path, access_token):
     """Create api client and construct API headers"""
@@ -21,17 +21,25 @@ def create_documents(documents):
         name = doc.get('name', 'Document')
         file_extension = doc.get('file_extension', 'pdf')
         document_id = doc.get('document_id', indx+1)
-        file_path = doc['file_path']
+        file_path = doc.get('file_path', None)
+        html_definition = doc.get('html_definition', None)
+        content = {}
 
-        with open(file_path, "rb") as file:
-            content_bytes = file.read()
-        base64_content = base64.b64encode(content_bytes).decode('ascii')
+        if file_path:
+            with open(file_path, "rb") as file:
+                content_bytes = file.read()
+            base64_content = base64.b64encode(content_bytes).decode('ascii')
+            content['document_base64'] = base64_content
+
+        if html_definition:
+            content['html_definition'] = DocumentHtmlDefinition(
+                **html_definition)
 
         return Document(
-            document_base64 = base64_content,
             name = name,
             file_extension = file_extension,
-            document_id = document_id
+            document_id = document_id,
+            **content
         )
 
     return list(map(create_document, enumerate(documents)))
