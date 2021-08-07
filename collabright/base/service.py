@@ -9,11 +9,11 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from docusign_esign import (ApiClient, SignHere, Tabs,
-                            EnvelopeDefinition, Signer, Recipients,
+                            EnvelopeDefinition, RecipientEvent, Signer, Recipients,
                             EnvelopesApi, RecipientViewRequest, NameValue,
                             DocumentFieldsInformation, ReturnUrlRequest,
                             LockRequest, ConnectCustomConfiguration, ConnectApi,
-                            ConnectEventData)
+                            ConnectEventData, EventNotification)
 from .utils import (create_api_client, create_documents, create_signers,
                     assign_sign_here, create_sign_here)
 
@@ -339,7 +339,7 @@ class DocuSignOAuthService:
     service = OAuth2Service(
         client_id=settings.DOCUSIGN_INTEGRATION_KEY,
         client_secret=settings.DOCUSIGN_SECRET_KEY,
-        name='arcgis',
+        name='docusign',
         authorize_url="https://account-d.docusign.com/oauth/auth",
         access_token_url="https://account-d.docusign.com/oauth/token"
     )
@@ -441,6 +441,19 @@ class DocuSignService:
         documents = create_documents(args['documents'])
         signers = create_signers(args['signers'])
         status = args.get('status', 'created')
+        audit_token = args.get('audit_token')
+        audit_id = str(args.get('audit_id'))
+        event_notification = EventNotification(
+            envelope_events=[
+                RecipientEvent(
+                    recipient_event_status_code='Completed'
+                ),
+            ],
+            url="{0}/api/webhook/docusign/{1}/{2}/".format(settings.APP_URL, audit_id, audit_token),
+            event_data=ConnectEventData(format='json', include_data=[
+                'recipients',
+            ], version='restv2.1')
+        )
 
         sign_here = args.get('sign_here', {})
         assign_sign_here(signers, sign_here)
@@ -449,7 +462,8 @@ class DocuSignService:
             email_subject=email_subject,
             documents=documents,
             recipients=Recipients(signers=signers),
-            status=status
+            status=status,
+            event_notification=event_notification
         )
 
         return envelope_definition
