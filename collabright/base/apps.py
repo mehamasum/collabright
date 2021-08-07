@@ -9,12 +9,9 @@ class BaseConfig(AppConfig):
     def ready(self):
         from .models import (Audit, Document,)
         from .signals import (create_docusign_envelope,
-                              add_docusign_document_to_envelope,
                               export_map_as_pdf)
 
         post_save.connect(create_docusign_envelope, Audit,
                           dispatch_uid='create_docusign_envelope')
-        post_save.connect(add_docusign_document_to_envelope, Document,
-                          dispatch_uid='add_docusign_document_to_envelope')
         post_save.connect(export_map_as_pdf, Document,
                           dispatch_uid='export_map_as_pdf')
