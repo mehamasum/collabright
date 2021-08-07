@@ -4,6 +4,7 @@ import requests
 import shutil
 import os
 from .models import Document
+from .service import DocumentService
 from django.core.files.base import File
 from celery import shared_task
 
@@ -35,4 +36,5 @@ def download_and_save_file(audit_id, document_id):
         document.file.save(filename, File(f))
 
     print('written file', filename)
+    DocumentService.add_document_to_docusign_envelope(document)
     return filename
