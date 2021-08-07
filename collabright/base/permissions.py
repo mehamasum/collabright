@@ -2,17 +2,13 @@ from django.conf import settings
 from rest_framework import permissions
 from .models import Document, Reviewer, Audit
 from .utils import hash_is_valid
-
+from django.conf import settings
 
 class IsDocuSignWebHookRequest(permissions.BasePermission):
     def has_permission(self, request, view):
-        headers = request.headers
-        body = request.body
-        auth_type = headers.get('X-Authorization-Digest', None)
-
-        return auth_type == 'HMACSHA256' and hash_is_valid(
-            settings.DOCUSIGN_WEBHOOK_HMAC.encode('utf-8'), body,
-            headers['X-Docusign-Signature-1'].encode('utf-8'))
+        audit_id = request.resolver_match.kwargs.get('audit_id') or ''
+        audit_token = request.resolver_match.kwargs.get('audit_token') or ''
+        return hash_is_valid(settings.DOCUSIGN_SECRET_KEY.encode('utf-8'), str(audit_id).encode('utf-8'), audit_token)
 
 class IsAuditReviewer(permissions.BasePermission):
   def has_object_permission(self, request, view, audit):

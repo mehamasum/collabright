@@ -324,9 +324,8 @@ class OrganizationViewset(viewsets.ModelViewSet):
         return Organization.objects.none()
 
 class DocuSignWebHook(views.APIView):
-    permission_classes = [IsDocuSignWebHookRequest]
-
-    def post(self, request):
+    permission_classes = (permissions.AllowAny, IsDocuSignWebHookRequest,)
+    def post(self, request, audit_id, audit_token):
         data = request.data
         DocuSignService.handle_webhook_request(data)
         return Response({'ok': True}, status.HTTP_200_OK)

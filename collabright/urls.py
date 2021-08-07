@@ -22,7 +22,7 @@ urlpatterns = [
     path('api/admin/', admin.site.urls),
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
-    path('docusign/webhook/', DocuSignWebHook.as_view()),
+    path('api/webhook/docusign/<uuid:audit_id>/<str:audit_token>/', DocuSignWebHook.as_view()),
 ]
 
 if settings.DEFAULT_FILE_STORAGE == 'django.core.files.storage.FileSystemStorage':

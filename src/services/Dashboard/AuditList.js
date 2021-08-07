@@ -17,7 +17,7 @@ const columns = [
     render: (text, record) => (
       <Space>
           <Tag>v{record.documents.length}.0</Tag>
-          <Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 120)}</Link></Typography.Text>
+          <Typography.Text><Link to={`/audits/${record.id}`}>{truncateString(record.title, 64)}</Link></Typography.Text>
       </Space>
     )
   },
@@ -30,7 +30,7 @@ const columns = [
   {
     title: 'Updated',
     render: (text, record) => (
-      <Typography.Text><CommentOutlined/> {record.documents[record.documents.length - 1].comment_count}</Typography.Text>
+      <Typography.Text><CommentOutlined/> {record.documents[record.documents.length - 1]?.comment_count || 0}</Typography.Text>
     ),
   },
   {

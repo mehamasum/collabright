@@ -87,9 +87,7 @@ def create_sign_here(sign_here={}, indx=0):
     )
 
 def compute_hash(secret, payload):
-    hashBytes = hmac.new(secret, msg=payload, digestmod=hashlib.sha256).digest()
-    base64Hash = base64.b64encode(hashBytes)
-    return base64Hash;
+    return hmac.new(secret, msg=payload, digestmod=hashlib.sha256).hexdigest()
 
 def hash_is_valid(secret, payload, verify):
-    return hmac.compare_digest(verify, compute_hash(secret,payload))
+    return hmac.compare_digest(verify, compute_hash(secret, payload))
