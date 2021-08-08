@@ -30,12 +30,12 @@ const SendEnvelop = ({ audit }) => {
 
   return (
     <>
-      {(hasEnvelop && hasSigners) &&
+      {(hasEnvelop && hasSigners && !isEnvelopSent) &&
         <Tooltip title="You can only send out the envelope once all Signers have aprroved the Audit">
           <Button
             onClick={sendEnvelop}
             loading={loading}
-            disabled={!allSignersApproved || isEnvelopSent}
+            disabled={!allSignersApproved}
           >
             <SendOutlined /> Send Agreement
           </Button>
