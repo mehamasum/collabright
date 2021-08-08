@@ -1,1 +1,4 @@
 
+[submodule "Viewer"]
+	path = Viewer
+	url = git@github.com:mehamasum/Viewer.git

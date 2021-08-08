@@ -181,5 +181,5 @@ sketch
 /build
 /staticfiles
 /mediafiles
-/public/mapviewer
 /public/webviewer
+/public/embeds/esriviewer-lib
