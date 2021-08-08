@@ -9,7 +9,7 @@ import MapPrinter from './MapPrinter';
 import AddAuditors from './AddAuditors';
 import './AuditDetails.css';
 import { message } from 'antd';
-import EsriMap from './EsriMap';
+import {EsriTemplate} from './EsriMap';
 import { RedCross, GreenTick } from '../../components/icons';
 import { useHistory, useParams, useLocation } from "react-router";
 import EnvelopDetails, { SendEnvelop } from './EnvelopDetails';
@@ -326,7 +326,7 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
           </Row>
         </TabPane>
         <TabPane tab="Interactive Map" key="map">
-          <EsriMap documentId={document.id} className="map-frame" isAdmin={isAdmin} query={query} homeButtonId="details-map-home-btn" />
+          <EsriTemplate documentId={document.id} className="map-frame" isAdmin={isAdmin} query={query} homeButtonId="details-map-home-btn" />
         </TabPane>
         <TabPane tab={document.comment_count > 0 ? `Discussion (${document.comment_count})` : 'Discussion'} key="discussion">
           <Annotator key={versionIndex} document={document} isAdmin={isAdmin} query={query} user={isAdmin ? user.username : user.contact.email} count={count} onCountChange={onCountChange} />

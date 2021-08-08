@@ -23,8 +23,9 @@
 }
 
 .map-frame {
-  height: calc(100% - 72px);
+  height: 100%;
   position: relative;
+  width: 100%;
 }
 
 .list-header {

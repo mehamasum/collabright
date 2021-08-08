@@ -72,3 +72,18 @@ const EsriMap = ({ className, homeButtonId, documentId, onLoad, isAdmin, query }
 }
 
 export default EsriMap;
+
+export const EsriTemplate = ({className, homeButtonId, documentId, onLoad, isAdmin, query}) => {
+  const embedPath = process.env.NODE_ENV === 'production' ? '/static/esriviewer-lib/index.html' : '/embeds/esriviewer-lib/index.html';
+
+  return (
+    <iframe
+      className={className}
+      title="Esri Map"
+      frameBorder="0"
+      border="0"
+      cellSpacing="0"
+      src={`${embedPath}?document_id=${documentId}${isAdmin ? '' : '&' + query}`}>
+    </iframe>
+  );
+}
