@@ -13,8 +13,10 @@ const PrivateRoute = props => {
       <FetchProvider options={
         {
           headers: {
-            'Authorization': `Token ${token}`
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
           },
+          cachePolicy: 'no-cache'
         }
       }>
         {withoutTemplate ? <Component {...componentProps} /> : (
