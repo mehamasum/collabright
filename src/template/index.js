@@ -107,8 +107,8 @@ const Template = (props) => {
         </div>
       </Header>
       <Layout>
-        <Sider collapsible theme="dark" onCollapse={onSiderCollapse} breakpoint="lg" collapsedWidth="50" width="300">
-          <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']} selectedKeys={[props.path]}>
+        <Sider theme="light" collapsible onCollapse={onSiderCollapse} breakpoint="lg" collapsedWidth="50" width="300">
+          <Menu theme="light" mode="inline" defaultSelectedKeys={['1']} selectedKeys={[props.path]}>
             <Menu.Item key="/" icon={<AppstoreOutlined />}>
               <Link to="/">Dashboard</Link>
             </Menu.Item>
