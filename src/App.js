@@ -25,10 +25,9 @@ const App = (props) => {
   const [token] = useLocalStorage('token');
 
   return (
-    <FetchProvider url={process.env.REACT_APP_API_URL} options={
+    <FetchProvider options={
       {
         headers: {
-          'Authorization': token ? `Token ${token}` : undefined,
           'Content-Type': 'application/json'
         },
         cachePolicy: 'no-cache'
