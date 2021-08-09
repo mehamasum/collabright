@@ -262,6 +262,7 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
     if (verdict === 'REQUESTED_CHANGES') return <RedCross />;
     return 'error';
   }
+  const shouldDisabledEdit = audit.status === 'completed' || !audit.is_open;
 
   const needsToSign = !!audit.reviewers.find(reviewer => reviewer.id === user.id && !!reviewer.needs_to_sign);
   return (
@@ -293,7 +294,7 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
             </Col>
             <Col className="gutter-row" span={8}>
               <List
-                header={<div className="list-header"><Text strong>Signers</Text> <Button type="link" onClick={onEditSigner}> <EditOutlined /> Edit</Button></div>}
+                header={<div className="list-header"><Text strong>Signers</Text> <Button type="link" onClick={onEditSigner} disabled={shouldDisabledEdit}> <EditOutlined /> Edit</Button></div>}
                 dataSource={audit.reviewers.filter(reviewer => reviewer.needs_to_sign)}
                 renderItem={item => (
                   <List.Item actions={[
