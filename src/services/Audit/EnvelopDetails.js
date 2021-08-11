@@ -26,16 +26,16 @@ const SendEnvelop = ({ audit }) => {
   const signers = audit.reviewers.filter(reviewer => reviewer.needs_to_sign);
   const hasSigners = signers.length > 0;
   const allSignersApproved = signers.every(val => val.verdict === 'APPROVED');
-  const isEnvelopSent = audit.status === 'sent';
+  const isEnvelopSent = audit.status !== 'created';
 
   return (
     <>
-      {(hasEnvelop && hasSigners) &&
+      {(hasEnvelop && hasSigners && !isEnvelopSent) &&
         <Tooltip title="You can only send out the envelope once all Signers have aprroved the Audit">
           <Button
             onClick={sendEnvelop}
             loading={loading}
-            disabled={!allSignersApproved || isEnvelopSent}
+            disabled={!allSignersApproved}
           >
             <SendOutlined /> Send Agreement
           </Button>
@@ -57,7 +57,7 @@ const EnvelopDetails = ({ isAdmin, audit, latestDocument, needsToSign }) => {
   }
 
   const hasEnvelop = !!audit.envelope_id;
-  const isEnvelopSent = audit.status === 'sent';
+  const isEnvelopSent = audit.status !== 'created';
 
   return (
     <List

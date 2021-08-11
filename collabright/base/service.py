@@ -116,6 +116,9 @@ class DocumentService:
 
 class ReviewerService:
     def assign_reviewer_to_audit_evelope(user, audit, reviewers=[]):
+        if audit.status == 'completed':
+            return None
+
         access_token = DocuSignOAuthService.get_access_token(user)
         envelope_id = str(audit.envelope_id)
         signers = []
@@ -641,7 +644,7 @@ class DocuSignService:
             tabs=Tabs(sign_here_tabs=[sign_here]))
 
         return results.to_dict()
-        
+
     def handle_webhook_request(envelope):
         print("webhook", envelope)
         envelopeId = envelope.get('envelopeId', None)
