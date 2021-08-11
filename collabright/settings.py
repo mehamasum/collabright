@@ -67,9 +67,17 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'csp.middleware.CSPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CSP_FRAME_ANCESTORS = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'",)
+CSP_FONT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'",)
+CSP_IMG_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
 
 ROOT_URLCONF = 'collabright.urls'
 
