@@ -2,22 +2,7 @@
 
 # Server
 
-
-## Docker
-Install docker and docker compose
-
-- set environment variables  
-`cp .sample.env .env`  
-
-- Build images  
-`docker compose build`  
-
-- Start containers  
-`docker compose up`  
-
----
-
-## Manual Setup
+## Local Setup
 
 - goto project root  
 `cd YOUR_PROJECT_ROOT_DIRECTORY`
@@ -56,7 +41,7 @@ Install docker and docker compose
 
 # Client
 
-## Manual Setup
+## Local Setup
 
 Node.js 10.13 or later needed.
 
