@@ -431,6 +431,7 @@ class DocuSignOAuthService:
 
 
 class DocuSignService:
+    # TODO: get base_api_uri from user profile
     base_api_uri = settings.DOCUSIGN_ACCOUNT_BASE_URI + '/restapi'
     account_id = settings.DOCUSIGN_API_ACCOUNT_ID
 
