@@ -2,7 +2,7 @@ import './AuditList.css';
 
 import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
-import { Button, Card, Space, Table, Tag, Typography } from 'antd';
+import { Button, Card, Space, Table, Tag, Typography, message } from 'antd';
 import { Link } from "react-router-dom";
 import { LinkOutlined } from '@ant-design/icons';
 import { formatRelativeTime, truncateString } from '../../utils';
@@ -91,7 +91,8 @@ const PostListView = (props) => {
     <div>
       <Card title="Audits" extra={
         <Space>
-          <Button icon={<SearchOutlined />}>Search</Button>
+          {/* TODO: implement this */}
+          <Button icon={<SearchOutlined />} onClick={() => message.error('This feature is not available yet')}>Search</Button>
           <Link to={`/audits/new`}><Button type="primary" icon={<PlusOutlined />}>Audit Request</Button></Link>
         </Space>
       }>

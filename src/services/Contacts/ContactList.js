@@ -2,7 +2,7 @@ import './ContactList.css';
 
 import React, { useEffect, useState } from 'react';
 import useFetch from 'use-http';
-import { Button, Card, Space, Table, Modal, Typography, Form, Input, } from 'antd';
+import { Button, Card, Space, Table, Modal, Typography, Form, Input, message } from 'antd';
 import { formatRelativeTime } from '../../utils';
 import { EditOutlined, DeleteOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 
@@ -147,7 +147,8 @@ const ContactList = (props) => {
       render: (text, record) => (
         <Space>
           <Button type="link" onClick={onEdit(record)}> <EditOutlined /> Edit</Button>
-          <Button type="link" danger> <DeleteOutlined /> Delete</Button>
+          {/* TODO: implement this */}
+          <Button type="link" danger onClick={() => message.error('This feature is not available yet')}> <DeleteOutlined /> Delete</Button>
         </Space>
       ),
     }
@@ -157,7 +158,8 @@ const ContactList = (props) => {
     <div>
       <Card title="Contacts" extra={
         <Space>
-          <Button icon={<SearchOutlined />}>Search</Button>
+          {/* TODO: implement this */}
+          <Button icon={<SearchOutlined />} onClick={() => message.error('This feature is not available yet')}>Search</Button>
           <Button type="primary" onClick={showModal} icon={<PlusOutlined />}>New Contact</Button>
         </Space>
 

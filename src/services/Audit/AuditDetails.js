@@ -320,7 +320,8 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
                 )}
               />
               <Divider />
-              <Button>Unsubscribe</Button><br />
+              {/* TODO: implement this */}
+              <Button onClick={() => message.error('This feature is not available yet')}>Unsubscribe</Button><br />
               <small><Text type="secondary">Stop receiving notifications for this version</Text></small>
               <Divider />
             </Col>

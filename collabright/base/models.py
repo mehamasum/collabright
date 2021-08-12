@@ -27,16 +27,6 @@ class Contact(models.Model):
             self.name = self.email.split("@")[0]
         super(Contact, self).save(*args, **kwargs)
 
-
-# audit: user, arcgis map id, envelop id
-# contact: name, email
-# reviewer: contact, audit, needs_to_sign, verdict, token
-# review: reviewer, version, audit, verdict
-
-# signable ??? : audit, url, tabs (json)
-
-# notification: user, review_history
-
 def get_agreement_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/<audit_id>/<filename>
     return '{0}/agreement_{1}'.format(instance.id, filename)
@@ -117,6 +107,7 @@ class Notification(models.Model):
 
 
 class Comment(models.Model):
+    # TODO: ref user/reviewer
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='comments')
     annotation = models.CharField(max_length=200)
     xfdf = models.TextField()

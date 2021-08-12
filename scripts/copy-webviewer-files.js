@@ -2,6 +2,7 @@ const fs = require('fs-extra');
 
 const copyFiles = async () => {
   try {
+    // TODO: delete unnecessary files
     await fs.copy('./node_modules/@pdftron/webviewer/public', './public/webviewer/webviewer-lib');
     console.log('WebViewer files copied over successfully');
 

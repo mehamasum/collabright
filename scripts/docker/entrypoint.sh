@@ -3,38 +3,18 @@ set -e
 
 echo "Starting..."
 
-# TODO: wait for dependencies to get up
-
-cd Viewer
 npm install && rm -rf /usr/local/share/.cache
 npm run build
-cd ..
-mkdir -p public/mapviewer
-cp -a Viewer/build/. public/mapviewer/
-rm -rf Viewer/build
-
-npm install && rm -rf /usr/local/share/.cache
-mkdir -p public/webviewer/lib
-cp -a node_modules/@pdftron/webviewer/public/. public/webviewer/lib/
-npm run build
-
-exit
 
 pip install --no-cache-dir -r /app/requirements.txt
-
-python manage.py makemigrations
 python manage.py migrate
-
-cp -a build/. staticfiles/
-rm -rf build
-
 python manage.py collectstatic --noinput
 
 /etc/init.d/nginx start
 
 mkdir -p /var/log/uwsgi
 chown -R www-data:www-data /var/log/uwsgi
-uwsgi --ini /app/scripts/docker/uwsgi.ini
+uwsgi --ini /app/scripts/uwsgi.ini
 
 # TODO: separate out from web servers
 mkdir -p /var/log/celery
