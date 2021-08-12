@@ -15,9 +15,11 @@ const Banner = () => {
               Collect feeback and get approval through eSignature, in a jiffy!
             </Typography.Text>
 
-            <Button type="link" className="banner-cta">
-              <BulbOutlined /> <strong>See how Collabright works</strong>
-            </Button>
+            <a href="https://youtu.be/75aKAiwrdYA" target="_blank" rel="noreferrer">
+              <Button type="link" className="banner-cta">
+                <BulbOutlined /> <strong>See how Collabright works</strong>
+              </Button>
+            </a>
           </div>
           <div role="presentation" className="banner-header-image">
             <img src={banner} alt=""></img>
