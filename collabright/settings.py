@@ -73,11 +73,11 @@ MIDDLEWARE = [
 ]
 
 CSP_FRAME_ANCESTORS = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'",)
-CSP_FONT_SRC = ("'self'",)
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'",)
-CSP_IMG_SRC = ("'self'",)
-CSP_CONNECT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://js.arcgis.com", "'unsafe-eval'")
+CSP_FONT_SRC = ("'self'", "https://js.arcgis.com", "data:")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://js.arcgis.com")
+CSP_IMG_SRC = ("'self'", "https://js.arcgis.com", "https://server.arcgisonline.com", "https://services.arcgisonline.com")
+CSP_CONNECT_SRC = ("'self'", "https://services.arcgisonline.com", "https://static.arcgis.com")
 
 ROOT_URLCONF = 'collabright.urls'
 
