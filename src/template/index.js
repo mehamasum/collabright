@@ -3,7 +3,7 @@ import './index.css';
 import logo from '../assets/images/logo.svg';
 
 
-import { Avatar, Dropdown, Layout, Menu, Spin, Typography, Badge } from "antd";
+import { Avatar, Dropdown, Layout, Menu, Spin, Typography, Badge, Modal, Input } from "antd";
 import {
   AppstoreOutlined,
   SettingOutlined,
@@ -17,21 +17,24 @@ import { Link } from 'react-router-dom';
 import useFetch from "use-http";
 import { deleteFromStorage } from '@rehooks/local-storage';
 import { Helmet } from "react-helmet";
-import Banner from "../services/Dashboard/Banner";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 
 const Template = (props) => {
   const [user, setUser] = useState(null);
+  const [emailInput, setEmailInput] = useState(null);
+  const [emailModalVisible, setEmailModalVisible] = useState(false);
   const [notificationCount, setNotificationCount] = useState(null);
   const [siderCollapsed, setSiderCollapsed] = useState(false);
-  const { response, post, get } = useFetch();
+  const { response, post, get, loading } = useFetch();
 
   useEffect(() => {
     get('/api/auth/users/me/').then(data => {
       if (response.ok) {
-        return setUser(data);
+        setUser(data);
+        setEmailInput(data.email || '');
+        return;
       }
 
       //deleteFromStorage('token');
@@ -53,9 +56,39 @@ const Template = (props) => {
     });
   };
 
+  const onChangeEmail = () => {
+    setEmailModalVisible(true);
+  };
+
+  const handleOk = () => {
+    console.log({ emailInput });
+    post('api/auth/users/me/set_email/', {
+      email: emailInput
+    }).then(() => {
+      if (response.ok) {
+        setEmailModalVisible(false);
+        setUser(user => ({
+          ...user,
+          email: emailInput
+        }));
+      }
+    });
+  };
+
+  const handleCancel = () => {
+    setEmailModalVisible(false);
+  };
+
+  const onEmailInputChange = (e) => setEmailInput(e.target.value); 
+
   const menu = (
     <Menu>
-      <Menu.Item key="logout" onClick={e => {
+      <Menu.Item key="change-email" onClick={e => {
+        onChangeEmail();
+      }}>
+        Change Email
+      </Menu.Item>
+      <Menu.Item danger key="logout" onClick={e => {
         onLoggedOutClick();
       }}>
         Log Out
@@ -103,7 +136,9 @@ const Template = (props) => {
               </div>
             </Dropdown>
           </div>
-
+          <Modal title="Set email" visible={emailModalVisible} onOk={handleOk} onCancel={handleCancel} confirmLoading={loading}>
+            <Input placeholder="Your email address" value={emailInput} onChange={onEmailInputChange} />
+          </Modal>
         </div>
       </Header>
       <Layout>

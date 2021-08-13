@@ -21,6 +21,8 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from docusign_esign.client import api_exception
 import json
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 
 def has_review_token(request):
@@ -328,3 +330,20 @@ class DocuSignWebHook(views.APIView):
         data = request.data
         DocuSignService.handle_webhook_request(data)
         return Response({'ok': True}, status.HTTP_200_OK)
+
+class SetUserEmail(views.APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request):
+        user = request.user
+        email = request.data.get('email')
+        try:
+            validate_email(email)
+            user.email = email
+            user.save()
+            return Response({'ok': True}, status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+        
+        
