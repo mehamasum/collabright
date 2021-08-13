@@ -16,6 +16,8 @@ from docusign_esign import (ApiClient, SignHere, Tabs,
                             ConnectEventData, EventNotification, EnvelopeEvent)
 from .utils import (create_api_client, create_documents, create_signers,
                     assign_sign_here, create_sign_here)
+import logging
+logger = logging.getLogger(__name__)
 
 
 def send_email_to_reviewer(user, audit, reviewer, version):
@@ -90,29 +92,27 @@ class AuditService:
         return None
 
 class DocumentService:
-    def add_document_to_docusign_envelope(document):
-        version = Document.objects.filter(audit=document.audit).count()
+    def add_document_to_docusign_envelope(document, version, file_bytes):
         user = document.audit.user
 
         if not document.audit.envelope_id:
-            print("No envelop found for this audit", "add_docusign_document_to_envelope")
+            logger.error("No envelop found to add document")
             return
 
         envelope_id = str(document.audit.envelope_id)
         token = DocuSignOAuthService.get_access_token(user)
-        file_path = document.file.path
         documents = [{
-            'file_path': file_path,
+            'file_bytes': file_bytes,
             'document_id': 1,
             'name': 'Map (v{0}.0)'.format(version)
         }]
 
-        document = DocuSignService.update_document({
+        DocuSignService.update_document({
             'access_token': token,
             'envelope_id': envelope_id,
             'documents': documents
         })
-        print('added document to envelop => ', document)
+        logger.info('Added document {0} pdf to envelop {1}'.format(str(document.id), envelope_id))
 
 class ReviewerService:
     def assign_reviewer_to_audit_evelope(user, audit, reviewers=[]):
@@ -216,8 +216,6 @@ class ArcGISOAuthService:
         refresh_token = integration.refresh_token
         refresh_expiry_date = integration.refresh_expiry_date
 
-        print(now, expiry_date, refresh_expiry_date)
-
         if now > refresh_expiry_date:
           return None
 
@@ -250,8 +248,6 @@ class ArcGISOAuthService:
     def get_map_item(user, base_url, map_id):
         token = ArcGISOAuthService.get_access_token(user)
 
-        print('token', token)
-        
         params = {
             'f': 'json',
             'token': token,

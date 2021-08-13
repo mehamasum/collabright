@@ -33,8 +33,8 @@ def download_and_save_file(audit_id, document_id):
             shutil.copyfileobj(r.raw, f)
     
     with open(local_filename, 'rb') as f:
-        document.file.save(filename, File(f))
-
-    print('written file', filename)
-    DocumentService.add_document_to_docusign_envelope(document)
+        local_temp_file = File(f)
+        local_temp_file_bytes = f.read()
+        document.file.save(filename, local_temp_file)
+        DocumentService.add_document_to_docusign_envelope(document, version, local_temp_file_bytes)
     return filename

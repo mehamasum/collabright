@@ -21,14 +21,12 @@ def create_documents(documents):
         name = doc.get('name', 'Document')
         file_extension = doc.get('file_extension', 'pdf')
         document_id = doc.get('document_id', indx+1)
-        file_path = doc.get('file_path', None)
+        file_bytes = doc.get('file_bytes', None)
         html_definition = doc.get('html_definition', None)
         content = {}
 
-        if file_path:
-            with open(file_path, "rb") as file:
-                content_bytes = file.read()
-            base64_content = base64.b64encode(content_bytes).decode('ascii')
+        if file_bytes:
+            base64_content = base64.b64encode(file_bytes).decode('ascii')
             content['document_base64'] = base64_content
 
         if html_definition:

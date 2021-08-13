@@ -79,6 +79,7 @@ CSP_FONT_SRC = ("'self'", "https://*.arcgis.com", "data:")
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://*.arcgis.com")
 CSP_IMG_SRC = ("'self'", "https://*.arcgis.com", "https://*.arcgisonline.com")
 CSP_CONNECT_SRC = ("'self'", "https://*.arcgisonline.com", "https://*.arcgis.com")
+CSP_WORKER_SRC = ("'self'", "blob:")
 
 ROOT_URLCONF = 'collabright.urls'
 

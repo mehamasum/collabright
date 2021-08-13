@@ -24,7 +24,6 @@ class IsDocumentReviewer(permissions.BasePermission):
     token = request.query_params.get('token')
     try:
       reviewer = Reviewer.objects.get(token=token, audit=document.audit)
-      print('reviewer', reviewer)
       return True
     except Reviewer.DoesNotExist:
       return False

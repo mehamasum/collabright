@@ -44,7 +44,6 @@ def create_docusign_envelope(sender, instance, created, **kwargs):
         Audit.objects.filter(id=instance.id).update(envelope_id=envelope_id)
 
 def export_map_as_pdf(sender, instance, created, **kwargs):
-    print('export_map_as_pdf hook')
     document = instance
     if not document.file and \
         document.map_print_definition and \

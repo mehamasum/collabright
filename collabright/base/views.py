@@ -239,7 +239,6 @@ class AuditViewSet(viewsets.ModelViewSet):
             #url = url.replace('sendButtonAction=send', 'sendButtonAction=redirect')
             #url = url.replace('backButtonAction=previousPage', 'backButtonAction=redirect')
             #url += '&lockToken={0}'.format(lock_token)
-            print('sender url', url)
             recipient_view['url'] = url
             return Response(recipient_view, status.HTTP_200_OK)
         except api_exception.ApiException as e:
