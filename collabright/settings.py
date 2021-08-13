@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
+    'storages',
     'django_celery_results',
     'collabright.base',
 ]
@@ -73,11 +74,11 @@ MIDDLEWARE = [
 ]
 
 CSP_FRAME_ANCESTORS = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://js.arcgis.com", "'unsafe-eval'")
-CSP_FONT_SRC = ("'self'", "https://js.arcgis.com", "data:")
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://js.arcgis.com")
-CSP_IMG_SRC = ("'self'", "https://js.arcgis.com", "https://server.arcgisonline.com", "https://services.arcgisonline.com")
-CSP_CONNECT_SRC = ("'self'", "https://services.arcgisonline.com", "https://static.arcgis.com")
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://*.arcgis.com", "'unsafe-eval'")
+CSP_FONT_SRC = ("'self'", "https://*.arcgis.com", "data:")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://*.arcgis.com")
+CSP_IMG_SRC = ("'self'", "https://*.arcgis.com", "https://*.arcgisonline.com")
+CSP_CONNECT_SRC = ("'self'", "https://*.arcgisonline.com", "https://*.arcgis.com")
 
 ROOT_URLCONF = 'collabright.urls'
 
@@ -180,6 +181,14 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
+# aws settings
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_IS_GZIPPED = True
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+AWS_QUERYSTRING_AUTH = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -197,11 +206,14 @@ STATICFILES_DIRS = [
 
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = env.str('STATICFILES_STORAGE', default='whitenoise.storage.CompressedManifestStaticFilesStorage')
 
 DEFAULT_FILE_STORAGE=env.str('DEFAULT_FILE_STORAGE', default='django.core.files.storage.FileSystemStorage')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
+
+if DEFAULT_FILE_STORAGE == 'collabright.storages.PublicMediaStorage':
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
