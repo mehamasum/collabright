@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip, Popconfirm, Card } from 'antd';
+import { Typography, Spin, Button, Tag, Tabs, Space, Select, PageHeader, Menu, Dropdown, Input, Tooltip, Popconfirm, Alert } from 'antd';
 import { DownOutlined, QuestionOutlined, FileFilled, FileUnknownOutlined, EditOutlined, LinkOutlined, CloseCircleFilled } from '@ant-design/icons';
 import Annotator from './Annotator';
 import useFetch from 'use-http';
@@ -255,6 +255,8 @@ const AuditDetails = ({ auditId, isAdmin = false, query }) => {
 
   const document = audit.documents[versionIndex];
   const latestDocument = audit.documents[audit.documents.length - 1];
+
+  if (!document) return <div className="full-page-loader"><Alert type="error" message="There was an error creating this version" /></div>;
 
   const getBadgeType = (verdict) => {
     if (verdict === 'PENDING') return <QuestionOutlined />;
